@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Picture {
     pub id: String,
     pub width: u32,
@@ -16,7 +16,7 @@ pub struct Picture {
     pub links: Links,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Links {
     #[serde(rename = "self")]
     pub l_self: String,
@@ -25,14 +25,14 @@ pub struct Links {
     pub download_location: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Location {
     pub name: Option<String>,
     pub city: Option<String>,
     pub country: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Exif {
     pub make: Option<String>,
     pub model: Option<String>,
@@ -42,7 +42,7 @@ pub struct Exif {
     pub iso: Option<u32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     pub id: String,
     pub username: String,
@@ -55,7 +55,7 @@ pub struct User {
     pub links: UserLinks,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserLinks {
     #[serde(rename = "self")]
     pub l_self: String,

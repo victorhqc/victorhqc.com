@@ -1,2 +1,3 @@
 [debug]
 port = 7878
+log_level= "debug"

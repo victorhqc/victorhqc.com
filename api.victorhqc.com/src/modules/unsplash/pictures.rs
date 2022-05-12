@@ -14,7 +14,11 @@ pub async fn fetch_random_picture() -> Result<Picture> {
         .await
         .context(RequestIssueSnafu)?;
 
-    debug!("Client Response: {:?}", response);
+    debug!("Random Picture Response: {:?}", response);
+
+    let response_headers = response.headers();
+
+    debug!("Random Picture Headers: {:?}", response_headers);
 
     let picture = response.json::<Picture>().await.context(JsonIssueSnafu)?;
 
