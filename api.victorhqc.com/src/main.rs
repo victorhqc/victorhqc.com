@@ -13,7 +13,7 @@ mod modules;
 use async_mutex::Mutex;
 use dotenv::dotenv;
 use handlers::unsplash;
-use modules::unsplash::PicturesState;
+use modules::unsplash::PicturesCache;
 use rocket::serde::{json::Json, Serialize};
 use std::sync::Arc;
 
@@ -21,7 +21,7 @@ use std::sync::Arc;
 async fn main() -> Result<(), rocket::Error> {
     dotenv().ok();
 
-    let state = Arc::new(Mutex::new(PicturesState::new()));
+    let state = Arc::new(Mutex::new(PicturesCache::new(30)));
 
     let _rocket = rocket::build()
         .manage(state)

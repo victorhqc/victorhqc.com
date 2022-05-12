@@ -4,12 +4,15 @@ use super::{
 };
 use snafu::prelude::*;
 
-pub async fn fetch_random_picture() -> Result<Picture> {
+pub async fn fetch_random_picture(query: &str, orientation: &str) -> Result<Picture> {
     let unsplash_url: &str = dotenv!("UNSPLASH_API_URL");
     let client = build_client().context(ClientIssueSnafu)?;
 
     let response = client
-        .get(format!("{}/photos/random", unsplash_url))
+        .get(format!(
+            "{}/photos/random?query={}&orientation={}",
+            unsplash_url, query, orientation
+        ))
         .send()
         .await
         .context(RequestIssueSnafu)?;
