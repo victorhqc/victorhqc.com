@@ -14,6 +14,7 @@ pub struct Picture {
     pub location: Location,
     pub exif: Exif,
     pub links: Links,
+    pub user: User,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

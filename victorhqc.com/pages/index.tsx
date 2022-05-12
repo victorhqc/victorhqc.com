@@ -1,7 +1,8 @@
-import type { NextPage } from 'next'
+import type { NextPage, GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import { getRandomPicture } from '@/api/unsplash';
 
 const Home: NextPage = () => {
   return (
@@ -68,5 +69,14 @@ const Home: NextPage = () => {
     </div>
   )
 }
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  await getRandomPicture();
+
+  return {
+    props: {}, // will be passed to the page component as props
+  }
+}
+
 
 export default Home
