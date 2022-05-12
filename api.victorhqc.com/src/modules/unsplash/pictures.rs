@@ -1,43 +1,24 @@
-// use snafu::{ResultExt, Snafu};
-use reqwest::header::{HeaderMap, HeaderName, AUTHORIZATION};
-use serde::{Deserialize, Serialize};
+use super::{
+    client::{build_client, UnsplashClientError},
+    entities::Picture,
+};
 use snafu::prelude::*;
 
-pub async fn fetch_random_picture() -> Result<()> {
+pub async fn fetch_random_picture() -> Result<Picture> {
     let unsplash_url: &str = dotenv!("UNSPLASH_API_URL");
-    let client_id = dotenv!("UNSPLASH_ACCESS_KEY");
+    let client = build_client().context(ClientIssueSnafu)?;
 
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        AUTHORIZATION,
-        format!("Client-ID {}", client_id).parse().unwrap(),
-    );
-
-    headers.insert(
-        HeaderName::from_static("accept-version"),
-        "v1".parse().unwrap(),
-    );
-
-    let client = reqwest::Client::builder()
-        .default_headers(headers)
-        .build()
-        .context(ClientIssueSnafu)?;
-
-    // Authorization: Client-ID YOUR_ACCESS_KEY
-
-    let resp = client
+    let response = client
         .get(format!("{}/photos/random", unsplash_url))
         .send()
         .await
         .context(RequestIssueSnafu)?;
 
-    println!("headers: {:?}", resp.headers());
+    debug!("Client Response: {:?}", response);
 
-    let value = resp.json::<Picture>().await.context(JsonIssueSnafu)?;
+    let picture = response.json::<Picture>().await.context(JsonIssueSnafu)?;
 
-    println!("response: {:?}", value);
-
-    Ok(())
+    Ok(picture)
 }
 
 pub type Result<T, E = UnsplashPicturesError> = std::result::Result<T, E>;
@@ -50,99 +31,6 @@ pub enum UnsplashPicturesError {
     #[snafu(display("Failed parse a randon picture {}", source))]
     JsonIssue { source: reqwest::Error },
 
-    #[snafu(display("Failed build a client {}", source))]
-    ClientIssue { source: reqwest::Error },
+    #[snafu(display("Failed to build the client {}", source))]
+    ClientIssue { source: UnsplashClientError },
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Picture {
-    pub id: String,
-    pub width: u32,
-    pub height: u32,
-    pub color: Option<String>,
-    pub blur_hash: Option<String>,
-    pub downloads: u64,
-    pub likes: u64,
-    pub description: Option<String>,
-}
-
-/*
-{
-  "id": "Dwu85P9SOIk",
-  "created_at": "2016-05-03T11:00:28-04:00",
-  "updated_at": "2016-07-10T11:00:01-05:00",
-  "width": 2448,
-  "height": 3264,
-  "color": "#6E633A",
-  "blur_hash": "LFC$yHwc8^$yIAS$%M%00KxukYIp",
-  "downloads": 1345,
-  "likes": 24,
-  "liked_by_user": false,
-  "description": "A man drinking a coffee.",
-  "exif": {
-    "make": "Canon",
-    "model": "Canon EOS 40D",
-    "exposure_time": "0.011111111111111112",
-    "aperture": "4.970854",
-    "focal_length": "37",
-    "iso": 100
-  },
-  "location": {
-    "name": "Montreal, Canada",
-    "city": "Montreal",
-    "country": "Canada",
-    "position": {
-      "latitude": 45.473298,
-      "longitude": -73.638488
-    }
-  },
-  "current_user_collections": [ // The *current user's* collections that this photo belongs to.
-    {
-      "id": 206,
-      "title": "Makers: Cat and Ben",
-      "published_at": "2016-01-12T18:16:09-05:00",
-      "last_collected_at": "2016-06-02T13:10:03-04:00",
-      "updated_at": "2016-07-10T11:00:01-05:00",
-      "cover_photo": null,
-      "user": null
-    },
-    // ... more collections
-  ],
-  "urls": {
-    "raw": "https://images.unsplash.com/photo-1417325384643-aac51acc9e5d",
-    "full": "https://images.unsplash.com/photo-1417325384643-aac51acc9e5d?q=75&fm=jpg",
-    "regular": "https://images.unsplash.com/photo-1417325384643-aac51acc9e5d?q=75&fm=jpg&w=1080&fit=max",
-    "small": "https://images.unsplash.com/photo-1417325384643-aac51acc9e5d?q=75&fm=jpg&w=400&fit=max",
-    "thumb": "https://images.unsplash.com/photo-1417325384643-aac51acc9e5d?q=75&fm=jpg&w=200&fit=max"
-  },
-  "links": {
-    "self": "https://api.unsplash.com/photos/Dwu85P9SOIk",
-    "html": "https://unsplash.com/photos/Dwu85P9SOIk",
-    "download": "https://unsplash.com/photos/Dwu85P9SOIk/download"
-    "download_location": "https://api.unsplash.com/photos/Dwu85P9SOIk/download"
-  },
-  "user": {
-    "id": "QPxL2MGqfrw",
-    "updated_at": "2016-07-10T11:00:01-05:00",
-    "username": "exampleuser",
-    "name": "Joe Example",
-    "portfolio_url": "https://example.com/",
-    "bio": "Just an everyday Joe",
-    "location": "Montreal",
-    "total_likes": 5,
-    "total_photos": 10,
-    "total_collections": 13,
-    "instagram_username": "instantgrammer",
-    "twitter_username": "crew",
-    "links": {
-      "self": "https://api.unsplash.com/users/exampleuser",
-      "html": "https://unsplash.com/exampleuser",
-      "photos": "https://api.unsplash.com/users/exampleuser/photos",
-      "likes": "https://api.unsplash.com/users/exampleuser/likes",
-      "portfolio": "https://api.unsplash.com/users/exampleuser/portfolio"
-    }
-  }
-}
-
-
-*/
