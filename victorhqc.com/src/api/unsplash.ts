@@ -3,15 +3,11 @@ import { getAPIUrl } from './client';
 import { Picture } from './entities';
 
 export async function getRandomPicture() {
-  console.log(
-    '`${getUnsplashAPIUrl()}/picture`',
-    `${getUnsplashAPIUrl()}/picture`
-  );
-  const response = await got(`${getUnsplashAPIUrl()}/picture`, {
+  const { picture } = await got(`${getUnsplashAPIUrl()}/picture`, {
     searchParams: { query: '', orientation: '' },
-  }).json<Picture>();
+  }).json<{ picture: Picture }>();
 
-  console.log('response', response);
+  return picture;
 }
 
 export function getUnsplashAPIUrl(): string {

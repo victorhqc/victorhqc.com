@@ -11,6 +11,14 @@ export type Picture = {
   location: Location;
   exif: Exif;
   links: Links;
+  urls: Urls;
+};
+
+type Urls = {
+  raw: string | null;
+  regular: string;
+  small: string;
+  thumb: string;
 };
 
 type Links = {

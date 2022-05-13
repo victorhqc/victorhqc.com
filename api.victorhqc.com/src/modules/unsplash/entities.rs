@@ -15,6 +15,16 @@ pub struct Picture {
     pub exif: Exif,
     pub links: Links,
     pub user: User,
+    pub urls: Urls,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Urls {
+    pub raw: Option<String>,
+    pub full: String,
+    pub regular: String,
+    pub small: String,
+    pub thumb: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
