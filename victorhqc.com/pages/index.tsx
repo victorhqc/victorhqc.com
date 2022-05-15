@@ -2,7 +2,7 @@ import type { NextPage, GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { getRandomPicture } from '@/api/unsplash';
 import { Picture } from '@/api/entities';
-import { yearsDiff } from '@/pageSrc/home/utils';
+import { yearsDiff, isMobile } from '@/pageSrc/home/utils';
 import styles from '@/pageSrc/home/styles.module.css';
 import RenderBlur from '@/components/RenderBlur';
 import UAParser from 'ua-parser-js';
@@ -12,10 +12,12 @@ const Home: NextPage<Props> = ({
   rustaceanSince,
   experiencedSince,
   picture,
+  isMobile,
 }) => {
   const since = new Date(experiencedSince);
   const rustSince = new Date(rustaceanSince);
-  const imgUrl = `${picture.links.download}&crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-1.2.1&w=2000&q=80`;
+  const desiredWidth = isMobile ? 800 : 2000;
+  const imgUrl = `${picture.links.download}&crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-1.2.1&w=${desiredWidth}&q=80`;
   const isDark = isDarkColor(picture.color ?? '#000');
 
   return (
@@ -41,7 +43,7 @@ const Home: NextPage<Props> = ({
         <div
           className={styles.about_me}
           style={{
-            color: isDarkColor(picture.color ?? '#000') ? '#fafafa' : '#333',
+            color: isDark ? '#fafafa' : '#333',
             backgroundColor: picture.color ?? '#fff',
           }}
         >
@@ -71,13 +73,14 @@ const Home: NextPage<Props> = ({
 export async function getServerSideProps(
   context: GetServerSidePropsContext
 ): Promise<{ props: Props }> {
-  const picture = await getRandomPicture();
   const parser = new UAParser(context.req.headers['user-agent']);
+  const orientation = isMobile(parser) ? 'portrait' : 'landscape';
+  const picture = await getRandomPicture(undefined, orientation);
 
   return {
     props: {
       picture,
-      os: parser.getOS(),
+      isMobile: isMobile(parser),
       experiencedSince: '2010-06-30',
       rustaceanSince: '2019-04-01',
     },
@@ -86,9 +89,9 @@ export async function getServerSideProps(
 
 type Props = {
   picture: Picture;
-  os: UAParser.IOS;
   experiencedSince: string;
   rustaceanSince: string;
+  isMobile: boolean;
 };
 
 export default Home;
