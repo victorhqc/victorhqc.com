@@ -1,17 +1,23 @@
 .picture__wrapper {
-  @apply w-full overflow-hidden absolute z-10 top-0 left-0 bg-cover transition-opacity;
+  @apply w-full overflow-hidden absolute top-0 left-0 bg-cover transition-opacity;
   height: 100vh;
+  z-index: -1;
 }
 
 .about_me {
-  /* @apply z-20 absolute top-0 left-0 p-3 w-full pl-10 max-w-3xl; */
-  @apply bg-white shadow-md z-20 absolute top-20 left-10 p-6 max-w-3xl rounded-xl transition-transform;
-  /* transform: translate3d(0, 10vh, 0); */
+  @apply w-10/12 m-auto mt-10;
+  @apply transition-transform bg-white shadow-md p-6 rounded-xl;
 }
 
-.about_me:hover {
-  /* transform-origin: 0% 0%; */
-  transform: rotate(-1deg);
+@screen md {
+  .about_me {
+    @apply bg-white shadow-md p-6 rounded-xl max-w-3xl;
+    @apply z-20 absolute top-20 left-10 transition-transform;
+  }
+
+  .about_me:hover {
+    transform: rotate(-1deg);
+  }
 }
 
 .title {
@@ -27,5 +33,8 @@
 }
 
 .image__blur {
-  @apply transition-opacity absolute z-0 top-0 left-0;
+  @apply transition-opacity absolute top-0 left-0;
+  z-index: -2;
+}
+
 }
