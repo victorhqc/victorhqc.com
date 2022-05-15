@@ -37,6 +37,8 @@ const Home: NextPage<Props> = ({
                 backgroundImage: `url(${imgUrl})`,
                 opacity: imageLoaded ? 1 : 0,
               }}
+              role="img"
+              aria-label={picture.alt_description ?? 'background picture'}
             ></div>
           )}
         </RenderBlur>
