@@ -28,12 +28,12 @@ const Home: NextPage<Props> = ({
 
       <main className={styles.main}>
         <RenderBlur blurHash={picture.blur_hash ?? ''} url={imgUrl}>
-          {(isReady) => (
+          {({ imageLoaded }) => (
             <div
               className={styles.picture__wrapper}
               style={{
                 backgroundImage: `url(${imgUrl})`,
-                opacity: isReady ? 1 : 0,
+                opacity: imageLoaded ? 1 : 0,
               }}
             ></div>
           )}
@@ -56,9 +56,9 @@ const Home: NextPage<Props> = ({
           <div>
             <h1 className={styles.title}>About Me</h1>
             <p className={styles.text}>
-              I'm a Software Engineer with {yearsDiff(since)} of experience with
-              JavaScript & Web Technologies and {yearsDiff(rustSince)} years of
-              experience with Rust.
+              I&apos;m a Software Engineer with {yearsDiff(since)} of experience
+              with JavaScript & Web Technologies and {yearsDiff(rustSince)}{' '}
+              years of experience with Rust.
             </p>
           </div>
         </div>

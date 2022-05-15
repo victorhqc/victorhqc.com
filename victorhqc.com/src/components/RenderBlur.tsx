@@ -10,15 +10,21 @@ export default function RenderBlur({
 }: {
   blurHash: string;
   url: string;
-  children: (isReady: boolean) => ReactNode;
+  children: (state: State) => ReactNode;
 }) {
   const [blur] = useNextBlurHash(blurHash);
-  const [isReady, setIsReady] = useState(false);
+  const [state, setState] = useState<State>({
+    imageLoaded: false,
+    blurVisible: true,
+  });
 
   useEffect(() => {
     const img = new Image();
     img.addEventListener('load', () => {
-      setIsReady(true);
+      setState({ imageLoaded: true, blurVisible: true });
+      setTimeout(() => {
+        setState({ imageLoaded: true, blurVisible: false });
+      }, 500);
     });
 
     img.src = url;
@@ -26,10 +32,15 @@ export default function RenderBlur({
 
   return (
     <>
-      {!isReady ? (
+      {state.blurVisible ? (
         <NextImage src={blur} layout="fill" className={styles.image__blur} />
       ) : null}
-      {children(isReady)}
+      {children(state)}
     </>
   );
 }
+
+type State = {
+  imageLoaded: boolean;
+  blurVisible: boolean;
+};
