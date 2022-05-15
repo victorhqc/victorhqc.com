@@ -2,9 +2,9 @@ import got from 'got';
 import { getAPIUrl } from './client';
 import { Picture } from './entities';
 
-export async function getRandomPicture() {
+export async function getRandomPicture(query = '', orientation = '') {
   const { picture } = await got(`${getUnsplashAPIUrl()}/picture`, {
-    searchParams: { query: '', orientation: '' },
+    searchParams: { query, orientation },
   }).json<{ picture: Picture }>();
 
   return picture;
