@@ -4,6 +4,7 @@ use std::time::SystemTime;
 pub struct PicturesCache {
     pictures: Vec<CachedPicture>,
     max_len: usize,
+    invalidate_at: u64,
 }
 
 pub struct CachedPicture {
@@ -14,10 +15,11 @@ pub struct CachedPicture {
 }
 
 impl PicturesCache {
-    pub fn new(max_len: usize) -> Self {
+    pub fn new(max_len: usize, invalidate_at: u64) -> Self {
         Self {
             pictures: Vec::new(),
             max_len,
+            invalidate_at,
         }
     }
 
@@ -26,14 +28,15 @@ impl PicturesCache {
             if query == pictures.query && orientation == pictures.orientation {
                 let elapsed = pictures.last_updated.elapsed().unwrap();
 
-                if elapsed.as_secs() >= 60 {
+                if elapsed.as_secs() >= 60 * self.invalidate_at {
                     debug!("Fetching a new picture");
                     return true;
                 }
 
                 debug!(
-                    "Last update happened {} secs ago, skipping fetch",
-                    elapsed.as_secs()
+                    "Last update happened {} secs ago, skipping fetch for another {} secs",
+                    elapsed.as_secs(),
+                    60 * self.invalidate_at - elapsed.as_secs()
                 );
 
                 return false;
