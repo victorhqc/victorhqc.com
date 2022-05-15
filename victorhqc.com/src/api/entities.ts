@@ -12,6 +12,7 @@ export type Picture = {
   exif: Exif;
   links: Links;
   urls: Urls;
+  user: User;
 };
 
 type Urls = {
