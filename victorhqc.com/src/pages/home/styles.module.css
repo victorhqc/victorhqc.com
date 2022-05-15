@@ -1,28 +1,31 @@
 .picture__wrapper {
-    @apply w-full overflow-hidden absolute z-10 top-0 left-0 bg-cover transition-opacity;
-    height: 100vh;
+  @apply w-full overflow-hidden absolute z-10 top-0 left-0 bg-cover transition-opacity;
+  height: 100vh;
 }
 
 .about_me {
-    @apply z-20 absolute top-0 left-0 p-3 w-full pl-10 max-w-3xl;
-    transform: translate3d(0, 20vh, 0);
+  /* @apply z-20 absolute top-0 left-0 p-3 w-full pl-10 max-w-3xl; */
+  @apply bg-white shadow-md z-20 absolute top-20 left-10 p-6 max-w-3xl rounded-xl transition-transform;
+  /* transform: translate3d(0, 10vh, 0); */
+}
+
+.about_me:hover {
+  /* transform-origin: 0% 0%; */
+  transform: rotate(-1deg);
 }
 
 .title {
-    @apply text-4xl mt-6;
-    text-shadow: 2px 2px 8px #333;
+  @apply text-4xl mt-6;
 }
 
 .subtitle {
-    @apply text-2xl;
-    text-shadow: 2px 2px 8px #333;
+  @apply text-2xl;
 }
 
 .text {
-    @apply text-lg;
-    text-shadow: 2px 2px 8px #333;
+  @apply text-lg;
 }
 
 .image__blur {
-    @apply transition-opacity absolute z-0 top-0 left-0;
+  @apply transition-opacity absolute z-0 top-0 left-0;
 }

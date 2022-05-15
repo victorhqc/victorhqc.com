@@ -42,6 +42,7 @@ const Home: NextPage<Props> = ({
           className={styles.about_me}
           style={{
             color: isDarkColor(picture.color ?? '#000') ? '#fafafa' : '#333',
+            backgroundColor: picture.color ?? '#fff',
           }}
         >
           <div>
