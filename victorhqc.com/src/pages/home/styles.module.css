@@ -6,17 +6,13 @@
 
 .about_me {
   @apply w-10/12 m-auto mt-10;
-  @apply transition-transform bg-white shadow-md p-6 rounded-xl;
+  @apply bg-white shadow-md p-6 rounded-xl;
 }
 
 @screen md {
   .about_me {
     @apply bg-white shadow-md p-6 rounded-xl max-w-3xl;
-    @apply z-20 absolute top-20 left-10 transition-transform;
-  }
-
-  .about_me:hover {
-    transform: rotate(-1deg);
+    @apply z-20 absolute top-20 left-10;
   }
 }
 
