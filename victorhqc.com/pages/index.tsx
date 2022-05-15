@@ -1,12 +1,10 @@
-import { useEffect, useState, ReactNode } from 'react';
 import type { NextPage, GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import NextImage from 'next/image';
-import useNextBlurHash from 'use-next-blurhash';
 import { getRandomPicture } from '@/api/unsplash';
 import { Picture } from '@/api/entities';
 import { yearsDiff } from '@/pageSrc/home/utils';
 import styles from '@/pageSrc/home/styles.module.css';
+import RenderBlur from '@/components/RenderBlur';
 import UAParser from 'ua-parser-js';
 import isDarkColor from 'is-dark-color';
 
@@ -93,35 +91,3 @@ type Props = {
 };
 
 export default Home;
-
-function RenderBlur({
-  blurHash,
-  url,
-  children,
-}: {
-  blurHash: string;
-  url: string;
-  children: (isReady: boolean) => ReactNode;
-}) {
-  const [blur] = useNextBlurHash(blurHash);
-  const [isReady, setIsReady] = useState(false);
-  const isBrowser = typeof window !== 'undefined';
-
-  useEffect(() => {
-    const img = new Image();
-    img.addEventListener('load', () => {
-      setIsReady(true);
-    });
-
-    img.src = url;
-  }, [url]);
-
-  return (
-    <>
-      {!isReady ? (
-        <NextImage src={blur} layout="fill" className={styles.image__blur} />
-      ) : null}
-      {children(isReady)}
-    </>
-  );
-}
