@@ -37,4 +37,10 @@
   z-index: -2;
 }
 
+.picture__about {
+  @apply absolute z-10 bottom-0 right-0 mb-3 mr-3;
+}
+
+.picture__about a {
+  @apply underline;
 }

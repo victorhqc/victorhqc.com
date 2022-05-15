@@ -66,6 +66,14 @@ const Home: NextPage<Props> = ({
           </div>
         </div>
       </main>
+      <footer
+        className={styles.picture__about}
+        style={{ color: isDark ? '#fafafa' : '#333' }}
+      >
+        <p>
+          Picture taken by <a href={picture.links.html}>{picture.user.name}</a>
+        </p>
+      </footer>
     </div>
   );
 };
