@@ -34,7 +34,7 @@ jobs:
           UNSPLASH_ACCESS_KEY: ${{secrets.UNSPLASH_ACCESS_KEY}}
           UNSPLASH_SECRET_KEY: ${{secrets.UNSPLASH_SECRET_KEY}}
         with:
-        RUSTTARGET: ${{ matrix.target }}
+          RUSTTARGET: ${{ matrix.target }}
         # EXTRA_FILES: "README.md LICENSE"
 
   deploy:
