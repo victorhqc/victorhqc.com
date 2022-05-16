@@ -7,33 +7,33 @@ on: [push]
 
 jobs:
   build:
-  name: Build Binary
-  runs-on: ubuntu-latest
-  strategy:
-    fail-fast: false
-    matrix:
-      target: [x86_64-unknown-linux-musl]
-  steps:
-    - uses: actions/checkout@master
-    # - uses: actions/setup-node@v1
-    #   with:
-    #       node-version: "16.x"
-    # - name: Install rust stable
-    #   uses: actions-rs/toolchain@v1
-    #   with:
-    #     toolchain: stable
-    #     override: true
-    - name: Build Server
-      uses: rust-build/rust-build.action@v1.3.2
-      # run: |
-      #   cargo build --release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        UNSPLASH_IMAGE_CACHE_IN_MINS: 60
-        UNSPLASH_API_URL: https://api.unsplash.com
-        UNSPLASH_ACCESS_KEY: ${{secrets.UNSPLASH_ACCESS_KEY}}
-        UNSPLASH_SECRET_KEY: ${{secrets.UNSPLASH_SECRET_KEY}}
-      with:
+    name: Build Binary
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-unknown-linux-musl]
+    steps:
+      - uses: actions/checkout@master
+      # - uses: actions/setup-node@v1
+      #   with:
+      #       node-version: "16.x"
+      # - name: Install rust stable
+      #   uses: actions-rs/toolchain@v1
+      #   with:
+      #     toolchain: stable
+      #     override: true
+      - name: Build Server
+        uses: rust-build/rust-build.action@v1.3.2
+        # run: |
+        #   cargo build --release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          UNSPLASH_IMAGE_CACHE_IN_MINS: 60
+          UNSPLASH_API_URL: https://api.unsplash.com
+          UNSPLASH_ACCESS_KEY: ${{secrets.UNSPLASH_ACCESS_KEY}}
+          UNSPLASH_SECRET_KEY: ${{secrets.UNSPLASH_SECRET_KEY}}
+        with:
         RUSTTARGET: ${{ matrix.target }}
         # EXTRA_FILES: "README.md LICENSE"
 
