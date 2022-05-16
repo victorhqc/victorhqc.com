@@ -32,15 +32,18 @@ jobs:
     name: Deploy Binary
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@master
       - uses: actions/setup-node@v3
         with:
           node-version: 18
       - name: Download Binary
         run: |
-          node --experimental-fetch ./api.victorhqc.com/scripts/download_binary.js
+          cd ./api.victorhqc.com/scripts/
+          node --experimental-fetch ./download_binary.js
+        shell: bash
         env:
           GH_REPO: ${{ github.api_url }}/repos/${{ github.repository }}
-          GH_TAGS: ${{ env.GH_REPO }}/releases/tags/${{ github.ref_name }}
+          GH_TAGS: ${{ github.api_url }}/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}
           TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Create SSH key
         run: |
@@ -52,4 +55,22 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
+      - name: debug data
+        run: |
+          ls -la
+          cd api.victorhqc.com
+          ls -la
+        shell: bash
+      - name: Upload Binary
+        run: |
+          scp -i ${{ env.SSH_KEY_PATH }} ./api.victorhqc.com/api_victorhqc_com.zip github@159.65.35.29:/home/github
+        shell: bash
+        env:
+          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
+      - name: Commit Deploy
+        run: |
+          ssh -i ${{ env.SSH_KEY_PATH }} github@159.65.35.29 'unzip api_victorhqc_com.zip | sudo systemctl restart api.victorhqc.com'
+        shell: bash
+        env:
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
