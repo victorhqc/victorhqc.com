@@ -22,8 +22,7 @@ jobs:
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
       - name: Download Binary
         run: |
-          ssh -i $SSH_KEY_PATH github@159.65.35.29
-          pwd
+          ssh -i $SSH_KEY_PATH github@159.65.35.29 'pwd'
         shell: bash
         env:
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
