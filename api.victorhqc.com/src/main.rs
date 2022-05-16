@@ -2,9 +2,6 @@
 extern crate rocket;
 
 #[macro_use]
-extern crate dotenv_codegen;
-
-#[macro_use]
 extern crate log;
 
 mod handlers;
@@ -21,7 +18,9 @@ use std::sync::Arc;
 async fn main() -> Result<(), rocket::Error> {
     dotenv().ok();
 
-    let image_cache_time: String = dotenv!("UNSPLASH_IMAGE_CACHE_IN_MINS").to_string();
+    let image_cache_time: String = option_env!("UNSPLASH_IMAGE_CACHE_IN_MINS")
+        .expect("UNSPLASH_IMAGE_CACHE_IN_MINS is not defined")
+        .to_string();
     let image_cache_time = image_cache_time
         .parse::<u64>()
         .expect("UNSPLASH_IMAGE_CACHE_IN_MINS is not a valid number");

@@ -5,7 +5,8 @@ use super::{
 use snafu::prelude::*;
 
 pub async fn fetch_random_picture(query: &str, orientation: &str) -> Result<Picture> {
-    let unsplash_url: &str = dotenv!("UNSPLASH_API_URL");
+    let unsplash_url: &str =
+        option_env!("UNSPLASH_API_URL").expect("UNSPLASH_API_URL is not defined");
     let client = build_client().context(ClientIssueSnafu)?;
 
     let response = client

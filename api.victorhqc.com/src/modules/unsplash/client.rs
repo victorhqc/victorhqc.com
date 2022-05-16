@@ -5,7 +5,7 @@ use reqwest::{
 use snafu::prelude::*;
 
 pub fn build_client() -> Result<Client> {
-    let client_id = dotenv!("UNSPLASH_ACCESS_KEY");
+    let client_id = option_env!("UNSPLASH_ACCESS_KEY").expect("UNSPLASH_ACCESS_KEY is not defined");
 
     let mut headers = HeaderMap::new();
     headers.insert(
