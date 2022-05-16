@@ -28,7 +28,7 @@ jobs:
           RUSTTARGET: ${{ matrix.target }}
 
   deploy:
-    # needs: build
+    needs: build
     name: Deploy Binary
     runs-on: ubuntu-latest
     steps:
