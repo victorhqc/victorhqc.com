@@ -28,6 +28,7 @@ jobs:
         # run: |
         #   cargo build --release
         env:
+          SRC_DIR: api.victorhqc.com
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           UNSPLASH_IMAGE_CACHE_IN_MINS: 60
           UNSPLASH_API_URL: https://api.unsplash.com
