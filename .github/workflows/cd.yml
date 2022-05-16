@@ -26,3 +26,5 @@ jobs:
           echo $SSH_KEY_PATH
           ssh -i $SSH_KEY_PATH github@159.65.35.29
         shell: bash
+        env:
+          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
