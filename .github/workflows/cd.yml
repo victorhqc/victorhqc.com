@@ -15,18 +15,8 @@ jobs:
         target: [x86_64-unknown-linux-musl]
     steps:
       - uses: actions/checkout@master
-      # - uses: actions/setup-node@v1
-      #   with:
-      #       node-version: "16.x"
-      # - name: Install rust stable
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: stable
-      #     override: true
       - name: Build Server
         uses: rust-build/rust-build.action@v1.3.2
-        # run: |
-        #   cargo build --release
         env:
           SRC_DIR: api.victorhqc.com
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -36,10 +26,9 @@ jobs:
           UNSPLASH_SECRET_KEY: ${{secrets.UNSPLASH_SECRET_KEY}}
         with:
           RUSTTARGET: ${{ matrix.target }}
-        # EXTRA_FILES: "README.md LICENSE"
 
   deploy:
-    needs: build
+    # needs: build
     name: Deploy Binary
     runs-on: ubuntu-latest
     steps:
@@ -54,8 +43,8 @@ jobs:
           GH_ASSET="${{ env.GH_REPO }}/releases/assets/$id"
           echo "GH_ASSET=$GH_ASSET" >> $GITHUB_ENV
         env:
-          GH_REPO: ${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}
-          GH_TAGS: ${{ env.GH_REPO }}/releases/tags/${{ env.GITHUB_REF_NAME }}
+          GH_REPO: ${{ github.api_url }}/repos/${{ github.repository }}
+          GH_TAGS: ${{ env.GH_REPO }}/releases/tags/${{ github.ref_name }}
           AUTH: "Authorization: token ${{ secrets.GH_TOKEN }}"
       - name: Create SSH key
         run: |
@@ -76,8 +65,7 @@ jobs:
           # ssh -i $SSH_KEY_PATH github@159.65.35.29 "curl -vLJO -H 'Authorization: token $GITHUB_TOKEN' 'https://api.github.com/repos/victorhqc/victorhqc.com/releases/assets/:id'"
         shell: bash
         env:
-          GH_REPO: ${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}
-          GH_TAGS: ${{ env.GH_REPO }}/releases/tags/${{ env.GITHUB_REF_NAME }}
-          AUTH: "Authorization: token ${{ env.GITHUB_TOKEN }}"
+          GH_REPO: ${{ github.api_url }}/repos/${{ github.repository }}
+          GH_TAGS: ${{ env.GH_REPO }}/releases/tags/${{ github.ref_name }}
+          AUTH: "Authorization: token ${{ secrets.GH_TOKEN }}"
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
