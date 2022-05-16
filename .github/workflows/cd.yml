@@ -20,8 +20,6 @@ jobs:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
-    steps:
       - name: Download Binary
         run: |
           ssh -i $SSH_KEY_PATH github@159.65.35.29
-
