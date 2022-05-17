@@ -76,7 +76,9 @@ const Home: NextPage<Props> = ({
         style={{ color: isDark ? '#fafafa' : '#333' }}
       >
         <p>
-          Picture taken by <a href={picture.links.html}>{picture.user.name}</a>
+          Picture taken by{' '}
+          <a href={picture.user.links.html}>{picture.user.name}</a> on{' '}
+          <a href={picture.links.html}>Unsplash</a>
         </p>
       </footer>
     </div>
