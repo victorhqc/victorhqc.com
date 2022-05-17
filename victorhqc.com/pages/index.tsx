@@ -1,5 +1,7 @@
 import type { NextPage, GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
+import { decode } from 'blurhash';
+import { createCanvas } from '@napi-rs/canvas';
 import { getRandomPicture } from '@/api/unsplash';
 import { Picture } from '@/api/entities';
 import { yearsDiff, isMobile } from '@/pageSrc/home/utils';
@@ -13,6 +15,7 @@ const Home: NextPage<Props> = ({
   experiencedSince,
   picture,
   isMobile,
+  blur,
 }) => {
   const since = new Date(experiencedSince);
   const rustSince = new Date(rustaceanSince);
@@ -29,7 +32,7 @@ const Home: NextPage<Props> = ({
       </Head>
 
       <main className={styles.main}>
-        <RenderBlur blurHash={picture.blur_hash ?? ''} url={imgUrl}>
+        <RenderBlur blur={blur} url={imgUrl}>
           {({ imageLoaded }) => (
             <div
               className={styles.picture__wrapper}
@@ -90,6 +93,11 @@ export async function getServerSideProps(
   return {
     props: {
       picture,
+      blur: generateBlur(
+        picture.blur_hash ?? '',
+        isMobile(parser) ? 400 : 900,
+        isMobile(parser) ? 800 : 600
+      ),
       isMobile: isMobile(parser),
       experiencedSince: '2010-06-30',
       rustaceanSince: '2019-04-01',
@@ -97,11 +105,30 @@ export async function getServerSideProps(
   };
 }
 
+function generateBlur(
+  blurHash: string,
+  width: number = 160,
+  height: number = 120,
+  punch?: number
+) {
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.createImageData(width, height);
+
+  const pixels = decode(blurHash, width, height, punch);
+  imageData.data.set(pixels);
+
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas.toDataURL();
+}
+
 type Props = {
   picture: Picture;
   experiencedSince: string;
   rustaceanSince: string;
   isMobile: boolean;
+  blur: string;
 };
 
 export default Home;

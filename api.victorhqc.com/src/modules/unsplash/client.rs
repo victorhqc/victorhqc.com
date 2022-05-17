@@ -3,9 +3,10 @@ use reqwest::{
     Client,
 };
 use snafu::prelude::*;
+use std::env;
 
 pub fn build_client() -> Result<Client> {
-    let client_id = option_env!("UNSPLASH_ACCESS_KEY").expect("UNSPLASH_ACCESS_KEY is not defined");
+    let client_id = env::var("UNSPLASH_ACCESS_KEY").expect("UNSPLASH_ACCESS_KEY is not defined");
 
     let mut headers = HeaderMap::new();
     headers.insert(

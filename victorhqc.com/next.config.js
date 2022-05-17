@@ -1,8 +1,7 @@
-
 const {
   PHASE_DEVELOPMENT_SERVER,
   PHASE_PRODUCTION_BUILD,
-} = require('next/constants')
+} = require('next/constants');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,7 +9,7 @@ const nextConfig = {
   images: {
     domains: ['unsplash.com'],
   },
-}
+};
 
 module.exports = (phase) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;
@@ -18,8 +17,17 @@ module.exports = (phase) => {
 
   return {
     env: {
-      API_URL: isDev ? 'http://localhost:7878' : '',
+      API_URL: isDev ? 'http://127.0.0.1:7878' : 'https://api.victorhqc.com',
+    },
+    webpack: (config, _options) => {
+      config.module.rules.push({
+        test: /\.node$/,
+        loader: 'node-loader',
+      });
+
+      // Important: return the modified config
+      return config;
     },
     ...nextConfig,
-  }
+  };
 };

@@ -1,18 +1,18 @@
 import { useEffect, useState, ReactNode } from 'react';
 import NextImage from 'next/image';
-import useNextBlurHash from 'use-next-blurhash';
+// import useBlur from '@/hooks/useBlur';
 import styles from '@/pageSrc/home/styles.module.css';
 
 export default function RenderBlur({
-  blurHash,
+  blur,
   url,
   children,
 }: {
-  blurHash: string;
+  blur: string;
   url: string;
   children: (state: State) => ReactNode;
 }) {
-  const [blur] = useNextBlurHash(blurHash);
+  // const blur = useBlur(blurHash);
   const [state, setState] = useState<State>({
     imageLoaded: false,
     blurVisible: true,

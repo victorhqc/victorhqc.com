@@ -12,13 +12,14 @@ use dotenv::dotenv;
 use handlers::unsplash;
 use modules::unsplash::PicturesCache;
 use rocket::serde::{json::Json, Serialize};
+use std::env;
 use std::sync::Arc;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     dotenv().ok();
 
-    let image_cache_time: String = option_env!("UNSPLASH_IMAGE_CACHE_IN_MINS")
+    let image_cache_time: String = env::var("UNSPLASH_IMAGE_CACHE_IN_MINS")
         .expect("UNSPLASH_IMAGE_CACHE_IN_MINS is not defined")
         .to_string();
     let image_cache_time = image_cache_time
