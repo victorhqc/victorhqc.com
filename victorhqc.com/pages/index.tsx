@@ -64,9 +64,9 @@ const Home: NextPage<Props> = ({
           <div>
             <h1 className={styles.title}>About Me</h1>
             <p className={styles.text}>
-              I&apos;m a Software Engineer with {yearsDiff(since)} of experience
-              with JavaScript & Web Technologies and {yearsDiff(rustSince)}{' '}
-              years of experience with Rust.
+              I&apos;m a Software Engineer with {yearsDiff(since)} years of
+              experience with JavaScript & Web Technologies and{' '}
+              {yearsDiff(rustSince)} years of experience with Rust.
             </p>
           </div>
         </div>
