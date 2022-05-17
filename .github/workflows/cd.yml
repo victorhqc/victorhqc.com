@@ -70,7 +70,7 @@ jobs:
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
       - name: Commit Deploy
         run: |
-          ssh -i ${{ env.SSH_KEY_PATH }} github@159.65.35.29 'unzip api_victorhqc_com.zip | sudo systemctl restart api.victorhqc.com'
+          ssh -i ${{ env.SSH_KEY_PATH }} github@159.65.35.29 'unzip -o api_victorhqc_com.zip | sudo systemctl restart api.victorhqc.com'
         shell: bash
         env:
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
