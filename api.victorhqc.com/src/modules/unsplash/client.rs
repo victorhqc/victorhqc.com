@@ -26,6 +26,8 @@ pub fn build_client() -> Result<Client> {
         .build()
         .context(ClientIssueSnafu)?;
 
+    debug!("Client Created OK");
+
     Ok(client)
 }
 
