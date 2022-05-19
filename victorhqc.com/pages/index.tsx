@@ -96,8 +96,8 @@ export async function getServerSideProps(
       picture,
       blur: generateBlur(
         picture.blur_hash ?? '',
-        isMobile(parser) ? 400 : 900,
-        isMobile(parser) ? 800 : 600
+        isMobile(parser) ? 320 : 720,
+        isMobile(parser) ? 640 : 480
       ),
       isMobile: isMobile(parser),
       experiencedSince: '2010-06-30',
