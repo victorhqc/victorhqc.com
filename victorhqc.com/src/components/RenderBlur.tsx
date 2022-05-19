@@ -1,6 +1,6 @@
 import { useEffect, useState, ReactNode } from 'react';
 import NextImage from 'next/image';
-// import useBlur from '@/hooks/useBlur';
+import { isServer } from '@/src/utils/next';
 import styles from '@/pageSrc/home/styles.module.css';
 
 export default function RenderBlur({
@@ -12,13 +12,14 @@ export default function RenderBlur({
   url: string;
   children: (state: State) => ReactNode;
 }) {
-  // const blur = useBlur(blurHash);
   const [state, setState] = useState<State>({
     imageLoaded: false,
     blurVisible: true,
   });
 
   useEffect(() => {
+    if (isServer()) return;
+
     const img = new Image();
     img.addEventListener('load', () => {
       setState({ imageLoaded: true, blurVisible: true });
