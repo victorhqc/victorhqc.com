@@ -82,7 +82,7 @@ const Home: NextPage<Props> = ({
               <a href="https://www.instagram.com/victorhqc.photos/">
                 @victorhqc.photos
               </a>{' '}
-              in Instagram!
+              on Instagram!
             </p>
           </div>
         </div>
