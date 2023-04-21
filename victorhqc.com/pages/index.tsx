@@ -4,7 +4,7 @@ import { decode } from 'blurhash';
 import { createCanvas } from '@napi-rs/canvas';
 import { getRandomPicture } from '@/api/unsplash';
 import { Picture } from '@/api/entities';
-import { yearsDiff, isMobile } from '@/pageSrc/home/utils';
+import { yearsDiff, isMobile, isRecent } from '@/pageSrc/home/utils';
 import styles from '@/pageSrc/home/styles.module.css';
 import RenderBlur from '@/components/RenderBlur';
 import UAParser from 'ua-parser-js';
@@ -13,15 +13,19 @@ import isDarkColor from 'is-dark-color';
 const Home: NextPage<Props> = ({
   rustaceanSince,
   experiencedSince,
+  streetPhotographySince,
   picture,
   isMobile,
   blur,
 }) => {
   const since = new Date(experiencedSince);
   const rustSince = new Date(rustaceanSince);
+  const photographySince = new Date(streetPhotographySince);
   const desiredWidth = isMobile ? 800 : 2000;
   const imgUrl = `${picture.links.download}&crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-1.2.1&w=${desiredWidth}&q=80`;
   const isDark = isDarkColor(picture.color ?? '#000');
+
+  const isPhotographyRecent = isRecent(photographySince);
 
   return (
     <div className={styles.container}>
@@ -68,6 +72,18 @@ const Home: NextPage<Props> = ({
               experience with JavaScript & Web Technologies and{' '}
               {yearsDiff(rustSince)} years of experience with Rust.
             </p>
+            <p className={styles.text}>
+              {isPhotographyRecent
+                ? 'I recently started my journey into street photography'
+                : `I've been into street photography for ${yearsDiff(
+                    photographySince
+                  )} years`}
+              . Feel free to follow me at{' '}
+              <a href="https://www.instagram.com/victorhqc.photos/">
+                @victorhqc.photos
+              </a>{' '}
+              in Instagram!
+            </p>
           </div>
         </div>
       </main>
@@ -102,6 +118,7 @@ export async function getServerSideProps(
       isMobile: isMobile(parser),
       experiencedSince: '2010-06-30',
       rustaceanSince: '2019-04-01',
+      streetPhotographySince: '2023-01-15',
     },
   };
 }
@@ -128,6 +145,7 @@ type Props = {
   picture: Picture;
   experiencedSince: string;
   rustaceanSince: string;
+  streetPhotographySince: string;
   isMobile: boolean;
   blur: string;
 };

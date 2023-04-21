@@ -17,7 +17,7 @@
 }
 
 .title {
-  @apply text-4xl mt-6;
+  @apply text-4xl mt-6 mb-2;
 }
 
 .subtitle {
@@ -25,7 +25,11 @@
 }
 
 .text {
-  @apply text-lg;
+  @apply text-lg mb-2;
+}
+
+.text a {
+  @apply underline;
 }
 
 .image__blur {

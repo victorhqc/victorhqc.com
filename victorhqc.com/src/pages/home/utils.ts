@@ -6,6 +6,12 @@ export function yearsDiff(date: Date) {
   return Math.abs(diff.getUTCFullYear() - 1970);
 }
 
+export function isRecent(date: Date) {
+  const diff = yearsDiff(date);
+
+  return diff <= 1;
+}
+
 export function isMobile(parser: UAParser) {
   if (parser.getDevice().type && parser.getDevice().type !== 'tablet') {
     return true;
