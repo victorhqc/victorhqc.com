@@ -10,6 +10,8 @@ import RenderBlur from '@/components/RenderBlur';
 import UAParser from 'ua-parser-js';
 import isDarkColor from 'is-dark-color';
 
+const REFERAL = 'utm_source=victorhqc.com&utm_medium=referral';
+
 const Home: NextPage<Props> = ({
   rustaceanSince,
   experiencedSince,
@@ -92,8 +94,11 @@ const Home: NextPage<Props> = ({
         style={{ color: isDark ? '#fafafa' : '#333' }}
       >
         <p>
-          Photo by <a href={picture.user.links.html}>{picture.user.name}</a> on{' '}
-          <a href={picture.links.html}>Unsplash</a>
+          Photo by{' '}
+          <a href={`${picture.user.links.html}?${REFERAL}`}>
+            {picture.user.name}
+          </a>{' '}
+          on <a href={`https://unsplash.com/?${REFERAL}`}>Unsplash</a>
         </p>
       </footer>
     </div>
