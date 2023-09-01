@@ -19,14 +19,22 @@ use std::sync::Arc;
 async fn main() -> Result<(), rocket::Error> {
     dotenv().ok();
 
-    let image_cache_time: String = env::var("UNSPLASH_IMAGE_CACHE_IN_MINS")
+    let image_cache_time: u64 = env::var("UNSPLASH_IMAGE_CACHE_IN_MINS")
         .expect("UNSPLASH_IMAGE_CACHE_IN_MINS is not defined")
-        .to_string();
-    let image_cache_time = image_cache_time
+        .to_string()
         .parse::<u64>()
         .expect("UNSPLASH_IMAGE_CACHE_IN_MINS is not a valid number");
 
-    let state = Arc::new(Mutex::new(PicturesCache::new(30, image_cache_time)));
+    let image_cache_amount: usize = env::var("UNSPLASH_IMAGE_CACHE_AMOUNT")
+        .unwrap_or(String::from("30"))
+        .to_string()
+        .parse::<usize>()
+        .expect("UNSPLASH_IMAGE_CACHE_AMOUNT is not a valid number");
+
+    let state = Arc::new(Mutex::new(PicturesCache::new(
+        image_cache_amount,
+        image_cache_time,
+    )));
 
     let _rocket = rocket::build()
         .manage(state)

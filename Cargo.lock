@@ -53,6 +53,7 @@ dependencies = [
  "async-mutex",
  "dotenv",
  "log",
+ "rand",
  "reqwest",
  "rocket",
  "serde",

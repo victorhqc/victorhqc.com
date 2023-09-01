@@ -30,7 +30,8 @@ pub async fn get_random_picture(
         o => o,
     };
 
-    if state.should_fetch(q, o) {
+    let (should_fetch, _) = state.should_fetch(q, o);
+    if should_fetch {
         let picture = fetch_random_picture(q, o)
             .await
             .context(PictureIssueSnafu)?;
