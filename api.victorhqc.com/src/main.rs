@@ -26,7 +26,7 @@ async fn main() -> Result<(), rocket::Error> {
         .expect("UNSPLASH_IMAGE_CACHE_IN_MINS is not a valid number");
 
     let image_cache_amount: usize = env::var("UNSPLASH_IMAGE_CACHE_AMOUNT")
-        .unwrap_or(String::from("30"))
+        .unwrap_or(String::from("5"))
         .to_string()
         .parse::<usize>()
         .expect("UNSPLASH_IMAGE_CACHE_AMOUNT is not a valid number");
