@@ -11,6 +11,12 @@ Could this be done differently? Most likely, but I don't really want to
 over-complicate it for now. Even if the deployment needs to upload the binary
 and  SQLite DB to the server.
 
+An additional consideration is to avoid S3 fees from Amazon. It's virtually
+free to upload to a bucket, but every time data is transferred from the bucket
+to any client it costs money. One way to minimize this cost, is to fetch the
+images on boot and save them in memory. The bootstrap will be slow, but it will
+keep the cost low.
+
 In a future iteration I plan to have a simple backoffice to handle the S3 upload
 and photos management, but that's a maybe and definitely in the future.
 

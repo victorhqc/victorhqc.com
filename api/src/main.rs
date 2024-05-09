@@ -15,10 +15,6 @@ fn index() -> &'static str {
 #[rocket::main]
 async fn main() -> Result<(), Error> {
     dotenv().ok();
-    let db_url = "sqlite://development.db";
-    let pool = SqlitePool::connect(db_url).await.context(SQLXSnafu)?;
-
-    sqlx::migrate!().run(&pool).await.context(MigrationSnafu)?;
 
     let rocket = rocket::build();
     let figment = rocket.figment();
@@ -28,6 +24,10 @@ async fn main() -> Result<(), Error> {
 
     info!("DATABASE_URL: {}", database_url);
 
+    let pool = SqlitePool::connect(&database_url).await.context(SQLXSnafu)?;
+
+    sqlx::migrate!().run(&pool).await.context(MigrationSnafu)?;
+    
     rocket
         .mount("/", routes![index])
         .launch()
