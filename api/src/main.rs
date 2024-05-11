@@ -7,6 +7,8 @@ use rocket::serde::Deserialize;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
 
+mod models;
+
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
@@ -27,7 +29,7 @@ async fn main() -> Result<(), Error> {
     let pool = SqlitePool::connect(&database_url).await.context(SQLXSnafu)?;
 
     sqlx::migrate!().run(&pool).await.context(MigrationSnafu)?;
-    
+
     rocket
         .mount("/", routes![index])
         .launch()

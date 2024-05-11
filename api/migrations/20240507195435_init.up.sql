@@ -25,7 +25,7 @@ CREATE TABLE fuji_recipes (
 CREATE TABLE exif_metas (
   id TEXT PRIMARY KEY NOT NULL,
   iso INTEGER NOT NULL,
-  focal_length INTEGER NOT NULL,
+  focal_length REAL NOT NULL,
   aperture REAL NOT NULL,
   maker TEXT NOT NULL,
   crop_factor REAL NOT NULL,
