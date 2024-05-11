@@ -28,3 +28,35 @@ and photos management, but that's a maybe and definitely in the future.
   ```bash
   cargo install sqlx-cli
   ```
+  
+## CLI Backoffice
+
+Since this Site won't have a UI or any kind of management outside my computer,
+all the CRUD operations will happen locally, and I'll just ship the DB on every
+release, I have to have someway of managing it, so a simple CLI will do.
+
+## API Development
+
+Make sure you're in the `api` path first.
+
+```bash
+cd api
+```
+
+Prepare the environment variables by creating an `.env` file
+
+```bash
+cp .env.example .env
+```
+
+Create an initial DB
+
+```bash
+sqlx db create
+```
+
+Run the project
+
+```bash
+cargo run
+```
