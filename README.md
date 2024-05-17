@@ -35,6 +35,9 @@ Since this Site won't have a UI or any kind of management outside my computer,
 all the CRUD operations will happen locally, and I'll just ship the DB on every
 release, I have to have someway of managing it, so a simple CLI will do.
 
+This CLI reads the EXIF information using the trusty exiftool, stores it in the
+DB and uploads the file to an S3 Bucket.
+
 ## API Development
 
 Make sure you're in the `api` path first.
