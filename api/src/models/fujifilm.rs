@@ -18,7 +18,7 @@ pub enum Settings {
     TransI(TransISettings),
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Clone)]
 pub enum TransSensor {
     #[strum(serialize = "Trans Sensor I")]
     TransI,
@@ -39,7 +39,7 @@ pub struct Meta {
     pub src: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, EnumString)]
 pub enum FilmSimulation {
     #[strum(serialize = "Provia")]
     ProviaStandard,
@@ -61,7 +61,7 @@ pub enum FilmSimulation {
     Acros(Option<MonochromaticFilter>),
     #[strum(serialize = "Eterna")]
     EternaCinema,
-    #[strum(serialize = "Monochrome")]
+    #[strum(serialize = "Monochrome +{}")]
     Monochrome(Option<MonochromaticFilter>),
     #[strum(serialize = "Reala")]
     RealaAce,
@@ -69,7 +69,7 @@ pub enum FilmSimulation {
     Sepia,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, EnumString)]
 pub enum MonochromaticFilter {
     #[strum(serialize = "None")]
     None,
@@ -77,11 +77,11 @@ pub enum MonochromaticFilter {
     Green,
     #[strum(serialize = "Red")]
     Red,
-    #[strum(serialize = "Blue")]
-    Blue,
+    #[strum(serialize = "Yellow")]
+    Yellow,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum GrainStrength {
     #[strum(serialize = "Weak")]
     #[default]
@@ -90,7 +90,7 @@ pub enum GrainStrength {
     Strong,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum GrainSize {
     #[strum(serialize = "Small")]
     #[default]
@@ -107,7 +107,7 @@ pub enum GrainEffect {
     StrengthAndSize(GrainStrength, GrainSize),
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum SettingStrength {
     #[default]
     #[strum(serialize = "Off")]
@@ -148,7 +148,7 @@ pub struct WBShift {
     pub blue: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum DynamicRange {
     #[default]
     #[strum(serialize = "Auto")]
@@ -161,7 +161,7 @@ pub enum DynamicRange {
     DR400,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum DRangePriority {
     #[default]
     #[strum(serialize = "Off")]
