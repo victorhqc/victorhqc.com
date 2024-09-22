@@ -25,18 +25,18 @@ pub struct Photo {
     pub deleted: bool,
 }
 
-#[derive(Clone, Debug, FromRow)]
+#[derive(Clone, Debug, FromRow, Serialize)]
 pub struct ExifMeta {
     pub id: String,
-    pub iso: i32,
-    pub focal_length: f32,
-    pub exposure_compensation: f32,
-    pub aperture: f32,
+    pub iso: i64,
+    pub focal_length: f64,
+    pub exposure_compensation: f64,
+    pub aperture: f64,
     pub maker: Maker,
-    pub crop_factor: f32,
+    pub crop_factor: f64,
     pub camera_name: String,
     pub lens_name: Option<String>,
-    fuji_recipe_id: Option<String>,
+    pub fuji_recipe_id: Option<String>,
 }
 
 #[derive(Clone, Debug, FromRow)]
@@ -78,7 +78,7 @@ pub enum FileType {
     Jpeg,
 }
 
-#[derive(Clone, Debug, EnumString, EnumDisplay)]
+#[derive(Clone, Debug, Serialize, EnumString, EnumDisplay, sqlx::Type)]
 pub enum Maker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,
