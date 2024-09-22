@@ -1,12 +1,14 @@
 pub mod fujifilm;
 
-use sqlx::FromRow;
-use time::OffsetDateTime;
-use std::str::FromStr;
+use crate::models::fujifilm::{
+    DRangePriority, DynamicRange, FilmSimulation, GrainSize, GrainStrength, MonochromaticFilter,
+    SettingStrength, TransSensor,
+};
 use rocket::serde::{Deserialize, Serialize};
-use strum_macros::{EnumString, Display as EnumDisplay};
-use crate::models::fujifilm::{DRangePriority, DynamicRange, FilmSimulation, GrainSize, GrainStrength, MonochromaticFilter, SettingStrength, TransSensor};
-
+use sqlx::FromRow;
+use std::str::FromStr;
+use strum_macros::{Display as EnumDisplay, EnumString};
+use time::OffsetDateTime;
 
 #[derive(Clone, Debug, FromRow)]
 pub struct Photo {
@@ -120,5 +122,5 @@ pub enum FilmSim {
     Monochrome,
     MonochromeYellow,
     MonochromeRed,
-    MonochromeGreen
+    MonochromeGreen,
 }

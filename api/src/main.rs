@@ -26,9 +26,14 @@ async fn main() -> Result<(), Error> {
 
     info!("DATABASE_URL: {}", database_url);
 
-    let db_pool = SqlitePool::connect(&database_url).await.context(SQLXSnafu)?;
+    let db_pool = SqlitePool::connect(&database_url)
+        .await
+        .context(SQLXSnafu)?;
 
-    sqlx::migrate!().run(&db_pool).await.context(MigrationSnafu)?;
+    sqlx::migrate!()
+        .run(&db_pool)
+        .await
+        .context(MigrationSnafu)?;
 
     rocket
         .manage(State { db_pool })
