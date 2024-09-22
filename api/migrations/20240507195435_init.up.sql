@@ -26,6 +26,7 @@ CREATE TABLE exif_metas (
   id TEXT PRIMARY KEY NOT NULL,
   iso INTEGER NOT NULL,
   focal_length REAL NOT NULL,
+  exposure_compensation REAL NOT NULL,
   aperture REAL NOT NULL,
   maker TEXT NOT NULL,
   crop_factor REAL NOT NULL,
@@ -43,6 +44,7 @@ CREATE TABLE photos (
     src TEXT NOT NULL UNIQUE,
     filename TEXT NOT NULL UNIQUE,
     filetype TEXT NOT NULL,
+    rating INTEGER NOT NULL,
     date_taken DATE NULL,
     city TEXT NULL,
     created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
@@ -53,4 +55,28 @@ CREATE TABLE photos (
       REFERENCES exif_metas (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+);
+
+CREATE TABLE tags (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
+  updated_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE photo_tags (
+  id TEXT PRIMARY KEY NOT NULL,
+  tag_id TEXT NOT NULL,
+  photo_id TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
+  updated_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
+  FOREIGN KEY (tag_id)
+    REFERENCES tags (id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  FOREIGN KEY (photo_id)
+    REFERENCES photos (id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
 );

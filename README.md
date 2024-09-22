@@ -27,6 +27,7 @@ and photos management, but that's a maybe and definitely in the future.
 
   ```bash
   cargo install sqlx-cli
+  cargo install cargo-watch
   ```
   
 ## CLI Backoffice
@@ -62,4 +63,7 @@ Run the project
 
 ```bash
 cargo run
+
+# To recompile on change
+cargo watch -x run
 ```

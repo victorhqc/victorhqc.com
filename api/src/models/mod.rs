@@ -13,6 +13,7 @@ pub struct Photo {
     pub id: String,
     pub src: String,
     pub filename: String,
+    pub rating: i32,
     pub filetype: FileType,
     pub date_taken: OffsetDateTime,
     pub city: String,
@@ -27,12 +28,22 @@ pub struct ExifMeta {
     pub id: String,
     pub iso: i32,
     pub focal_length: f32,
+    pub exposure_compensation: f32,
     pub aperture: f32,
     pub maker: Maker,
     pub crop_factor: f32,
     pub camera_name: String,
     pub lens_name: Option<String>,
     fuji_recipe_id: Option<String>,
+}
+
+#[derive(Clone, Debug, FromRow)]
+pub struct Tag {
+    pub id: String,
+    pub name: String,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
+    pub deleted: bool,
 }
 
 #[derive(Clone, Debug, FromRow)]
