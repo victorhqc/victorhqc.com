@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{Display, EnumString};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -39,46 +39,58 @@ pub struct Meta {
     pub src: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, EnumString)]
+#[derive(Debug, Deserialize, PartialEq, Display)]
 pub enum FilmSimulation {
-    #[strum(serialize = "Provia")]
+    #[strum(serialize = "Provia", to_string = "Provia")]
     ProviaStandard,
-    #[strum(serialize = "Velvia")]
+    #[strum(serialize = "Velvia", to_string = "Velvia")]
     VelviaVivid,
-    #[strum(serialize = "Astia")]
+    #[strum(serialize = "Astia", to_string = "Astia")]
     AstiaSoft,
-    #[strum(serialize = "Classic Chrome")]
+    #[strum(serialize = "Classic Chrome", to_string = "Classic Chrome")]
     ClassicChrome,
-    #[strum(serialize = "Classic Neg.")]
-    ClassicNeg,
-    #[strum(serialize = "Nostalgic Neg.")]
-    NostalgicNeg,
-    #[strum(serialize = "Pro Neg. Hi")]
-    ProNegHi,
-    #[strum(serialize = "Pro Neg. Std")]
-    ProNegStd,
-    #[strum(serialize = "Acros")]
-    Acros(Option<MonochromaticFilter>),
-    #[strum(serialize = "Eterna")]
-    EternaCinema,
-    #[strum(serialize = "Monochrome +{}")]
-    Monochrome(Option<MonochromaticFilter>),
-    #[strum(serialize = "Reala")]
+    #[strum(serialize = "Reala Ace", to_string = "Reala Ace")]
     RealaAce,
-    #[strum(serialize = "Sepia")]
+    #[strum(serialize = "Pro Neg. Hi", to_string = "Pro Neg. Hi")]
+    ProNegHi,
+    #[strum(serialize = "Pro Neg. Std", to_string = "Pro Neg. Std")]
+    ProNegStd,
+    #[strum(serialize = "Classic Neg.", to_string = "Classic Negative")]
+    ClassicNeg,
+    #[strum(serialize = "Nostalgic Neg.", to_string = "Nostalgic Negative")]
+    NostalgicNeg,
+    #[strum(serialize = "Eterna", to_string = "Eterna")]
+    EternaCinema,
+    #[strum(serialize = "Eterna Bleach Bypass", to_string = "Eterna Bleach Bypass")]
+    BleachBypass,
+    #[strum(serialize = "Acros", to_string = "Acros{filter}")]
+    Acros { filter: MonochromaticFilter },
+    #[strum(serialize = "Monochrome{filter}")]
+    Monochrome { filter: MonochromaticFilter },
+    #[strum(serialize = "Sepia", to_string = "Sepia")]
     Sepia,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, EnumString)]
+impl Serialize for FilmSimulation {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString)]
+#[serde(rename_all = "camelCase")]
 pub enum MonochromaticFilter {
-    #[strum(serialize = "None")]
-    None,
-    #[strum(serialize = "Green")]
-    Green,
-    #[strum(serialize = "Red")]
-    Red,
-    #[strum(serialize = "Yellow")]
+    #[strum(serialize = "Standard", to_string = "")]
+    Std,
+    #[strum(serialize = "Yellow", to_string = " +Ye")]
     Yellow,
+    #[strum(serialize = "Red", to_string = " +R")]
+    Red,
+    #[strum(serialize = "Green", to_string = " +G")]
+    Green,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]

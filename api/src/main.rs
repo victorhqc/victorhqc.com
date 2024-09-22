@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate rocket;
 
-use dotenv::dotenv;
 use log::info;
-use rocket::serde::Deserialize;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
 
 mod models;
+mod queries;
+mod routes;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -16,12 +16,11 @@ fn index() -> &'static str {
 
 #[rocket::main]
 async fn main() -> Result<(), Error> {
-    dotenv().ok();
+    dotenvy::dotenv().context(DotenvSnafu)?;
 
     let rocket = rocket::build();
     let figment = rocket.figment();
 
-    let config: Config = figment.extract().expect("config");
     let database_url: String = figment.extract_inner("database_url").expect("databaseUrl");
 
     info!("DATABASE_URL: {}", database_url);
@@ -36,8 +35,9 @@ async fn main() -> Result<(), Error> {
         .context(MigrationSnafu)?;
 
     rocket
-        .manage(State { db_pool })
+        .manage(AppState { db_pool })
         .mount("/", routes![index])
+        .mount("/v1", routes![routes::photos::get_all_photos])
         .launch()
         .await
         .context(RocketSnafu)?;
@@ -45,18 +45,15 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-struct State {
+struct AppState {
     db_pool: SqlitePool,
-}
-
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
-struct Config {
-    database_url: String,
 }
 
 #[derive(Debug, Snafu)]
 enum Error {
+    #[snafu(display("Failed to load configuration: {}", source))]
+    Dotenv { source: dotenvy::Error },
+
     #[snafu(display("There is a problem with the DB Initialization: {}", source))]
     Sqlx { source: sqlx::Error },
 

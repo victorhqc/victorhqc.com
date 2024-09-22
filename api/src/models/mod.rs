@@ -1,24 +1,24 @@
 pub mod fujifilm;
-
 use crate::models::fujifilm::{
-    DRangePriority, DynamicRange, GrainSize, GrainStrength,
-    SettingStrength, TransSensor,
+    DRangePriority, DynamicRange, GrainSize, GrainStrength, SettingStrength, TransSensor,
 };
-use rocket::serde::{Deserialize, Serialize};
+use rocket::serde::{Serialize};
 use sqlx::FromRow;
+// use std::fmt::Display;
 // use std::str::FromStr;
+// use std::string::ToString;
 use strum_macros::{Display as EnumDisplay, EnumString};
-use time::OffsetDateTime;
+use time::{Date, OffsetDateTime};
 
-#[derive(Clone, Debug, FromRow)]
+#[derive(Clone, Debug, FromRow, Serialize)]
 pub struct Photo {
     pub id: String,
     pub src: String,
     pub filename: String,
-    pub rating: i32,
+    pub rating: i64,
     pub filetype: FileType,
-    pub date_taken: OffsetDateTime,
-    pub city: String,
+    pub date_taken: Option<Date>,
+    pub city: Option<String>,
     pub exif_meta_id: String,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
@@ -72,7 +72,7 @@ pub struct FujifilmRecipe {
     pub monochromatic_color: Option<String>,
 }
 
-#[derive(Clone, Debug, EnumString, EnumDisplay)]
+#[derive(Clone, Debug, Serialize, EnumString, EnumDisplay, sqlx::Type)]
 pub enum FileType {
     #[strum(serialize = "JPEG")]
     Jpeg,
