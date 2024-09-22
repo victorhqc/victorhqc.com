@@ -28,7 +28,7 @@ async fn main() -> Result<(), Error> {
 
     let db_pool = SqlitePool::connect(&database_url)
         .await
-        .context(SQLXSnafu)?;
+        .context(SqlxSnafu)?;
 
     sqlx::migrate!()
         .run(&db_pool)
@@ -58,7 +58,7 @@ struct Config {
 #[derive(Debug, Snafu)]
 enum Error {
     #[snafu(display("There is a problem with the DB Initialization: {}", source))]
-    SQLX { source: sqlx::Error },
+    Sqlx { source: sqlx::Error },
 
     #[snafu(display("Failed to run migrations: {}", source))]
     Migration { source: sqlx::migrate::MigrateError },

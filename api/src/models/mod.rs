@@ -1,12 +1,12 @@
 pub mod fujifilm;
 
 use crate::models::fujifilm::{
-    DRangePriority, DynamicRange, FilmSimulation, GrainSize, GrainStrength, MonochromaticFilter,
+    DRangePriority, DynamicRange, GrainSize, GrainStrength,
     SettingStrength, TransSensor,
 };
 use rocket::serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use std::str::FromStr;
+// use std::str::FromStr;
 use strum_macros::{Display as EnumDisplay, EnumString};
 use time::OffsetDateTime;
 
@@ -74,14 +74,18 @@ pub struct FujifilmRecipe {
 
 #[derive(Clone, Debug, EnumString, EnumDisplay)]
 pub enum FileType {
-    JPEG,
+    #[strum(serialize = "JPEG")]
+    Jpeg,
 }
 
 #[derive(Clone, Debug, EnumString, EnumDisplay)]
 pub enum Maker {
-    FUJIFILM,
-    KONICA,
-    CANON,
+    #[strum(serialize = "FUJIFILM")]
+    Fujifilm,
+    #[strum(serialize = "KONICA")]
+    Konica,
+    #[strum(serialize = "CANON")]
+    Canon,
 }
 
 #[derive(Clone, Debug, EnumString, EnumDisplay)]
