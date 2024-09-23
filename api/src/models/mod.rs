@@ -2,10 +2,10 @@ pub mod fujifilm;
 use crate::models::fujifilm::{
     DRangePriority, DynamicRange, GrainSize, GrainStrength, SettingStrength, TransSensor,
 };
-use rocket::serde::{Serialize};
+use rocket::serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-// use std::fmt::Display;
-// use std::str::FromStr;
+use std::fmt::Display;
+use std::str::FromStr;
 // use std::string::ToString;
 use strum_macros::{Display as EnumDisplay, EnumString};
 use time::{Date, OffsetDateTime};
@@ -72,7 +72,7 @@ pub struct FujifilmRecipe {
     pub monochromatic_color: Option<String>,
 }
 
-#[derive(Clone, Debug, Serialize, EnumString, EnumDisplay, sqlx::Type)]
+#[derive(Clone, Debug, Deserialize, Serialize, EnumString, EnumDisplay, sqlx::Type)]
 pub enum FileType {
     #[strum(serialize = "JPEG")]
     Jpeg,
