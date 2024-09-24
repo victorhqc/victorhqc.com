@@ -1,5 +1,5 @@
 use crate::models::{ExifMeta, Photo};
-use crate::queries::photos;
+use crate::db::photos;
 use crate::AppState;
 use rocket::http::Status;
 // use rocket::response::status;

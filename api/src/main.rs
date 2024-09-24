@@ -1,12 +1,18 @@
 #[macro_use]
 extern crate rocket;
 
+use crate::graphql::context::Context;
+use crate::graphql::loaders::AppLoader;
+use crate::graphql::routes::{graphql_playground, graphql_query, graphql_request};
+use crate::graphql::{graph::RootSchema, queries::RootQuery, sdl_gen};
+use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use log::info;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
 
+mod db;
+mod graphql;
 mod models;
-mod queries;
 mod routes;
 
 #[get("/")]
@@ -29,14 +35,31 @@ async fn main() -> Result<(), Error> {
         .await
         .context(SqlxSnafu)?;
 
+    let context = Context::default(db_pool.clone());
+    let loader = AppLoader::default(db_pool.clone());
+
     sqlx::migrate!()
         .run(&db_pool)
         .await
         .context(MigrationSnafu)?;
 
+    let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
+        .data(context)
+        .data(DataLoader::new(loader, async_std::task::spawn))
+        .finish();
+
+    #[cfg(debug_assertions)]
+    {
+        sdl_gen(&schema).unwrap();
+    }
+
     rocket
+        .manage(schema)
         .manage(AppState { db_pool })
-        .mount("/", routes![index])
+        .mount(
+            "/",
+            routes![index, graphql_query, graphql_request, graphql_playground],
+        )
         .mount("/v1", routes![routes::photos::get_all_photos])
         .launch()
         .await

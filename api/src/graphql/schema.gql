@@ -1,0 +1,31 @@
+
+enum FileType {
+	JPEG
+}
+
+
+
+
+type Photo {
+	id: ID!
+	src: String!
+	filename: String!
+	rating: Int!
+	filetype: FileType!
+	dateTaken: String
+	city: String
+	createdAt: String!
+	updatedAt: String!
+	deleted: Boolean!
+}
+
+type RootQuery {
+	photo(id: String!): Photo!
+}
+
+
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+schema {
+	query: RootQuery
+}

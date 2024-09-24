@@ -7,15 +7,16 @@ use sqlx::FromRow;
 use std::fmt::Display;
 use std::str::FromStr;
 // use std::string::ToString;
+use async_graphql::Enum;
 use strum_macros::{Display as EnumDisplay, EnumString};
 use time::{Date, OffsetDateTime};
 
-#[derive(Clone, Debug, FromRow, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Photo {
     pub id: String,
     pub src: String,
     pub filename: String,
-    pub rating: i64,
+    pub rating: i8,
     pub filetype: FileType,
     pub date_taken: Option<Date>,
     pub city: Option<String>,
@@ -25,7 +26,7 @@ pub struct Photo {
     pub deleted: bool,
 }
 
-#[derive(Clone, Debug, FromRow, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ExifMeta {
     pub id: String,
     pub iso: i64,
@@ -39,7 +40,7 @@ pub struct ExifMeta {
     pub fuji_recipe_id: Option<String>,
 }
 
-#[derive(Clone, Debug, FromRow)]
+#[derive(Clone, Debug)]
 pub struct Tag {
     pub id: String,
     pub name: String,
@@ -48,7 +49,7 @@ pub struct Tag {
     pub deleted: bool,
 }
 
-#[derive(Clone, Debug, FromRow)]
+#[derive(Clone, Debug)]
 pub struct FujifilmRecipe {
     pub id: String,
     pub author: String,
@@ -72,7 +73,19 @@ pub struct FujifilmRecipe {
     pub monochromatic_color: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, EnumString, EnumDisplay, sqlx::Type)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Deserialize,
+    Serialize,
+    EnumString,
+    EnumDisplay,
+    sqlx::Type,
+    Enum,
+    Eq,
+    PartialEq,
+)]
 pub enum FileType {
     #[strum(serialize = "JPEG")]
     Jpeg,
