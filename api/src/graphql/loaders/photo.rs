@@ -1,7 +1,7 @@
 use crate::{
+    db::photos::{get_photos_by_ids, Error as PhotosDbError},
     graphql::loaders::AppLoader,
     graphql::models::Photo,
-    db::photos::{Error as PhotosDbError, get_photos_by_ids},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;

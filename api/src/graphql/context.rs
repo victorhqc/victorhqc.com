@@ -1,16 +1,14 @@
-use sqlx::{Pool, Sqlite};
 use async_graphql::{Context as AsyncGraphqlContext, Error as AsyncGraphqlError};
+use sqlx::{Pool, Sqlite};
 
 #[derive(Clone)]
 pub struct Context {
-    pub pool: Pool<Sqlite>
+    pub pool: Pool<Sqlite>,
 }
 
 impl Context {
     pub fn default(pool: Pool<Sqlite>) -> Self {
-        Context {
-            pool
-        }
+        Context { pool }
     }
 }
 

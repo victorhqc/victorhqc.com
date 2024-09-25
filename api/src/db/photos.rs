@@ -20,11 +20,13 @@ pub struct DBPhoto {
     deleted: bool,
 }
 
-impl Photo {
-    pub fn from_db(row: DBPhoto) -> Result<Self, Error> {
-        let filetype = FileType::from_str(&row.filetype).context(FileTypeSnafu)?;
+impl TryFrom<DBPhoto> for Photo {
+    type Error = Error;
 
-        let date_taken = if let Some(v) = row.date_taken {
+    fn try_from(photo: DBPhoto) -> Result<Self, Error> {
+        let filetype = FileType::from_str(&photo.filetype).context(FileTypeSnafu)?;
+
+        let date_taken = if let Some(v) = photo.date_taken {
             // Time is in milliseconds
             let timestamp = v.0 / 1000;
             let datetime =
@@ -37,36 +39,36 @@ impl Photo {
 
         let created_at = {
             // Time is in milliseconds
-            let timestamp = row.created_at.0 / 1000;
+            let timestamp = photo.created_at.0 / 1000;
 
             OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
         };
 
         let updated_at = {
             // Time is in milliseconds
-            let timestamp = row.updated_at.0 / 1000;
+            let timestamp = photo.updated_at.0 / 1000;
 
             OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
         };
 
         Ok(Photo {
-            id: row.id,
-            src: row.src,
-            filename: row.filename,
-            rating: row.rating as i8,
+            id: photo.id,
+            src: photo.src,
+            filename: photo.filename,
+            rating: photo.rating as i8,
             filetype,
             date_taken,
-            city: row.city,
-            exif_meta_id: row.exif_meta_id,
+            city: photo.city,
+            exif_meta_id: photo.exif_meta_id,
             created_at,
             updated_at,
-            deleted: row.deleted,
+            deleted: photo.deleted,
         })
     }
 }
 
 pub async fn get_photo_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
-    let row = sqlx::query_as!(
+    let photo = sqlx::query_as!(
         DBPhoto,
         r#"
     SELECT
@@ -95,9 +97,7 @@ pub async fn get_photo_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error
     .await
     .context(SqlxSnafu)?;
 
-    let photo = Photo::from_db(row)?;
-
-    Ok(photo)
+    Ok(photo.try_into()?)
 }
 
 pub async fn get_all_photos(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
@@ -128,10 +128,7 @@ pub async fn get_all_photos(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
     .await
     .context(SqlxSnafu)?;
 
-    let photos = photos
-        .into_iter()
-        .map(|p| Photo::from_db(p).unwrap())
-        .collect();
+    let photos: Vec<Photo> = photos.into_iter().map(|p| p.try_into().unwrap()).collect();
 
     Ok(photos)
 }
@@ -170,10 +167,7 @@ pub async fn get_photos_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<V
 
     let photos = query.fetch_all(pool).await.context(SqlxSnafu)?;
 
-    let photos = photos
-        .into_iter()
-        .map(|p| Photo::from_db(p).unwrap())
-        .collect();
+    let photos: Vec<Photo> = photos.into_iter().map(|p| p.try_into().unwrap()).collect();
 
     Ok(photos)
 }

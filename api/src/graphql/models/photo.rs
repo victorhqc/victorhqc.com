@@ -1,4 +1,4 @@
-use crate::models::{FileType, Photo as DbPhoto};
+use crate::models::{FileType, Photo as AppPhoto};
 use async_graphql::{SimpleObject, ID};
 use time::format_description;
 
@@ -16,8 +16,8 @@ pub struct Photo {
     pub deleted: bool,
 }
 
-impl From<DbPhoto> for Photo {
-    fn from(photo: DbPhoto) -> Self {
+impl From<AppPhoto> for Photo {
+    fn from(photo: AppPhoto) -> Self {
         let date_taken = if let Some(d) = photo.date_taken {
             let format = format_description::parse("[year]-[month]-[day]").unwrap();
             let formatted = d.format(&format).unwrap();
@@ -34,10 +34,8 @@ impl From<DbPhoto> for Photo {
             filetype: photo.filetype,
             date_taken,
             city: photo.city,
-            // created_at: String::from(photo.created_at),
-            created_at: String::from(""),
-            // updated_at: String::from(photo.updated_at),
-            updated_at: String::from(""),
+            created_at: format!("{}", photo.created_at),
+            updated_at: format!("{}", photo.updated_at),
             deleted: photo.deleted,
         }
     }
