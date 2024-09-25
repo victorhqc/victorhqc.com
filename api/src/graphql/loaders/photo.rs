@@ -1,7 +1,7 @@
 use crate::{
-    db::photos::{get_photos_by_ids, Error as PhotosDbError},
     graphql::loaders::AppLoader,
-    graphql::models::Photo,
+    graphql::models::Photo as GqlPhoto,
+    models::photo::{Error as PhotoError, Photo},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
@@ -13,7 +13,7 @@ use std::{
 };
 
 impl Loader<PhotoId> for AppLoader {
-    type Value = Photo;
+    type Value = GqlPhoto;
     type Error = Arc<Error>;
 
     async fn load(
@@ -22,7 +22,7 @@ impl Loader<PhotoId> for AppLoader {
     ) -> Result<HashMap<PhotoId, Self::Value>, Self::Error> {
         let ids: Vec<String> = photo_ids.into_iter().map(|i| i.0.clone()).collect();
 
-        let photos = get_photos_by_ids(&self.pool, &ids)
+        let photos = Photo::find_by_ids(&self.pool, &ids)
             .await
             .context(QuerySnafu)?;
 
@@ -49,5 +49,5 @@ impl Hash for PhotoId {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("{:?}", source))]
-    QueryError { source: PhotosDbError },
+    QueryError { source: PhotoError },
 }

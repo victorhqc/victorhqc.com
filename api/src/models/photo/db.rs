@@ -1,4 +1,5 @@
-use crate::models::{FileType, Photo};
+use super::Photo;
+use crate::models::{FileType, Timestamp};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
@@ -13,10 +14,10 @@ pub struct DBPhoto {
     rating: i64,
     city: Option<String>,
     filetype: String,
-    date_taken: Option<super::Timestamp>,
+    date_taken: Option<Timestamp>,
     exif_meta_id: String,
-    created_at: super::Timestamp,
-    updated_at: super::Timestamp,
+    created_at: Timestamp,
+    updated_at: Timestamp,
     deleted: bool,
 }
 
@@ -77,11 +78,11 @@ pub async fn get_photo_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error
         filename,
         rating,
         filetype,
-        date_taken as "date_taken: crate::db::Timestamp",
+        date_taken as "date_taken: Timestamp",
         city,
         exif_meta_id,
-        created_at as "created_at: crate::db::Timestamp",
-        updated_at as "updated_at: crate::db::Timestamp",
+        created_at as "created_at: Timestamp",
+        updated_at as "updated_at: Timestamp",
         deleted
     FROM
         photos
@@ -110,11 +111,11 @@ pub async fn get_all_photos(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         filename,
         rating,
         filetype,
-        date_taken as "date_taken: crate::db::Timestamp",
+        date_taken as "date_taken: Timestamp",
         city,
         exif_meta_id,
-        created_at as "created_at: crate::db::Timestamp",
-        updated_at as "updated_at: crate::db::Timestamp",
+        created_at as "created_at: Timestamp",
+        updated_at as "updated_at: Timestamp",
         deleted
     FROM
         photos AS p
@@ -144,11 +145,11 @@ pub async fn get_photos_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<V
         filename,
         rating,
         filetype,
-        date_taken as "date_taken: crate::db::Timestamp",
+        date_taken as "date_taken: Timestamp",
         city,
         exif_meta_id,
-        created_at as "created_at: crate::db::Timestamp",
-        updated_at as "updated_at: crate::db::Timestamp",
+        created_at as "created_at: Timestamp",
+        updated_at as "updated_at: Timestamp",
         deleted
     FROM
         photos

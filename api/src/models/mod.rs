@@ -1,4 +1,6 @@
 pub mod fujifilm;
+pub mod photo;
+
 use crate::models::fujifilm::{
     DRangePriority, DynamicRange, GrainSize, GrainStrength, SettingStrength, TransSensor,
 };
@@ -10,20 +12,9 @@ use async_graphql::Enum;
 use strum_macros::{Display as EnumDisplay, EnumString};
 use time::{Date, OffsetDateTime};
 
-#[derive(Clone, Debug, Serialize)]
-pub struct Photo {
-    pub id: String,
-    pub src: String,
-    pub filename: String,
-    pub rating: i8,
-    pub filetype: FileType,
-    pub date_taken: Option<Date>,
-    pub city: Option<String>,
-    pub exif_meta_id: String,
-    pub created_at: OffsetDateTime,
-    pub updated_at: OffsetDateTime,
-    pub deleted: bool,
-}
+#[derive(sqlx::Type, Debug, Clone)]
+#[sqlx(transparent)]
+pub struct Timestamp(i64);
 
 #[derive(Clone, Debug, Serialize)]
 pub struct ExifMeta {

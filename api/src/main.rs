@@ -10,7 +10,6 @@ use log::info;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
 
-mod db;
 mod graphql;
 mod models;
 mod routes;
