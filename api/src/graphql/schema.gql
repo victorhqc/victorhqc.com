@@ -20,7 +20,7 @@ type Photo {
 }
 
 type RootQuery {
-	photo(id: String!): Photo!
+	photo(id: ID!): Photo!
 }
 
 
