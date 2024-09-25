@@ -57,6 +57,7 @@ Create an initial DB
 
 ```bash
 sqlx db create
+sqlx db setup
 ```
 
 Run the project
