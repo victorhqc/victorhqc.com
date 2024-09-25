@@ -1,8 +1,5 @@
 use super::graph::RootSchema;
-use async_graphql::{
-    http::{playground_source, GraphQLPlaygroundConfig},
-    BatchResponse, Response, ServerError,
-};
+use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
 use rocket::{response::content, State};
 

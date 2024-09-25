@@ -1,4 +1,4 @@
-use async_graphql::{Object, Schema, EmptyMutation, EmptySubscription};
+use async_graphql::{Schema, EmptyMutation, EmptySubscription};
 use crate::graphql::queries::RootQuery;
 
 pub type RootSchema = Schema<RootQuery, EmptyMutation, EmptySubscription>;
