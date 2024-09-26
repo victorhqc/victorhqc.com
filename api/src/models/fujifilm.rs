@@ -3,40 +3,42 @@ use strum_macros::{Display, EnumString};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FujifilmRecipe {
-    pub meta: Meta,
     pub film_simulation: FilmSimulation,
     pub sensor: TransSensor,
     pub settings: Settings,
 }
 
 #[derive(Debug, Serialize, Deserialize, Display)]
+#[serde(untagged)]
 pub enum Settings {
-    TransV(TransVSettings),
-    TransIV(TransIVSettings),
-    TransIII(TransIIISettings),
-    TransII(TransIISettings),
     TransI(TransISettings),
+    TransII(TransIISettings),
+    TransIII(TransIIISettings),
+    TransIV(TransIVSettings),
+    TransV(TransVSettings),
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Display, Clone)]
 pub enum TransSensor {
-    #[strum(serialize = "Trans Sensor I")]
+    #[strum(serialize = "Trans Sensor I", to_string = "TransI")]
     TransI,
-    #[strum(serialize = "Trans Sensor II")]
+    #[strum(serialize = "Trans Sensor II", to_string = "TransII")]
     TransII,
-    #[strum(serialize = "Trans Sensor III")]
+    #[strum(serialize = "Trans Sensor III", to_string = "TransIII")]
     TransIII,
-    #[strum(serialize = "Trans Sensor IV")]
+    #[strum(serialize = "Trans Sensor IV", to_string = "TransIV")]
     TransIV,
-    #[strum(serialize = "Trans Sensor V")]
+    #[strum(serialize = "Trans Sensor V", to_string = "TransV")]
     TransV,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Meta {
-    pub name: String,
-    pub author: Option<String>,
-    pub src: String,
+impl Serialize for TransSensor {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 #[derive(Debug, Deserialize, PartialEq, Display)]
@@ -81,7 +83,6 @@ impl Serialize for FilmSimulation {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Display, EnumString)]
-#[serde(rename_all = "camelCase")]
 pub enum MonochromaticFilter {
     #[strum(serialize = "Standard", to_string = "")]
     Std,
@@ -93,30 +94,45 @@ pub enum MonochromaticFilter {
     Green,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum GrainStrength {
-    #[strum(serialize = "Weak")]
     #[default]
+    #[strum(to_string = "Weak")]
     Weak,
-    #[strum(serialize = "Strong")]
+    #[strum(to_string = "Strong")]
     Strong,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum GrainSize {
-    #[strum(serialize = "Small")]
     #[default]
+    #[strum(to_string = "Small")]
     Small,
-    #[strum(serialize = "Large")]
+    #[strum(to_string = "Large")]
     Large,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize, Display, Default)]
 pub enum GrainEffect {
     #[default]
+    #[strum(to_string = "Off")]
     Off,
-    OnlyStrength(GrainStrength),
-    StrengthAndSize(GrainStrength, GrainSize),
+    #[strum(to_string = "{strength}")]
+    OnlyStrength { strength: GrainStrength },
+    #[strum(to_string = "{strength}, {size}")]
+    StrengthAndSize {
+        strength: GrainStrength,
+        size: GrainSize,
+    },
+}
+
+impl Serialize for GrainEffect {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
@@ -131,26 +147,29 @@ pub enum SettingStrength {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum WhiteBalance {
-    Auto(WBShift),
-    AutoWhitePriority(WBShift),
-    AmbiencePriority(WBShift),
-    Custom1(WBShift),
-    Custom2(WBShift),
-    Custom3(WBShift),
-    ColorTemperature(WBShift, i32),
-    Daylight(WBShift),
-    Shade(WBShift),
-    FluorescentLight1(WBShift),
-    FluorescentLight2(WBShift),
-    FluorescentLight3(WBShift),
-    Incandescent(WBShift),
-    Underwater(WBShift),
+    Auto { shift: WBShift },
+    AutoWhitePriority { shift: WBShift },
+    AutoAmbiencePriority { shift: WBShift },
+    Custom1 { shift: WBShift },
+    Custom2 { shift: WBShift },
+    Custom3 { shift: WBShift },
+    Kelvin { temperature: i32, shift: WBShift },
+    Daylight { shift: WBShift },
+    Cloudy { shift: WBShift },
+    FluorescentLight1 { shift: WBShift },
+    FluorescentLight2 { shift: WBShift },
+    FluorescentLight3 { shift: WBShift },
+    Incandescent { shift: WBShift },
+    Underwater { shift: WBShift },
 }
 
 impl Default for WhiteBalance {
     fn default() -> Self {
-        WhiteBalance::Auto(WBShift::default())
+        WhiteBalance::Auto {
+            shift: WBShift::default(),
+        }
     }
 }
 
@@ -160,7 +179,7 @@ pub struct WBShift {
     pub blue: i32,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, Default)]
 pub enum DynamicRange {
     #[default]
     #[strum(serialize = "Auto")]
@@ -173,7 +192,7 @@ pub enum DynamicRange {
     DR400,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, Default)]
 pub enum DRangePriority {
     #[default]
     #[strum(serialize = "Off")]
@@ -187,14 +206,17 @@ pub enum DRangePriority {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum MonochromaticColor {
-    ColorShift(MonochromaticColorShift),
-    Strength(MonochromaticEffect),
+    ColorShift { shift: MonochromaticColorShift },
+    Strength { value: i32 },
 }
 
 impl Default for MonochromaticColor {
     fn default() -> Self {
-        MonochromaticColor::ColorShift(MonochromaticColorShift { mg: 0, wc: 0 })
+        MonochromaticColor::ColorShift {
+            shift: MonochromaticColorShift { mg: 0, wc: 0 },
+        }
     }
 }
 
@@ -202,11 +224,6 @@ impl Default for MonochromaticColor {
 pub struct MonochromaticColorShift {
     pub wc: i32,
     pub mg: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct MonochromaticEffect {
-    pub strength: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -220,13 +237,9 @@ pub struct ColorChromeEffectFxBlue {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct HighlightTone {
-    pub value: f32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct ShadowTone {
-    pub value: f32,
+pub struct ToneCurve {
+    pub highlights: f32,
+    pub shadows: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -257,8 +270,7 @@ pub struct TransVSettings {
     pub grain_effect: GrainEffect,
     pub color_chrome_effect: ColorChromeEffect,
     pub color_chrome_fx_blue: ColorChromeEffectFxBlue,
-    pub highlight_tone: HighlightTone,
-    pub shadow_tone: ShadowTone,
+    pub tone_curve: ToneCurve,
     pub color: Color,
     pub monochromatic_color: MonochromaticColor,
     pub sharpness: Sharpness,
@@ -274,8 +286,7 @@ pub struct TransIVSettings {
     pub grain_effect: GrainEffect,
     pub color_chrome_fx_blue: ColorChromeEffectFxBlue,
     pub color_chrome_effect: ColorChromeEffect,
-    pub highlight_tone: HighlightTone,
-    pub shadow_tone: ShadowTone,
+    pub tone_curve: ToneCurve,
     pub color: Color,
     pub monochromatic_color: MonochromaticColor,
     pub sharpness: Sharpness,
@@ -288,8 +299,7 @@ pub struct TransIIISettings {
     pub white_balance: WhiteBalance,
     pub dynamic_range: DynamicRange,
     pub grain_effect: GrainEffect,
-    pub highlight_tone: HighlightTone,
-    pub shadow_tone: ShadowTone,
+    pub tone_curve: ToneCurve,
     pub color: Color,
     pub monochromatic_color: MonochromaticColor,
     pub sharpness: Sharpness,
@@ -300,8 +310,7 @@ pub struct TransIIISettings {
 pub struct TransIISettings {
     pub white_balance: WhiteBalance,
     pub dynamic_range: DynamicRange,
-    pub highlight_tone: HighlightTone,
-    pub shadow_tone: ShadowTone,
+    pub tone_curve: ToneCurve,
     pub color: Color,
     pub sharpness: Sharpness,
     pub high_iso_noise_reduction: HighISONoiseReduction,
@@ -311,8 +320,7 @@ pub struct TransIISettings {
 pub struct TransISettings {
     pub white_balance: WhiteBalance,
     pub dynamic_range: DynamicRange,
-    pub highlight_tone: HighlightTone,
-    pub shadow_tone: ShadowTone,
+    pub tone_curve: ToneCurve,
     pub color: Color,
     pub sharpness: Sharpness,
     pub high_iso_noise_reduction: HighISONoiseReduction,
