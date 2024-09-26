@@ -21,13 +21,32 @@ struct DBPhoto {
     deleted: bool,
 }
 
+#[derive(FromRow)]
+struct DBTagPhoto {
+    tag_id: String,
+    id: String,
+    src: String,
+    filename: String,
+    rating: i64,
+    city: Option<String>,
+    filetype: String,
+    date_taken: Option<Timestamp>,
+    exif_meta_id: String,
+    created_at: Timestamp,
+    updated_at: Timestamp,
+    deleted: bool,
+}
+
 impl Photo {
     pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
         find_by_id(pool, id).await
     }
 
-    pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>, Error> {
-        find_by_ids(pool, ids).await
+    pub async fn find_by_tag_ids(
+        pool: &SqlitePool,
+        ids: &Vec<String>,
+    ) -> Result<Vec<(String, Photo)>, Error> {
+        find_by_tag_ids(pool, ids).await
     }
 
     pub async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
@@ -101,33 +120,39 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
     Ok(photos)
 }
 
-async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>, Error> {
+async fn find_by_tag_ids(
+    pool: &SqlitePool,
+    ids: &Vec<String>,
+) -> Result<Vec<(String, Photo)>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(
         r#"
     SELECT
-        id,
+        tag_id,
+        p.id,
         src,
         filename,
         rating,
         filetype,
-        date_taken as "date_taken: Timestamp",
+        date_taken,
         city,
         exif_meta_id,
-        created_at as "created_at: Timestamp",
-        updated_at as "updated_at: Timestamp",
-        deleted
+        p.created_at,
+        p.updated_at,
+        p.deleted
     FROM
-        photos
+        photos as p
+    JOIN
+        photo_tags as pt ON pt.photo_id = p.id
     WHERE
-        deleted = false
-        AND id IN ( { } )
+        pt.tag_id IN ( { } )
+        AND deleted = false
     "#,
         params
     );
 
-    let mut query = sqlx::query_as::<_, DBPhoto>(&query);
+    let mut query = sqlx::query_as::<_, DBTagPhoto>(&query);
 
     for id in ids {
         query = query.bind(id);
@@ -135,7 +160,28 @@ async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>,
 
     let photos = query.fetch_all(pool).await.context(SqlxSnafu)?;
 
-    let photos: Vec<Photo> = photos.into_iter().map(|p| p.try_into().unwrap()).collect();
+    let photos: Vec<(String, Photo)> = photos
+        .into_iter()
+        .map(|p| {
+            (
+                p.tag_id,
+                DBPhoto {
+                    id: p.id,
+                    src: p.src,
+                    filename: p.filename,
+                    rating: p.rating,
+                    filetype: p.filetype,
+                    date_taken: p.date_taken,
+                    city: p.city,
+                    exif_meta_id: p.exif_meta_id,
+                    created_at: p.created_at,
+                    updated_at: p.updated_at,
+                    deleted: p.deleted,
+                },
+            )
+        })
+        .map(|(id, t)| (id, t.try_into().unwrap()))
+        .collect();
 
     Ok(photos)
 }

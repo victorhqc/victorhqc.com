@@ -1,7 +1,7 @@
 use sqlx::{Pool, Sqlite};
 
-pub mod photo;
 pub mod exif_meta;
+pub mod photo;
 pub mod tag;
 
 pub struct AppLoader {

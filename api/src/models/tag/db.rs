@@ -24,6 +24,10 @@ struct DBPhotoTag {
 }
 
 impl Tag {
+    pub async fn find_by_name(pool: &SqlitePool, name: &str) -> Result<Tag, Error> {
+        find_by_name(pool, name).await
+    }
+
     pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {
         find_by_ids(pool, ids).await
     }
@@ -34,6 +38,31 @@ impl Tag {
     ) -> Result<Vec<(String, Tag)>, Error> {
         find_by_photo_ids(pool, ids).await
     }
+}
+
+async fn find_by_name(pool: &SqlitePool, id: &str) -> Result<Tag, Error> {
+    let tag = sqlx::query_as!(
+        DBTag,
+        r#"
+    SELECT
+        id,
+        name,
+        created_at as "created_at: Timestamp",
+        updated_at as "updated_at: Timestamp",
+        deleted
+    FROM
+        tags
+    WHERE
+        deleted = false
+        AND name = ?
+    "#,
+        id
+    )
+    .fetch_one(pool)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(tag.try_into()?)
 }
 
 async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {

@@ -1,7 +1,8 @@
 use async_graphql::MergedObject;
 
-mod photo;
 mod exif_meta;
+mod photo;
+mod tag;
 
 #[derive(MergedObject, Default)]
-pub struct RootQuery(photo::PhotoQuery, exif_meta::ExifMetaQuery);
+pub struct RootQuery(photo::PhotoQuery, exif_meta::ExifMetaQuery, tag::TagQuery);

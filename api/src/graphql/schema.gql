@@ -43,6 +43,7 @@ type RootQuery {
 	photo(id: ID!): Photo!
 	photos: [Photo!]!
 	exifMeta(id: ID!): ExifMeta!
+	tag(name: String!): Tag!
 }
 
 
@@ -52,6 +53,7 @@ type Tag {
 	createdAt: String!
 	updatedAt: String!
 	deleted: Boolean!
+	photos: [Photo!]!
 }
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
