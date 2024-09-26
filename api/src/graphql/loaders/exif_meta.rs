@@ -1,7 +1,7 @@
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::ExifMeta as GqlExifMeta,
-    models::exif_meta::{Error as ExifMetaError, ExifMeta},
+    models::exif_meta::{db::Error as ExifMetaError, ExifMeta},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;

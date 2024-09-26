@@ -1,12 +1,12 @@
-use std::str::FromStr;
 use super::ExifMeta;
 use crate::models::Maker;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
+use std::str::FromStr;
 
 #[derive(Debug, FromRow)]
-pub struct DBExifMeta {
+struct DBExifMeta {
     pub id: String,
     pub iso: i64,
     pub focal_length: f64,
@@ -19,28 +19,17 @@ pub struct DBExifMeta {
     pub fuji_recipe_id: Option<String>,
 }
 
-impl TryFrom<DBExifMeta> for ExifMeta {
-    type Error = Error;
+impl ExifMeta {
+    pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
+        find_by_id(pool, id).await
+    }
 
-    fn try_from(value: DBExifMeta) -> Result<Self, Self::Error> {
-        let maker = Maker::from_str(&value.maker).context(MakerSnafu)?;
-
-        Ok(ExifMeta {
-            id: value.id,
-            iso: value.iso,
-            focal_length: value.focal_length,
-            exposure_compensation: value.exposure_compensation,
-            aperture: value.aperture,
-            maker,
-            crop_factor: value.crop_factor,
-            camera_name: value.camera_name,
-            lens_name: value.lens_name,
-            fuji_recipe_id: value.fuji_recipe_id,
-        })
+    pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+        find_by_ids(pool, ids).await
     }
 }
 
-pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
+async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
     let exif = sqlx::query_as!(
         DBExifMeta,
         r#"
@@ -69,7 +58,7 @@ pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> 
     Ok(exif.try_into()?)
 }
 
-pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(
@@ -103,6 +92,27 @@ pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Exi
     let metas: Vec<ExifMeta> = metas.into_iter().map(|m| m.try_into().unwrap()).collect();
 
     Ok(metas)
+}
+
+impl TryFrom<DBExifMeta> for ExifMeta {
+    type Error = Error;
+
+    fn try_from(value: DBExifMeta) -> Result<Self, Self::Error> {
+        let maker = Maker::from_str(&value.maker).context(MakerSnafu)?;
+
+        Ok(ExifMeta {
+            id: value.id,
+            iso: value.iso,
+            focal_length: value.focal_length,
+            exposure_compensation: value.exposure_compensation,
+            aperture: value.aperture,
+            maker,
+            crop_factor: value.crop_factor,
+            camera_name: value.camera_name,
+            lens_name: value.lens_name,
+            fuji_recipe_id: value.fuji_recipe_id,
+        })
+    }
 }
 
 #[derive(Debug, Snafu)]

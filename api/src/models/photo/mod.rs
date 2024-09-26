@@ -1,9 +1,7 @@
-mod db;
+pub mod db;
 
 use crate::models::FileType;
 use rocket::serde::Serialize;
-use snafu::prelude::*;
-use sqlx::SqlitePool;
 use time::{Date, OffsetDateTime};
 
 #[derive(Clone, Debug, Serialize)]
@@ -19,24 +17,4 @@ pub struct Photo {
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
     pub deleted: bool,
-}
-
-impl Photo {
-    pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
-        db::find_by_id(pool, id).await.context(DBSnafu)
-    }
-
-    pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>, Error> {
-        db::find_by_ids(pool, ids).await.context(DBSnafu)
-    }
-
-    pub async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
-        db::find_all(pool).await.context(DBSnafu)
-    }
-}
-
-#[derive(Debug, Snafu)]
-pub enum Error {
-    #[snafu(display("Failed to get photos: {:?}", source))]
-    DB { source: db::Error },
 }

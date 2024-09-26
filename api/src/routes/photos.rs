@@ -1,7 +1,6 @@
 use crate::models::photo::Photo;
 use crate::AppState;
 use rocket::http::Status;
-// use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::State;
 

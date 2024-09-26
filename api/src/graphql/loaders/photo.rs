@@ -1,7 +1,7 @@
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::Photo as GqlPhoto,
-    models::photo::{Error as PhotoError, Photo},
+    models::photo::{db::Error as PhotoError, Photo},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
