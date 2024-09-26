@@ -23,6 +23,7 @@ fn index() -> &'static str {
 #[rocket::main]
 async fn main() -> Result<(), Error> {
     dotenvy::dotenv().context(DotenvSnafu)?;
+    pretty_env_logger::init();
 
     let rocket = rocket::build();
     let figment = rocket.figment();
