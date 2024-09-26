@@ -11,13 +11,14 @@ use std::{
     hash::{Hash, Hasher},
     sync::Arc,
 };
+use std::collections::hash_map::Entry;
 
 impl Loader<TagId> for AppLoader {
     type Value = GqlTag;
     type Error = Arc<Error>;
 
     async fn load(&self, ids: &[TagId]) -> Result<HashMap<TagId, Self::Value>, Self::Error> {
-        let ids: Vec<String> = ids.into_iter().map(|i| i.0.clone()).collect();
+        let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
         let values = Tag::find_by_ids(&self.pool, &ids)
             .await
@@ -57,7 +58,7 @@ impl Loader<PhotoTagId> for AppLoader {
         &self,
         ids: &[PhotoTagId],
     ) -> Result<HashMap<PhotoTagId, Self::Value>, Self::Error> {
-        let ids: Vec<String> = ids.into_iter().map(|i| i.0.clone()).collect();
+        let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
         let values = Tag::find_by_photo_ids(&self.pool, &ids)
             .await
@@ -69,10 +70,11 @@ impl Loader<PhotoTagId> for AppLoader {
             let id = PhotoTagId::new(&photo_id);
             let gql_tag: GqlTag = tag.into();
 
-            if grouped.contains_key(&id) {
-                grouped.entry(id).and_modify(|d| d.push(gql_tag));
+            let entry = grouped.entry(id);
+            if let Entry::Vacant(e) = entry {
+                e.insert(vec![gql_tag]);
             } else {
-                grouped.insert(id, vec![gql_tag]);
+                entry.and_modify(|t| t.push(gql_tag));
             }
         }
 

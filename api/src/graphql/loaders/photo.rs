@@ -7,7 +7,7 @@ use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},
-    collections::HashMap,
+    collections::{HashMap, hash_map::Entry},
     hash::{Hash, Hasher},
     sync::Arc,
 };
@@ -20,7 +20,7 @@ impl Loader<TagPhotoId> for AppLoader {
         &self,
         ids: &[TagPhotoId],
     ) -> Result<HashMap<TagPhotoId, Self::Value>, Self::Error> {
-        let ids: Vec<String> = ids.into_iter().map(|i| i.0.clone()).collect();
+        let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
         let values = Photo::find_by_tag_ids(&self.pool, &ids)
             .await
@@ -31,11 +31,12 @@ impl Loader<TagPhotoId> for AppLoader {
         for (tag_id, photo) in values.into_iter() {
             let id = TagPhotoId::new(&tag_id);
             let gql: GqlPhoto = photo.into();
-
-            if grouped.contains_key(&id) {
-                grouped.entry(id).and_modify(|p| p.push(gql));
+            
+            let entry = grouped.entry(id);
+            if let Entry::Vacant(e) = entry {
+                e.insert(vec![gql]);
             } else {
-                grouped.insert(id, vec![gql]);
+                entry.and_modify(|p| p.push(gql));
             }
         }
 

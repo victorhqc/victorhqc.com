@@ -62,7 +62,7 @@ async fn find_by_name(pool: &SqlitePool, id: &str) -> Result<Tag, Error> {
     .await
     .context(SqlxSnafu)?;
 
-    Ok(tag.try_into()?)
+    tag.try_into()
 }
 
 async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {

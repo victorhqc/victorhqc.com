@@ -55,7 +55,7 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
     .await
     .context(SqlxSnafu)?;
 
-    Ok(exif.try_into()?)
+    exif.try_into()
 }
 
 async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {

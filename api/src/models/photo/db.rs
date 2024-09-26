@@ -84,7 +84,7 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
     .await
     .context(SqlxSnafu)?;
 
-    Ok(photo.try_into()?)
+    photo.try_into()
 }
 
 async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {

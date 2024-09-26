@@ -42,11 +42,7 @@ impl Photo {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
         let id = PhotoTagId::new(&self.id);
 
-        let tags = if let Some(t) = loader.load_one(id).await? {
-            t
-        } else {
-            vec![]
-        };
+        let tags = (loader.load_one(id).await?).unwrap_or_default();
 
         Ok(tags)
     }
