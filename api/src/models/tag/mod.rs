@@ -1,7 +1,7 @@
 pub mod db;
 
-use time::OffsetDateTime;
 use rocket::serde::Serialize;
+use time::OffsetDateTime;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Tag {

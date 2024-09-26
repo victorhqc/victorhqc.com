@@ -33,7 +33,7 @@ impl Loader<TagPhotoId> for AppLoader {
             let gql: GqlPhoto = photo.into();
 
             if grouped.contains_key(&id) {
-                grouped.entry(id).and_modify(|p | p.push(gql));
+                grouped.entry(id).and_modify(|p| p.push(gql));
             } else {
                 grouped.insert(id, vec![gql]);
             }
@@ -63,4 +63,3 @@ pub enum Error {
     #[snafu(display("{:?}", source))]
     QueryError { source: DbError },
 }
-
