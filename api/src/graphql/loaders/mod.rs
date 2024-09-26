@@ -1,6 +1,7 @@
 use sqlx::{Pool, Sqlite};
 
 pub mod photo;
+pub mod exif_meta;
 
 pub struct AppLoader {
     pub pool: Pool<Sqlite>,

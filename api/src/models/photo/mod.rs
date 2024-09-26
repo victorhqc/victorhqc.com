@@ -23,15 +23,15 @@ pub struct Photo {
 
 impl Photo {
     pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
-        db::get_photo_by_id(pool, id).await.context(DBSnafu)
+        db::find_by_id(pool, id).await.context(DBSnafu)
     }
 
     pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>, Error> {
-        db::get_photos_by_ids(pool, ids).await.context(DBSnafu)
+        db::find_by_ids(pool, ids).await.context(DBSnafu)
     }
 
     pub async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
-        db::get_all_photos(pool).await.context(DBSnafu)
+        db::find_all(pool).await.context(DBSnafu)
     }
 }
 

@@ -1,0 +1,115 @@
+use std::str::FromStr;
+use super::ExifMeta;
+use crate::models::Maker;
+use snafu::prelude::*;
+use sqlx::error::Error as SqlxError;
+use sqlx::{FromRow, SqlitePool};
+
+#[derive(Debug, FromRow)]
+pub struct DBExifMeta {
+    pub id: String,
+    pub iso: i64,
+    pub focal_length: f64,
+    pub exposure_compensation: f64,
+    pub aperture: f64,
+    pub maker: String,
+    pub crop_factor: f64,
+    pub camera_name: String,
+    pub lens_name: Option<String>,
+    pub fuji_recipe_id: Option<String>,
+}
+
+impl TryFrom<DBExifMeta> for ExifMeta {
+    type Error = Error;
+
+    fn try_from(value: DBExifMeta) -> Result<Self, Self::Error> {
+        let maker = Maker::from_str(&value.maker).context(MakerSnafu)?;
+
+        Ok(ExifMeta {
+            id: value.id,
+            iso: value.iso,
+            focal_length: value.focal_length,
+            exposure_compensation: value.exposure_compensation,
+            aperture: value.aperture,
+            maker,
+            crop_factor: value.crop_factor,
+            camera_name: value.camera_name,
+            lens_name: value.lens_name,
+            fuji_recipe_id: value.fuji_recipe_id,
+        })
+    }
+}
+
+pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
+    let exif = sqlx::query_as!(
+        DBExifMeta,
+        r#"
+    SELECT
+        id,
+        iso,
+        focal_length,
+        exposure_compensation,
+        aperture,
+        maker,
+        crop_factor,
+        camera_name,
+        lens_name,
+        fuji_recipe_id
+    FROM
+        exif_metas
+    WHERE
+        id = ?
+    "#,
+        id
+    )
+    .fetch_one(pool)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(exif.try_into()?)
+}
+
+pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+    let params = format!("?{}", ", ?".repeat(ids.len() - 1));
+
+    let query = format!(
+        r#"
+    SELECT
+        id,
+        iso,
+        focal_length,
+        exposure_compensation,
+        aperture,
+        maker,
+        crop_factor,
+        camera_name,
+        lens_name,
+        fuji_recipe_id
+    FROM
+        exif_metas
+    WHERE
+        id IN ( { } )
+    "#,
+        params
+    );
+
+    let mut query = sqlx::query_as::<_, DBExifMeta>(&query);
+
+    for id in ids {
+        query = query.bind(id);
+    }
+
+    let metas = query.fetch_all(pool).await.context(SqlxSnafu)?;
+    let metas: Vec<ExifMeta> = metas.into_iter().map(|m| m.try_into().unwrap()).collect();
+
+    Ok(metas)
+}
+
+#[derive(Debug, Snafu)]
+pub enum Error {
+    #[snafu(display("Failed to execute query: {:?}", source))]
+    Sqlx { source: SqlxError },
+
+    #[snafu(display("Failed to parse Maker {:?}", source))]
+    Maker { source: strum::ParseError },
+}

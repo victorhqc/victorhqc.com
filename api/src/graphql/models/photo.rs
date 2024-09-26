@@ -1,8 +1,13 @@
+use super::ExifMeta;
+use crate::graphql::loaders::exif_meta::ExifMetaId;
+use crate::graphql::loaders::AppLoader;
 use crate::models::{photo::Photo as PhotoModel, FileType};
-use async_graphql::{SimpleObject, ID};
+use async_graphql::dataloader::DataLoader;
+use async_graphql::{ComplexObject, Context, Result, SimpleObject, ID};
 use time::format_description;
 
 #[derive(SimpleObject, Clone)]
+#[graphql(complex)]
 pub struct Photo {
     pub id: ID,
     pub src: String,
@@ -14,6 +19,23 @@ pub struct Photo {
     pub created_at: String,
     pub updated_at: String,
     pub deleted: bool,
+
+    #[graphql(skip)]
+    exif_meta_id: String,
+}
+
+#[ComplexObject]
+impl Photo {
+    async fn exif_meta(&self, ctx: &Context<'_>) -> Result<ExifMeta> {
+        let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
+        let id = ExifMetaId::new(&self.exif_meta_id);
+        let exif_meta: ExifMeta = loader
+            .load_one(id)
+            .await?
+            .expect("Photo has no such Exif Metadata");
+
+        Ok(exif_meta)
+    }
 }
 
 impl From<PhotoModel> for Photo {
@@ -37,6 +59,7 @@ impl From<PhotoModel> for Photo {
             created_at: format!("{}", photo.created_at),
             updated_at: format!("{}", photo.updated_at),
             deleted: photo.deleted,
+            exif_meta_id: photo.exif_meta_id,
         }
     }
 }

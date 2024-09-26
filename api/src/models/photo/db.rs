@@ -68,7 +68,7 @@ impl TryFrom<DBPhoto> for Photo {
     }
 }
 
-pub async fn get_photo_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
+pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
     let photo = sqlx::query_as!(
         DBPhoto,
         r#"
@@ -101,7 +101,7 @@ pub async fn get_photo_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error
     Ok(photo.try_into()?)
 }
 
-pub async fn get_all_photos(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
+pub async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
     let photos = sqlx::query_as!(
         DBPhoto,
         r#"
@@ -134,7 +134,7 @@ pub async fn get_all_photos(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
     Ok(photos)
 }
 
-pub async fn get_photos_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>, Error> {
+pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Photo>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(

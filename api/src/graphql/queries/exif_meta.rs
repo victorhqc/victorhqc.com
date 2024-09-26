@@ -1,0 +1,17 @@
+use crate::graphql::context::get_pool;
+use crate::graphql::models::ExifMeta as GqlExifMeta;
+use crate::models::exifmeta::ExifMeta;
+use async_graphql::{Context, Object, Result, ID};
+
+#[derive(Default)]
+pub struct ExifMetaQuery;
+
+#[Object]
+impl ExifMetaQuery {
+    pub async fn exif_meta(&self, ctx: &Context<'_>, id: ID) -> Result<GqlExifMeta> {
+        let pool = get_pool(ctx).await?;
+        let value = ExifMeta::find_by_id(pool, &id).await?;
+
+        Ok(value.into())
+    }
+}

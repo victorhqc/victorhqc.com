@@ -1,3 +1,4 @@
+pub mod exifmeta;
 pub mod fujifilm;
 pub mod photo;
 
@@ -10,25 +11,11 @@ use rocket::serde::{Deserialize, Serialize};
 // use std::string::ToString;
 use async_graphql::Enum;
 use strum_macros::{Display as EnumDisplay, EnumString};
-use time::{Date, OffsetDateTime};
+use time::OffsetDateTime;
 
 #[derive(sqlx::Type, Debug, Clone)]
 #[sqlx(transparent)]
 pub struct Timestamp(i64);
-
-#[derive(Clone, Debug, Serialize)]
-pub struct ExifMeta {
-    pub id: String,
-    pub iso: i64,
-    pub focal_length: f64,
-    pub exposure_compensation: f64,
-    pub aperture: f64,
-    pub maker: Maker,
-    pub crop_factor: f64,
-    pub camera_name: String,
-    pub lens_name: Option<String>,
-    pub fuji_recipe_id: Option<String>,
-}
 
 #[derive(Clone, Debug)]
 pub struct Tag {
@@ -81,7 +68,19 @@ pub enum FileType {
     Jpeg,
 }
 
-#[derive(Clone, Debug, Serialize, EnumString, EnumDisplay, sqlx::Type)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Deserialize,
+    Serialize,
+    EnumString,
+    EnumDisplay,
+    sqlx::Type,
+    Enum,
+    Eq,
+    PartialEq,
+)]
 pub enum Maker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,

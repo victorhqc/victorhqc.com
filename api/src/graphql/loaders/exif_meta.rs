@@ -1,7 +1,7 @@
 use crate::{
     graphql::loaders::AppLoader,
-    graphql::models::Photo as GqlPhoto,
-    models::photo::{Error as PhotoError, Photo},
+    graphql::models::ExifMeta as GqlExifMeta,
+    models::exifmeta::{Error as ExifMetaError, ExifMeta},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
@@ -12,25 +12,25 @@ use std::{
     sync::Arc,
 };
 
-impl Loader<PhotoId> for AppLoader {
-    type Value = GqlPhoto;
+impl Loader<ExifMetaId> for AppLoader {
+    type Value = GqlExifMeta;
     type Error = Arc<Error>;
 
     async fn load(
         &self,
-        photo_ids: &[PhotoId],
-    ) -> Result<HashMap<PhotoId, Self::Value>, Self::Error> {
+        photo_ids: &[ExifMetaId],
+    ) -> Result<HashMap<ExifMetaId, Self::Value>, Self::Error> {
         let ids: Vec<String> = photo_ids.into_iter().map(|i| i.0.clone()).collect();
 
-        let photos = Photo::find_by_ids(&self.pool, &ids)
+        let values = ExifMeta::find_by_ids(&self.pool, &ids)
             .await
             .context(QuerySnafu)?;
 
-        let mut grouped: HashMap<PhotoId, Self::Value> = HashMap::new();
-        for photo in photos.into_iter() {
-            let id = PhotoId::new(&photo.id);
+        let mut grouped: HashMap<ExifMetaId, Self::Value> = HashMap::new();
+        for value in values.into_iter() {
+            let id = ExifMetaId::new(&value.id);
 
-            grouped.insert(id, photo.into());
+            grouped.insert(id, value.into());
         }
 
         Ok(grouped)
@@ -38,15 +38,15 @@ impl Loader<PhotoId> for AppLoader {
 }
 
 #[derive(Clone, Eq, PartialEq)]
-pub struct PhotoId(String);
+pub struct ExifMetaId(String);
 
-impl PhotoId {
+impl ExifMetaId {
     pub fn new(id: &str) -> Self {
         Self(String::from(id))
     }
 }
 
-impl Hash for PhotoId {
+impl Hash for ExifMetaId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.0.hash(state);
     }
@@ -55,5 +55,5 @@ impl Hash for PhotoId {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("{:?}", source))]
-    QueryError { source: PhotoError },
+    QueryError { source: ExifMetaError },
 }
