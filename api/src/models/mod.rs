@@ -1,4 +1,4 @@
-pub mod exifmeta;
+pub mod exif_meta;
 pub mod fujifilm;
 pub mod photo;
 

@@ -1,5 +1,5 @@
 use crate::models::Maker;
-use crate::models::exifmeta::ExifMeta as ExifMetaModel;
+use crate::models::exif_meta::ExifMeta as ExifMetaModel;
 use async_graphql::{SimpleObject, ID};
 
 #[derive(SimpleObject, Clone)]

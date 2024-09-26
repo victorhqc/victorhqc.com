@@ -1,6 +1,6 @@
 use crate::graphql::context::get_pool;
 use crate::graphql::models::ExifMeta as GqlExifMeta;
-use crate::models::exifmeta::ExifMeta;
+use crate::models::exif_meta::ExifMeta;
 use async_graphql::{Context, Object, Result, ID};
 
 #[derive(Default)]
