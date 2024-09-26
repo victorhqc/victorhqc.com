@@ -1,8 +1,10 @@
 use super::graph::RootSchema;
+#[cfg(debug_assertions)]
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
 use rocket::{response::content, State};
 
+#[cfg(debug_assertions)]
 #[get("/graphql")]
 pub fn graphql_playground() -> content::RawHtml<String> {
     content::RawHtml(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
