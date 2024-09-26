@@ -1,10 +1,11 @@
-use super::ExifMeta;
+use super::{ExifMeta, Tag};
 use crate::graphql::loaders::exif_meta::ExifMetaId;
 use crate::graphql::loaders::AppLoader;
 use crate::models::{photo::Photo as PhotoModel, FileType};
 use async_graphql::dataloader::DataLoader;
 use async_graphql::{ComplexObject, Context, Result, SimpleObject, ID};
 use time::format_description;
+use crate::graphql::loaders::tag::PhotoTagId;
 
 #[derive(SimpleObject, Clone)]
 #[graphql(complex)]
@@ -35,6 +36,19 @@ impl Photo {
             .expect("Photo has no such Exif Metadata");
 
         Ok(exif_meta)
+    }
+
+    async fn tags(&self, ctx: &Context<'_>) -> Result<Vec<Tag>> {
+        let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
+        let id = PhotoTagId::new(&self.id);
+
+        let tags = if let Some(t) = loader.load_one(id).await? {
+          t
+        } else {
+            vec![]
+        };
+
+        Ok(tags)
     }
 }
 

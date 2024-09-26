@@ -1,7 +1,7 @@
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::Photo as GqlPhoto,
-    models::photo::{db::Error as PhotoError, Photo},
+    models::photo::{db::Error as DbError, Photo},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
@@ -22,15 +22,15 @@ impl Loader<PhotoId> for AppLoader {
     ) -> Result<HashMap<PhotoId, Self::Value>, Self::Error> {
         let ids: Vec<String> = photo_ids.into_iter().map(|i| i.0.clone()).collect();
 
-        let photos = Photo::find_by_ids(&self.pool, &ids)
+        let values = Photo::find_by_ids(&self.pool, &ids)
             .await
             .context(QuerySnafu)?;
 
         let mut grouped: HashMap<PhotoId, Self::Value> = HashMap::new();
-        for photo in photos.into_iter() {
-            let id = PhotoId::new(&photo.id);
+        for value in values.into_iter() {
+            let id = PhotoId::new(&value.id);
 
-            grouped.insert(id, photo.into());
+            grouped.insert(id, value.into());
         }
 
         Ok(grouped)
@@ -55,5 +55,5 @@ impl Hash for PhotoId {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("{:?}", source))]
-    QueryError { source: PhotoError },
+    QueryError { source: DbError },
 }

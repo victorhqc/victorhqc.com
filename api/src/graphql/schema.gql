@@ -36,6 +36,7 @@ type Photo {
 	updatedAt: String!
 	deleted: Boolean!
 	exifMeta: ExifMeta!
+	tags: [Tag!]!
 }
 
 type RootQuery {
@@ -44,6 +45,14 @@ type RootQuery {
 	exifMeta(id: ID!): ExifMeta!
 }
 
+
+type Tag {
+	id: ID!
+	name: String!
+	createdAt: String!
+	updatedAt: String!
+	deleted: Boolean!
+}
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

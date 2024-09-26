@@ -1,7 +1,7 @@
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::ExifMeta as GqlExifMeta,
-    models::exif_meta::{db::Error as ExifMetaError, ExifMeta},
+    models::exif_meta::{db::Error as DbError, ExifMeta},
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
@@ -55,5 +55,5 @@ impl Hash for ExifMetaId {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("{:?}", source))]
-    QueryError { source: ExifMetaError },
+    QueryError { source: DbError },
 }

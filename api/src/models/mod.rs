@@ -1,27 +1,18 @@
 pub mod exif_meta;
 pub mod fujifilm;
 pub mod photo;
+pub mod tag;
 
 use crate::models::fujifilm::{
     DRangePriority, DynamicRange, GrainSize, GrainStrength, SettingStrength, TransSensor,
 };
-use rocket::serde::{Deserialize, Serialize};
 use async_graphql::Enum;
+use rocket::serde::{Deserialize, Serialize};
 use strum_macros::{Display as EnumDisplay, EnumString};
-use time::OffsetDateTime;
 
 #[derive(sqlx::Type, Debug, Clone)]
 #[sqlx(transparent)]
 pub struct Timestamp(i64);
-
-#[derive(Clone, Debug)]
-pub struct Tag {
-    pub id: String,
-    pub name: String,
-    pub created_at: OffsetDateTime,
-    pub updated_at: OffsetDateTime,
-    pub deleted: bool,
-}
 
 #[derive(Clone, Debug)]
 pub struct FujifilmRecipe {
