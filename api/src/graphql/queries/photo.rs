@@ -14,4 +14,12 @@ impl PhotoQuery {
 
         Ok(photo.into())
     }
+
+    pub async fn photos(&self, ctx: &Context<'_>) -> Result<Vec<GqlPhoto>> {
+        let pool = get_pool(ctx).await?;
+        let photos = Photo::find_all(pool).await?;
+        let photos = photos.into_iter().map(|p| p.into()).collect();
+
+        Ok(photos)
+    }
 }
