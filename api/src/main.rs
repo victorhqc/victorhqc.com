@@ -7,6 +7,7 @@ use crate::graphql::routes::{graphql_playground, graphql_query, graphql_request}
 use crate::graphql::{graph::RootSchema, queries::RootQuery, sdl_gen};
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use log::info;
+use rocket::tokio::spawn;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
 
@@ -44,7 +45,7 @@ async fn main() -> Result<(), Error> {
 
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
         .data(context)
-        .data(DataLoader::new(loader, async_std::task::spawn))
+        .data(DataLoader::new(loader, spawn))
         .finish();
 
     #[cfg(debug_assertions)]

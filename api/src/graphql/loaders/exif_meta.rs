@@ -18,9 +18,9 @@ impl Loader<ExifMetaId> for AppLoader {
 
     async fn load(
         &self,
-        photo_ids: &[ExifMetaId],
+        ids: &[ExifMetaId],
     ) -> Result<HashMap<ExifMetaId, Self::Value>, Self::Error> {
-        let ids: Vec<String> = photo_ids.into_iter().map(|i| i.0.clone()).collect();
+        let ids: Vec<String> = ids.into_iter().map(|i| i.0.clone()).collect();
 
         let values = ExifMeta::find_by_ids(&self.pool, &ids)
             .await
