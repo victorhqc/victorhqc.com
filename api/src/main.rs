@@ -39,10 +39,13 @@ async fn main() -> Result<(), Error> {
     let context = Context::default(db_pool.clone());
     let loader = AppLoader::default(db_pool.clone());
 
-    sqlx::migrate!()
-        .run(&db_pool)
-        .await
-        .context(MigrationSnafu)?;
+    #[cfg(debug_assertions)]
+    {
+        sqlx::migrate!()
+            .run(&db_pool)
+            .await
+            .context(MigrationSnafu)?;
+    }
 
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
         .data(context)
