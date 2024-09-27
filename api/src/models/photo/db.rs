@@ -133,7 +133,6 @@ async fn find_by_tag_ids(
         filetype,
         date_taken,
         city,
-        exif_meta_id,
         p.created_at,
         p.updated_at,
         p.deleted
