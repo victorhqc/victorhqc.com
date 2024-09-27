@@ -1,3 +1,4 @@
+use crate::utils::hashmap::InsertOrPush;
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::Photo as GqlPhoto,
@@ -7,7 +8,7 @@ use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},
-    collections::{hash_map::Entry, HashMap},
+    collections::HashMap,
     hash::{Hash, Hasher},
     sync::Arc,
 };
@@ -32,12 +33,7 @@ impl Loader<PhotoByTagId> for AppLoader {
             let id = PhotoByTagId::new(&tag_id);
             let gql: GqlPhoto = photo.into();
 
-            let entry = grouped.entry(id);
-            if let Entry::Vacant(e) = entry {
-                e.insert(vec![gql]);
-            } else {
-                entry.and_modify(|p| p.push(gql));
-            }
+            grouped.insert_or_push(id, gql);
         }
 
         Ok(grouped)

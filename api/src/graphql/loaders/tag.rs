@@ -1,3 +1,4 @@
+use crate::utils::hashmap::InsertOrPush;
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::Tag as GqlTag,
@@ -70,12 +71,7 @@ impl Loader<TagByPhotoId> for AppLoader {
             let id = TagByPhotoId::new(&photo_id);
             let gql_tag: GqlTag = tag.into();
 
-            let entry = grouped.entry(id);
-            if let Entry::Vacant(e) = entry {
-                e.insert(vec![gql_tag]);
-            } else {
-                entry.and_modify(|t| t.push(gql_tag));
-            }
+            grouped.insert_or_push(id, gql_tag);
         }
 
         Ok(grouped)

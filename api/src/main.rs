@@ -14,6 +14,7 @@ use sqlx::sqlite::SqlitePool;
 mod graphql;
 mod models;
 mod routes;
+mod utils;
 
 #[get("/")]
 fn index() -> &'static str {
