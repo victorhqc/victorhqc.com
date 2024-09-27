@@ -1,4 +1,4 @@
-use crate::graphql::loaders::photo::TagPhotoId;
+use crate::graphql::loaders::photo::PhotoByTagId;
 use crate::graphql::loaders::AppLoader;
 use crate::graphql::models::Photo;
 use crate::models::tag::Tag as TagModel;
@@ -19,7 +19,7 @@ pub struct Tag {
 impl Tag {
     async fn photos(&self, ctx: &Context<'_>) -> Result<Vec<Photo>> {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
-        let id = TagPhotoId::new(&self.id);
+        let id = PhotoByTagId::new(&self.id);
 
         let photos = (loader.load_one(id).await?).unwrap_or_default();
 

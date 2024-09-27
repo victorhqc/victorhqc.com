@@ -1,6 +1,6 @@
 use super::{ExifMeta, Tag};
-use crate::graphql::loaders::exif_meta::PhotoId;
-use crate::graphql::loaders::tag::PhotoTagId;
+use crate::graphql::loaders::exif_meta::ExifMetaByPhotoId;
+use crate::graphql::loaders::tag::TagByPhotoId;
 use crate::graphql::loaders::AppLoader;
 use crate::models::{photo::Photo as PhotoModel, FileType};
 use async_graphql::dataloader::DataLoader;
@@ -26,7 +26,7 @@ pub struct Photo {
 impl Photo {
     async fn exif_meta(&self, ctx: &Context<'_>) -> Result<ExifMeta> {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
-        let id = PhotoId::new(&self.id);
+        let id = ExifMetaByPhotoId::new(&self.id);
         let exif_meta: ExifMeta = loader
             .load_one(id)
             .await?
@@ -37,7 +37,7 @@ impl Photo {
 
     async fn tags(&self, ctx: &Context<'_>) -> Result<Vec<Tag>> {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
-        let id = PhotoTagId::new(&self.id);
+        let id = TagByPhotoId::new(&self.id);
 
         let tags = (loader.load_one(id).await?).unwrap_or_default();
 

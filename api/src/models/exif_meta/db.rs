@@ -25,7 +25,10 @@ impl ExifMeta {
         find_by_id(pool, id).await
     }
 
-    pub async fn find_by_photo_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+    pub async fn find_by_photo_ids(
+        pool: &SqlitePool,
+        ids: &Vec<String>,
+    ) -> Result<Vec<ExifMeta>, Error> {
         find_by_photo_ids(pool, ids).await
     }
 }
