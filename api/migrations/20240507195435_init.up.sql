@@ -22,23 +22,6 @@ CREATE TABLE fuji_recipes (
   monochromatic_color TEXT NULL
 );
 
-CREATE TABLE exif_metas (
-  id TEXT PRIMARY KEY NOT NULL,
-  iso INTEGER NOT NULL,
-  focal_length REAL NOT NULL,
-  exposure_compensation REAL NOT NULL,
-  aperture REAL NOT NULL,
-  maker TEXT NOT NULL,
-  crop_factor REAL NOT NULL,
-  camera_name TEXT NOT NULL,
-  lens_name TEXT NULL,
-  fuji_recipe_id TEXT NULL,
-  FOREIGN KEY (fuji_recipe_id)
-    REFERENCES fuji_recipes (id)
-      ON DELETE SET NULL
-      ON UPDATE CASCADE
-);
-
 CREATE TABLE photos (
     id TEXT PRIMARY KEY NOT NULL,
     src TEXT NOT NULL UNIQUE,
@@ -49,12 +32,30 @@ CREATE TABLE photos (
     city TEXT NULL,
     created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
     updated_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
-    deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    exif_meta_id TEXT NOT NULL UNIQUE,
-    FOREIGN KEY (exif_meta_id)
-      REFERENCES exif_metas (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    deleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE exif_metas (
+  id TEXT PRIMARY KEY NOT NULL,
+  iso INTEGER NOT NULL,
+  focal_length REAL NOT NULL,
+  exposure_compensation REAL NOT NULL,
+  aperture REAL NOT NULL,
+  maker TEXT NOT NULL,
+  crop_factor REAL NOT NULL,
+  camera_name TEXT NOT NULL,
+  lens_name TEXT NULL,
+  photo_id TEXT NOT NULL,
+  fuji_recipe_id TEXT NULL,
+  FOREIGN KEY (fuji_recipe_id)
+    REFERENCES fuji_recipes (id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  FOREIGN KEY (photo_id)
+    REFERENCES photos (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  UNIQUE (photo_id)
 );
 
 CREATE TABLE tags (
@@ -74,7 +75,7 @@ CREATE TABLE photo_tags (
   FOREIGN KEY (tag_id)
     REFERENCES tags (id)
       ON DELETE CASCADE
-      ON UPDATE CASCADE
+      ON UPDATE CASCADE,
   FOREIGN KEY (photo_id)
     REFERENCES photos (id)
       ON DELETE CASCADE

@@ -15,5 +15,6 @@ pub struct ExifMeta {
     pub crop_factor: f64,
     pub camera_name: String,
     pub lens_name: Option<String>,
+    pub photo_id: String,
     pub fuji_recipe_id: Option<String>,
 }

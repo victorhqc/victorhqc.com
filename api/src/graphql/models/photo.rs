@@ -1,5 +1,5 @@
 use super::{ExifMeta, Tag};
-use crate::graphql::loaders::exif_meta::ExifMetaId;
+use crate::graphql::loaders::exif_meta::PhotoId;
 use crate::graphql::loaders::tag::PhotoTagId;
 use crate::graphql::loaders::AppLoader;
 use crate::models::{photo::Photo as PhotoModel, FileType};
@@ -20,16 +20,13 @@ pub struct Photo {
     pub created_at: String,
     pub updated_at: String,
     pub deleted: bool,
-
-    #[graphql(skip)]
-    exif_meta_id: String,
 }
 
 #[ComplexObject]
 impl Photo {
     async fn exif_meta(&self, ctx: &Context<'_>) -> Result<ExifMeta> {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
-        let id = ExifMetaId::new(&self.exif_meta_id);
+        let id = PhotoId::new(&self.id);
         let exif_meta: ExifMeta = loader
             .load_one(id)
             .await?
@@ -69,7 +66,6 @@ impl From<PhotoModel> for Photo {
             created_at: format!("{}", photo.created_at),
             updated_at: format!("{}", photo.updated_at),
             deleted: photo.deleted,
-            exif_meta_id: photo.exif_meta_id,
         }
     }
 }

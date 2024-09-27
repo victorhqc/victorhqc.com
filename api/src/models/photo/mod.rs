@@ -13,7 +13,6 @@ pub struct Photo {
     pub filetype: FileType,
     pub date_taken: Option<Date>,
     pub city: Option<String>,
-    pub exif_meta_id: String,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
     pub deleted: bool,

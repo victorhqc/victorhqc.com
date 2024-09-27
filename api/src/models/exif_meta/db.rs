@@ -16,6 +16,7 @@ struct DBExifMeta {
     pub crop_factor: f64,
     pub camera_name: String,
     pub lens_name: Option<String>,
+    pub photo_id: String,
     pub fuji_recipe_id: Option<String>,
 }
 
@@ -24,8 +25,8 @@ impl ExifMeta {
         find_by_id(pool, id).await
     }
 
-    pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
-        find_by_ids(pool, ids).await
+    pub async fn find_by_photo_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+        find_by_photo_ids(pool, ids).await
     }
 }
 
@@ -43,6 +44,7 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
         crop_factor,
         camera_name,
         lens_name,
+        photo_id,
         fuji_recipe_id
     FROM
         exif_metas
@@ -58,7 +60,7 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
     exif.try_into()
 }
 
-async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+async fn find_by_photo_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(
@@ -73,11 +75,12 @@ async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMet
         crop_factor,
         camera_name,
         lens_name,
+        photo_id,
         fuji_recipe_id
     FROM
         exif_metas
     WHERE
-        id IN ( { } )
+        photo_id IN ( { } )
     "#,
         params
     );
@@ -110,6 +113,7 @@ impl TryFrom<DBExifMeta> for ExifMeta {
             crop_factor: value.crop_factor,
             camera_name: value.camera_name,
             lens_name: value.lens_name,
+            photo_id: value.photo_id,
             fuji_recipe_id: value.fuji_recipe_id,
         })
     }

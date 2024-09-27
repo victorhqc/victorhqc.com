@@ -12,23 +12,24 @@ use std::{
     sync::Arc,
 };
 
-impl Loader<ExifMetaId> for AppLoader {
+impl Loader<PhotoId> for AppLoader {
     type Value = GqlExifMeta;
     type Error = Arc<Error>;
 
     async fn load(
         &self,
-        ids: &[ExifMetaId],
-    ) -> Result<HashMap<ExifMetaId, Self::Value>, Self::Error> {
+        ids: &[PhotoId],
+    ) -> Result<HashMap<PhotoId, Self::Value>, Self::Error> {
         let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
-        let values = ExifMeta::find_by_ids(&self.pool, &ids)
+        debug!("Loading exif meta with ids: {:?}", ids);
+        let values = ExifMeta::find_by_photo_ids(&self.pool, &ids)
             .await
             .context(QuerySnafu)?;
 
-        let mut grouped: HashMap<ExifMetaId, Self::Value> = HashMap::new();
+        let mut grouped: HashMap<PhotoId, Self::Value> = HashMap::new();
         for value in values.into_iter() {
-            let id = ExifMetaId::new(&value.id);
+            let id = PhotoId::new(&value.photo_id);
 
             grouped.insert(id, value.into());
         }
@@ -38,15 +39,15 @@ impl Loader<ExifMetaId> for AppLoader {
 }
 
 #[derive(Clone, Eq, PartialEq)]
-pub struct ExifMetaId(String);
+pub struct PhotoId(String);
 
-impl ExifMetaId {
+impl PhotoId {
     pub fn new(id: &str) -> Self {
         Self(String::from(id))
     }
 }
 
-impl Hash for ExifMetaId {
+impl Hash for PhotoId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.0.hash(state);
     }
