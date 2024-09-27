@@ -25,7 +25,7 @@ and photos management, but that's a maybe and definitely in the future.
 - Rust >= 1.78.0
 - sqlx-cli:
 
-  ```bash
+  ```sh
   cargo install sqlx-cli
   cargo install cargo-watch
   ```
@@ -43,28 +43,41 @@ DB and uploads the file to an S3 Bucket.
 
 Make sure you're in the `api` path first.
 
-```bash
+```sh
 cd api
 ```
 
 Prepare the environment variables by creating an `.env` file
 
-```bash
+```sh
 cp .env.example .env
 ```
 
 Create an initial DB
 
-```bash
+```sh
 sqlx db create
 sqlx db setup
 ```
 
 Run the project
 
-```bash
+```sh
 cargo run
 
 # To recompile on change
 cargo watch -x run
+```
+
+## Database
+
+Add a new migration
+
+```sh
+sqlx migrate add -r <name>
+```
+
+Run  migrations again
+```sh
+sqlx migrate run
 ```
