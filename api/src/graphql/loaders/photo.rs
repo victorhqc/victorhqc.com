@@ -1,8 +1,8 @@
-use crate::utils::hashmap::InsertOrPush;
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::Photo as GqlPhoto,
     models::photo::{db::Error as DbError, Photo},
+    utils::hashmap::InsertOrPush,
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;

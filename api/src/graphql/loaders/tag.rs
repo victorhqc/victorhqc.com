@@ -1,12 +1,11 @@
-use crate::utils::hashmap::InsertOrPush;
 use crate::{
     graphql::loaders::AppLoader,
     graphql::models::Tag as GqlTag,
     models::tag::{db::Error as DbError, Tag},
+    utils::hashmap::InsertOrPush,
 };
 use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
-use std::collections::hash_map::Entry;
 use std::{
     cmp::{Eq, PartialEq},
     collections::HashMap,

@@ -1,5 +1,4 @@
-use crate::graphql::context::get_pool;
-use crate::graphql::models::Tag as GqlTag;
+use crate::graphql::{context::get_pool, models::Tag as GqlTag};
 use crate::models::tag::Tag;
 use async_graphql::{Context, Object, Result};
 

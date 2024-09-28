@@ -1,5 +1,5 @@
-use super::Photo;
-use crate::models::{FileType, Timestamp};
+use super::{FileType, Photo};
+use crate::models::Timestamp;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};

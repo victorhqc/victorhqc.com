@@ -1,10 +1,7 @@
 use super::{ExifMeta, Tag};
-use crate::graphql::loaders::exif_meta::ExifMetaByPhotoId;
-use crate::graphql::loaders::tag::TagByPhotoId;
-use crate::graphql::loaders::AppLoader;
-use crate::models::{photo::Photo as PhotoModel, FileType};
-use async_graphql::dataloader::DataLoader;
-use async_graphql::{ComplexObject, Context, Result, SimpleObject, ID};
+use crate::graphql::loaders::{exif_meta::ExifMetaByPhotoId, tag::TagByPhotoId, AppLoader};
+use crate::models::photo::{FileType, Photo as PhotoModel};
+use async_graphql::{dataloader::DataLoader, ComplexObject, Context, Result, SimpleObject, ID};
 use time::format_description;
 
 #[derive(SimpleObject, Clone)]

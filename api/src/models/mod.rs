@@ -51,24 +51,6 @@ pub struct FujifilmRecipe {
     Eq,
     PartialEq,
 )]
-pub enum FileType {
-    #[strum(serialize = "JPEG")]
-    Jpeg,
-}
-
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Deserialize,
-    Serialize,
-    EnumString,
-    EnumDisplay,
-    sqlx::Type,
-    Enum,
-    Eq,
-    PartialEq,
-)]
 pub enum Maker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,

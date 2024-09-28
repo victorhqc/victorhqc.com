@@ -1,7 +1,8 @@
 pub mod db;
 
-use crate::models::FileType;
-use rocket::serde::Serialize;
+use async_graphql::Enum;
+use rocket::serde::{Deserialize, Serialize};
+use strum_macros::{Display as EnumDisplay, EnumString};
 use time::{Date, OffsetDateTime};
 
 #[derive(Clone, Debug, Serialize)]
@@ -16,4 +17,22 @@ pub struct Photo {
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
     pub deleted: bool,
+}
+
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Deserialize,
+    Serialize,
+    EnumString,
+    EnumDisplay,
+    sqlx::Type,
+    Enum,
+    Eq,
+    PartialEq,
+)]
+pub enum FileType {
+    #[strum(serialize = "JPEG")]
+    Jpeg,
 }

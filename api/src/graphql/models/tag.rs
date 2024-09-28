@@ -1,9 +1,9 @@
-use crate::graphql::loaders::photo::PhotoByTagId;
-use crate::graphql::loaders::AppLoader;
-use crate::graphql::models::Photo;
+use crate::graphql::{
+    loaders::{photo::PhotoByTagId, AppLoader},
+    models::Photo,
+};
 use crate::models::tag::Tag as TagModel;
-use async_graphql::dataloader::DataLoader;
-use async_graphql::{ComplexObject, Context, Result, SimpleObject, ID};
+use async_graphql::{dataloader::DataLoader, ComplexObject, Context, Result, SimpleObject, ID};
 
 #[derive(SimpleObject, Clone)]
 #[graphql(complex)]
