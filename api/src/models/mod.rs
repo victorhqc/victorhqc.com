@@ -6,7 +6,6 @@ pub mod tag;
 use crate::models::fujifilm::{
     DRangePriority, DynamicRange, GrainSize, GrainStrength, SettingStrength, TransSensor,
 };
-use async_graphql::Enum;
 use rocket::serde::{Deserialize, Serialize};
 use strum_macros::{Display as EnumDisplay, EnumString};
 
@@ -36,28 +35,6 @@ pub struct FujifilmRecipe {
     pub color_chrome_effect: Option<SettingStrength>,
     pub color_chrome_fx_blue: Option<SettingStrength>,
     pub monochromatic_color: Option<String>,
-}
-
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Deserialize,
-    Serialize,
-    EnumString,
-    EnumDisplay,
-    sqlx::Type,
-    Enum,
-    Eq,
-    PartialEq,
-)]
-pub enum Maker {
-    #[strum(serialize = "FUJIFILM")]
-    Fujifilm,
-    #[strum(serialize = "KONICA")]
-    Konica,
-    #[strum(serialize = "CANON")]
-    Canon,
 }
 
 #[derive(Clone, Debug, EnumString, EnumDisplay)]

@@ -1,5 +1,4 @@
-use super::ExifMeta;
-use crate::models::Maker;
+use super::{ExifMeta, Maker};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
