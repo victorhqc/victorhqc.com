@@ -1,6 +1,6 @@
 -- Add up migration script here
 
-CREATE TABLE films (
+CREATE TABLE IF NOT EXISTS films (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL UNIQUE,
   iso INTEGER NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE films (
 
 ALTER TABLE exif_metas RENAME TO exif_metas_OLD;
 
-CREATE TABLE exif_metas (
+CREATE TABLE IF NOT EXISTS exif_metas (
   id TEXT PRIMARY KEY NOT NULL,
   iso INTEGER NOT NULL,
   focal_length REAL NOT NULL,

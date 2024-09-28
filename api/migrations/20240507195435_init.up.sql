@@ -1,4 +1,4 @@
-CREATE TABLE fuji_recipes (
+CREATE TABLE IF NOT EXISTS fuji_recipes (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   author TEXT NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE fuji_recipes (
   monochromatic_color TEXT NULL
 );
 
-CREATE TABLE photos (
+CREATE TABLE IF NOT EXISTS photos (
     id TEXT PRIMARY KEY NOT NULL,
     src TEXT NOT NULL UNIQUE,
     filename TEXT NOT NULL UNIQUE,
@@ -35,7 +35,7 @@ CREATE TABLE photos (
     deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE exif_metas (
+CREATE TABLE IF NOT EXISTS exif_metas (
   id TEXT PRIMARY KEY NOT NULL,
   iso INTEGER NOT NULL,
   focal_length REAL NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE exif_metas (
   UNIQUE (photo_id)
 );
 
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL UNIQUE,
   created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE tags (
   deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE photo_tags (
+CREATE TABLE IF NOT EXISTS photo_tags (
   id TEXT PRIMARY KEY NOT NULL,
   tag_id TEXT NOT NULL,
   photo_id TEXT NOT NULL,
