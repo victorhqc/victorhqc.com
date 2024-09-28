@@ -33,7 +33,7 @@ jobs:
 
             -   name: Install SQLX
                 run: |
-                    cargo install sqlx-cli
+                    cargo install sqlx-cli --no-default-features --features sqlite
 
             -   name: Init DB
                 run: |
