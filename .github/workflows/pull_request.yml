@@ -59,19 +59,19 @@ jobs:
                      cargo check
                 working-directory: api
                 env:
-                    DATABASE_URL: sqlite:${CARGO_MANIFEST_DIR}/github.sqlite
+                    DATABASE_URL: sqlite:github.sqlite
                     ROCKET_DATABASE_URL: sqlite:github.sqlite
 
             -   name: Run cargo fmt
                 run: cargo fmt --all --check
                 working-directory: api
                 env:
-                    DATABASE_URL: sqlite:${CARGO_MANIFEST_DIR}/github.sqlite
+                    DATABASE_URL: sqlite:github.sqlite
                     ROCKET_DATABASE_URL: sqlite:github.sqlite
 
             -   name: Run cargo clippy
                 run: cargo clippy -- -D warnings
                 working-directory: api
                 env:
-                    DATABASE_URL: sqlite:${CARGO_MANIFEST_DIR}/github.sqlite
+                    DATABASE_URL: sqlite:github.sqlite
                     ROCKET_DATABASE_URL: sqlite:github.sqlite
