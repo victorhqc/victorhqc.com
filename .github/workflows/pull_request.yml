@@ -1,0 +1,60 @@
+name: Pull Request
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+env:
+    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
+    ROCKET_DATABASE_URL: sqlite://github.sqlite
+
+jobs:
+    rust_check:
+        name: Rust Check
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ ubuntu-latest ]
+                rust: [ stable ]
+        steps:
+            -   uses: actions/checkout@v3
+
+            -   name: Install latest stable
+                uses: actions-rs/toolchain@v1
+                with:
+                    toolchain: stable
+                    override: true
+                    components: rustfmt, clippy
+
+            -   uses: Swatinem/rust-cache@v2
+                with:
+                    workspaces: |
+                        api
+
+            -   name: Generate Cargo.lock
+                uses: actions-rs/cargo@v1
+                with:
+                    command: generate-lockfile
+
+            -   name: Install SQLX
+                run: |
+                    cargo install sqlx-cli --no-default-features --features sqlite
+
+            -   name: Init DB
+                run: |
+                    cd api
+                    sqlx db setup
+
+            -   name: Run cargo check
+                run: cargo check
+                working-directory: api
+
+            -   name: Run cargo fmt
+                run: cargo fmt --all --check
+                working-directory: api
+
+            -   name: Run cargo clippy
+                run: cargo clippy -- -D warnings
+                working-directory: api

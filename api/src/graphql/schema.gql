@@ -1,0 +1,63 @@
+
+type ExifMeta {
+	id: ID!
+	iso: Int!
+	focalLength: Float!
+	exposureCompensation: Float!
+	aperture: Float!
+	maker: Maker!
+	cropFactor: Float!
+	cameraName: String!
+	lensName: String
+}
+
+enum FileType {
+	JPEG
+}
+
+
+
+
+enum Maker {
+	FUJIFILM
+	KONICA
+	CANON
+}
+
+type Photo {
+	id: ID!
+	src: String!
+	filename: String!
+	rating: Int!
+	filetype: FileType!
+	dateTaken: String
+	city: String
+	createdAt: String!
+	updatedAt: String!
+	deleted: Boolean!
+	exifMeta: ExifMeta!
+	tags: [Tag!]!
+}
+
+type RootQuery {
+	photo(id: ID!): Photo!
+	photos: [Photo!]!
+	exifMeta(id: ID!): ExifMeta!
+	tag(name: String!): Tag!
+}
+
+
+type Tag {
+	id: ID!
+	name: String!
+	createdAt: String!
+	updatedAt: String!
+	deleted: Boolean!
+	photos: [Photo!]!
+}
+
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+schema {
+	query: RootQuery
+}

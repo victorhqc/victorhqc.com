@@ -1,0 +1,11 @@
+[default]
+address = "0.0.0.0"
+limits = { form = "64 kB", json = "1 MiB" }
+database_url = ""
+ident = "victorhqc.com"
+
+[debug]
+port = 7878
+
+[release]
+port = 9999
