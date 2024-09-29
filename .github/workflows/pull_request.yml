@@ -34,18 +34,18 @@ jobs:
                 with:
                     command: generate-lockfile
 
-#            -   name: Install SQLX
-#                run: |
-#                    cargo install sqlx-cli --no-default-features --features sqlite
-            - name: Install SQLX
-              uses: taiki-e/cache-cargo-install-action@v2
-              with:
-                tool: sqlx-cli
+            -   name: Install SQLX
+                run: |
+                    cargo install sqlx-cli --no-default-features --features sqlite
+#            - name: Install SQLX
+#              uses: taiki-e/cache-cargo-install-action@v2
+#              with:
+#                tool: sqlx-cli
 
             -   name: Init DB
                 run: |
                     cd api
-                    sqlx db setup
+                    sqlx db prepare --check
                 env:
                     DATABASE_URL: sqlite://github.sqlite
 
@@ -59,19 +59,19 @@ jobs:
                      cargo check
                 working-directory: api
                 env:
-                    DATABASE_URL: sqlite:github.sqlite
-                    ROCKET_DATABASE_URL: sqlite:github.sqlite
+                    DATABASE_URL: sqlite://github.sqlite
+                    ROCKET_DATABASE_URL: sqlite://github.sqlite
 
             -   name: Run cargo fmt
                 run: cargo fmt --all --check
                 working-directory: api
                 env:
-                    DATABASE_URL: sqlite:github.sqlite
-                    ROCKET_DATABASE_URL: sqlite:github.sqlite
+                    DATABASE_URL: sqlite://github.sqlite
+                    ROCKET_DATABASE_URL: sqlite://github.sqlite
 
             -   name: Run cargo clippy
                 run: cargo clippy -- -D warnings
                 working-directory: api
                 env:
-                    DATABASE_URL: sqlite:github.sqlite
-                    ROCKET_DATABASE_URL: sqlite:github.sqlite
+                    DATABASE_URL: sqlite://github.sqlite
+                    ROCKET_DATABASE_URL: sqlite://github.sqlite
