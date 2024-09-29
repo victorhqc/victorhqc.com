@@ -6,6 +6,10 @@ on:
             - main
     pull_request:
 
+env:
+    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
+    ROCKET_DATABASE_URL: sqlite://github.sqlite
+
 jobs:
     rust_check:
         name: Rust Check
@@ -37,41 +41,20 @@ jobs:
             -   name: Install SQLX
                 run: |
                     cargo install sqlx-cli --no-default-features --features sqlite
-#            - name: Install SQLX
-#              uses: taiki-e/cache-cargo-install-action@v2
-#              with:
-#                tool: sqlx-cli
 
             -   name: Init DB
                 run: |
                     cd api
                     sqlx db setup
-                env:
-                    DATABASE_URL: sqlite://github.sqlite
 
             -   name: Run cargo check
-                run: |
-                     echo "CURRENT PATH"
-                     pwd
-                     echo "DIR"
-                     ls -la
-                     echo "CHECK"
-                     cargo check
+                run: cargo check
                 working-directory: api
-                env:
-                    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
-                    ROCKET_DATABASE_URL: sqlite://github.sqlite
 
             -   name: Run cargo fmt
                 run: cargo fmt --all --check
                 working-directory: api
-                env:
-                    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
-                    ROCKET_DATABASE_URL: sqlite://github.sqlite
 
             -   name: Run cargo clippy
                 run: cargo clippy -- -D warnings
                 working-directory: api
-                env:
-                    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
-                    ROCKET_DATABASE_URL: sqlite://github.sqlite
