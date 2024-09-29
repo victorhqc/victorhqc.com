@@ -24,7 +24,10 @@ jobs:
                     override: true
                     components: rustfmt, clippy
 
-            -   uses: Swatinem/rust-cache@v1
+            -   uses: Swatinem/rust-cache@v2
+                with:
+                    workspaces: |
+                        api
 
             -   name: Generate Cargo.lock
                 uses: actions-rs/cargo@v1
@@ -42,25 +45,20 @@ jobs:
                 env:
                     DATABASE_URL: sqlite://github.db
 
-            - name: Build API
-              run: |
-                  cd api
-                  cp .env.example .env
-                  cargo build
-
             -   name: Run cargo check
-                uses: actions-rs/cargo@v1
-                with:
-                    command: check
+                run: cargo check
+                working-directory: api
+                env:
+                    DATABASE_URL: sqlite://github.db
 
             -   name: Run cargo fmt
-                uses: actions-rs/cargo@v1
-                with:
-                    command: fmt
-                    args: --all --check
+                run: cargo fmt --all --check
+                working-directory: api
+                env:
+                    DATABASE_URL: sqlite://github.db
 
             -   name: Run cargo clippy
-                uses: actions-rs/cargo@v1
-                with:
-                    command: clippy
-                    args: -- -D warnings
+                run: cargo clippy -- -D warnings
+                working-directory: api
+                env:
+                    DATABASE_URL: sqlite://github.db
