@@ -34,15 +34,18 @@ jobs:
                 with:
                     command: generate-lockfile
 
-            -   name: Install SQLX
-                run: |
-                    cargo install sqlx-cli --no-default-features --features sqlite
+#            -   name: Install SQLX
+#                run: |
+#                    cargo install sqlx-cli --no-default-features --features sqlite
+            - name: Install SQLX
+              uses: taiki-e/cache-cargo-install-action@v2
+              with:
+                tool: sqlx-cli
 
             -   name: Init DB
                 run: |
                     cd api
                     sqlx db setup
-                    chmod 777 ./github.sqlite
                 env:
                     DATABASE_URL: sqlite://github.sqlite
 
