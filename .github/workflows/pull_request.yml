@@ -46,7 +46,13 @@ jobs:
                     DATABASE_URL: sqlite://github.db
 
             -   name: Run cargo check
-                run: cargo check
+                run: |
+                     echo "CURRENT PATH"
+                     pwd
+                     echo "DIR"
+                     ls -la
+                     echo "CHECK"
+                     cargo check
                 working-directory: api
                 env:
                     DATABASE_URL: sqlite://github.db
