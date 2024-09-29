@@ -45,7 +45,8 @@ jobs:
             -   name: Init DB
                 run: |
                     cd api
-                    sqlx db prepare --check
+                    sqlx db setup
+                    sqlx prepare --check
                 env:
                     DATABASE_URL: sqlite://github.sqlite
 
