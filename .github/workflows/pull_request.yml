@@ -42,6 +42,7 @@ jobs:
                 run: |
                     cd api
                     sqlx db setup
+                    chmod 777 ./github.sqlite
                 env:
                     DATABASE_URL: sqlite://github.sqlite
 
