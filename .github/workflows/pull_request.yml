@@ -46,7 +46,7 @@ jobs:
                 run: |
                     cd api
                     sqlx db setup
-                    sqlx prepare --check
+                    cargo sqlx prepare --check
                 env:
                     DATABASE_URL: sqlite://github.sqlite
 
