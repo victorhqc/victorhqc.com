@@ -1,7 +1,4 @@
-use crate::models::fujifilm::{
-    builder::SettingsBuilder, Error as RecipeError, FilmSimulation, FujifilmRecipe, TransSensor,
-    WBShift, WhiteBalance,
-};
+use crate::models::fujifilm::{builder::SettingsBuilder, from_str::Error as RecipeError, from_tuple::{grain_effect::Error as GrainEffectError, FromTuple}, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange, FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength, TransSensor, WBShift, WhiteBalance};
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, SqlitePool};
 use std::str::FromStr;
@@ -103,15 +100,75 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             value: value.sensor,
         })?;
 
-        let mut white_balance = WhiteBalance::from_str(&value.white_balance).context(ParseSnafu {
-            key: ParseProperty::WhiteBalance,
-            value: value.white_balance,
-        })?;
+        let mut white_balance =
+            WhiteBalance::from_str(&value.white_balance).context(RecipeSnafu)?;
 
         let wb_shift = WBShift::from_str(&value.white_balance_shift).context(RecipeSnafu)?;
         white_balance.set_shift(wb_shift);
+        let dynamic_range = DynamicRange::from_str(&value.dynamic_range).context(ParseSnafu {
+            key: ParseProperty::DynamicRange,
+            value: value.dynamic_range,
+        })?;
 
-        builder.with_white_balance(Some(white_balance));
+        let d_range_priority = if let Some(d) = &value.d_range_priority {
+            Some(DRangePriority::from_str(d).context(ParseSnafu {
+                key: ParseProperty::DynamicRange,
+                value: String::from(d),
+            })?)
+        } else {
+            None
+        };
+
+        let grain_strength = if let Some(s) = &value.grain_strength {
+            Some(GrainStrength::from_str(s).context(ParseSnafu {
+                key: ParseProperty::GrainStrength,
+                value: String::from(s),
+            })?)
+        } else {
+            None
+        };
+
+        let grain_size = if let Some(s) = &value.grain_size {
+            Some(GrainSize::from_str(s).context(ParseSnafu {
+                key: ParseProperty::GrainStrength,
+                value: String::from(s),
+            })?)
+        } else {
+            None
+        };
+
+        let grain_effect =
+            GrainEffect::from_tuple((grain_strength, grain_size)).context(GrainEffectSnafu)?;
+
+        let color_chrome_effect = if let Some(s) = &value.color_chrome_effect {
+            let strength = SettingStrength::from_str(s).context(ParseSnafu {
+                key: ParseProperty::ColorChromeEffect,
+                value: String::from(s),
+            })?;
+
+            Some(ColorChromeEffect { strength })
+        } else {
+            None
+        };
+
+        let color_chrome_fx_blue = if let Some(s) = &value.color_chrome_fx_blue {
+            let strength = SettingStrength::from_str(s).context(ParseSnafu {
+                key: ParseProperty::ColorChromeFxBlue,
+                value: String::from(s),
+            })?;
+
+            Some(ColorChromeEffectFxBlue { strength })
+        } else {
+            None
+        };
+
+        builder
+            .with_white_balance(Some(white_balance))
+            .with_dynamic_range(Some(dynamic_range))
+            .with_d_range_priority(d_range_priority)
+            .with_grain_effect(Some(grain_effect))
+            .with_color_chrome_effect(color_chrome_effect)
+            .with_color_chrome_fx_blue(color_chrome_fx_blue);
 
         todo!()
     }
@@ -130,14 +187,20 @@ pub enum Error {
     },
 
     #[snafu(display("{:?}", source))]
-    Recipe {
-        source: RecipeError,
-    },
+    Recipe { source: RecipeError },
+
+    #[snafu(display("{:?}", source))]
+    GrainEffect { source: GrainEffectError },
 }
 
 #[derive(Debug, Display)]
 pub enum ParseProperty {
     FilmSimulation,
     TransSensor,
-    WhiteBalance,
+    DynamicRange,
+    DRangePriority,
+    GrainStrength,
+    GrainSize,
+    ColorChromeEffect,
+    ColorChromeFxBlue,
 }

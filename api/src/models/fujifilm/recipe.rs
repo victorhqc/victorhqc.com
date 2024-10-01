@@ -1,5 +1,3 @@
-use crate::models::fujifilm::WhiteBalance::Kelvin;
-use rocket::http::ext::IntoOwned;
 use serde::{Deserialize, Serialize, Serializer};
 use snafu::prelude::*;
 use std::str::FromStr;
@@ -152,7 +150,7 @@ pub enum SettingStrength {
     Strong,
 }
 
-#[derive(Debug, Serialize, Deserialize, EnumString)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum WhiteBalance {
     Auto { shift: WBShift },
@@ -172,39 +170,27 @@ pub enum WhiteBalance {
 }
 
 impl WhiteBalance {
-    pub fn set_shift(&mut self, shift: WBShift) {
+    pub fn set_shift(&mut self, s: WBShift) {
         match self {
-            WhiteBalance::Auto
-            | WhiteBalance::AutoWhitePriority
-            | WhiteBalance::AutoAmbiencePriority
-            | WhiteBalance::Custom1
-            | WhiteBalance::Custom2
-            | WhiteBalance::Custom3
-            | WhiteBalance::Daylight
-            | WhiteBalance::Cloudy
-            | WhiteBalance::FluorescentLight1
-            | WhiteBalance::FluorescentLight2
-            | WhiteBalance::FluorescentLight3
-            | WhiteBalance::Incandescent
-            | WhiteBalance::Underwater {shift: s } => {
-                *s = WBShift {
-                    red: shift.red,
-                    blue: shift.blue,
+            WhiteBalance::Auto { shift }
+            | WhiteBalance::AutoWhitePriority { shift }
+            | WhiteBalance::AutoAmbiencePriority { shift }
+            | WhiteBalance::Custom1 { shift }
+            | WhiteBalance::Custom2 { shift }
+            | WhiteBalance::Custom3 { shift }
+            | WhiteBalance::Daylight { shift }
+            | WhiteBalance::Cloudy { shift }
+            | WhiteBalance::FluorescentLight1 { shift }
+            | WhiteBalance::FluorescentLight2 { shift }
+            | WhiteBalance::FluorescentLight3 { shift }
+            | WhiteBalance::Incandescent { shift }
+            | WhiteBalance::Underwater { shift } => *shift = s,
+            WhiteBalance::Kelvin { shift, .. } => {
+                *shift = WBShift {
+                    blue: s.blue,
+                    red: s.red,
                 }
             }
-            Kelvin { shift: s, .. } => {
-                *s = WBShift {
-                    blue: shift.blue,
-                    red: shift.red,
-                }
-            }
-        }
-    }
-
-    pub fn set_temperature(&mut self, temp: i32) {
-        match self {
-            Kelvin { temperature: t, .. } => *t = temp,
-            _ => {}
         }
     }
 }
@@ -223,37 +209,7 @@ pub struct WBShift {
     pub blue: i32,
 }
 
-impl FromStr for WBShift {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let shifts: Vec<i32> = String::from(s)
-            .split(",")
-            .map(|val| val.parse::<i32>())
-            .filter_map(|e| e.ok())
-            .collect();
-
-        if shifts.len() != 2 {
-            return Err(Error::Parse {
-                key: ParseKey::WhiteBalanceShift,
-                reason: format!(
-                    "Wrong amount of values, should be 2 but got: {}",
-                    shifts.len(),
-                ),
-            });
-        }
-
-        let red: &i32 = shifts.get(0).unwrap_or(&0);
-        let blue: &i32 = shifts.get(1).unwrap_or(&0);
-
-        Ok(WBShift {
-            red: red.into_owned(),
-            blue: blue.into_owned(),
-        })
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum DynamicRange {
     #[default]
     #[strum(serialize = "Auto")]
@@ -266,7 +222,7 @@ pub enum DynamicRange {
     DR400,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Display, EnumString, Default)]
 pub enum DRangePriority {
     #[default]
     #[strum(serialize = "Off")]
@@ -398,15 +354,4 @@ pub struct TransISettings {
     pub color: Color,
     pub sharpness: Sharpness,
     pub high_iso_noise_reduction: HighISONoiseReduction,
-}
-
-#[derive(Debug, Snafu)]
-pub enum Error {
-    #[snafu(display("Failed to Parse {}: {}", key, reason))]
-    Parse { key: ParseKey, reason: String },
-}
-
-#[derive(Debug, Display)]
-pub enum ParseKey {
-    WhiteBalanceShift,
 }
