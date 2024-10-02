@@ -2,13 +2,15 @@ use crate::models::fujifilm::{
     from_str::{Error, ParseKey},
     WBShift,
 };
+use once_cell::sync::Lazy;
+use regex::Regex;
 use rocket::http::ext::IntoOwned;
 use std::fmt::Display;
 use std::str::FromStr;
 
 impl Display for WBShift {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("{},{}", self.red, self.blue))
+        write!(f, "{}", format!("R{}, B{}", self.red, self.blue))
     }
 }
 
@@ -22,11 +24,18 @@ impl FromStr for WBShift {
                 reason: "Invalid Empty String".to_string(),
             });
         }
+        static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"([0-9+\-.]+)").unwrap());
 
         let shifts: Result<Vec<i32>, Error> = String::from(s)
             .split(",")
             .map(|val| {
-                let val = val.trim();
+                let caps = RE.captures(val);
+
+                let val: &str = if let Some(caps) = caps {
+                    caps.get(1).map_or("", |m| m.as_str())
+                } else {
+                    ""
+                };
 
                 if val.is_empty() {
                     return Err(Error::Parse {
@@ -35,7 +44,7 @@ impl FromStr for WBShift {
                     });
                 }
 
-                val.parse::<i32>().map_err(|e| Error::Parse {
+                val.parse::<i32>().map_err(|_| Error::Parse {
                     key: ParseKey::WhiteBalanceShift,
                     reason: format!("{} is not a valid integer", val),
                 })
@@ -73,7 +82,7 @@ mod tests {
     fn it_parses_a_valid_wb_shift() {
         let wb_shift = WBShift { red: 2, blue: 3 }.to_string();
 
-        assert_eq!(&wb_shift, "2,3");
+        assert_eq!(&wb_shift, "R2, B3");
         assert_eq!(
             WBShift::from_str(&wb_shift),
             Ok(WBShift { red: 2, blue: 3 })
@@ -84,7 +93,7 @@ mod tests {
     fn it_supports_negative_values() {
         let wb_shift = WBShift { red: -2, blue: 3 }.to_string();
 
-        assert_eq!(&wb_shift, "-2,3");
+        assert_eq!(&wb_shift, "R-2, B3");
         assert_eq!(
             WBShift::from_str(&wb_shift),
             Ok(WBShift { red: -2, blue: 3 })
@@ -92,7 +101,7 @@ mod tests {
 
         let wb_shift = WBShift { red: 2, blue: -3 }.to_string();
 
-        assert_eq!(&wb_shift, "2,-3");
+        assert_eq!(&wb_shift, "R2, B-3");
         assert_eq!(
             WBShift::from_str(&wb_shift),
             Ok(WBShift { red: 2, blue: -3 })
@@ -163,7 +172,7 @@ mod tests {
 
     #[test]
     fn it_fails_when_values_are_not_int() {
-        let result = WBShift::from_str("2.5, 3");
+        let result = WBShift::from_str("R2.5, B3");
 
         assert_eq!(
             result,
