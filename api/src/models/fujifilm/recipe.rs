@@ -150,7 +150,7 @@ pub enum SettingStrength {
     Strong,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type")]
 pub enum WhiteBalance {
     Auto { shift: WBShift },
