@@ -1,9 +1,9 @@
-use std::fmt::Display;
 use crate::models::fujifilm::{
     from_str::{Error, ParseKey},
     WBShift,
 };
 use rocket::http::ext::IntoOwned;
+use std::fmt::Display;
 use std::str::FromStr;
 
 impl Display for WBShift {
@@ -16,11 +16,33 @@ impl FromStr for WBShift {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let shifts: Vec<i32> = String::from(s)
+        if s.is_empty() {
+            return Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "Invalid Empty String".to_string(),
+            });
+        }
+
+        let shifts: Result<Vec<i32>, Error> = String::from(s)
             .split(",")
-            .map(|val| val.parse::<i32>())
-            .filter_map(|e| e.ok())
+            .map(|val| {
+                let val = val.trim();
+
+                if val.is_empty() {
+                    return Err(Error::Parse {
+                        key: ParseKey::WhiteBalanceShift,
+                        reason: format!("Invalid Empty value in: {}", s),
+                    });
+                }
+
+                val.parse::<i32>().map_err(|e| Error::Parse {
+                    key: ParseKey::WhiteBalanceShift,
+                    reason: format!("{} is not a valid integer", val),
+                })
+            })
             .collect();
+
+        let shifts = shifts?;
 
         if shifts.len() != 2 {
             return Err(Error::Parse {
@@ -39,5 +61,126 @@ impl FromStr for WBShift {
             red: red.into_owned(),
             blue: blue.into_owned(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::fujifilm::from_str::{Error, ParseKey};
+
+    #[test]
+    fn it_parses_a_valid_wb_shift() {
+        let wb_shift = WBShift { red: 2, blue: 3 }.to_string();
+
+        assert_eq!(&wb_shift, "2,3");
+        assert_eq!(
+            WBShift::from_str(&wb_shift),
+            Ok(WBShift { red: 2, blue: 3 })
+        );
+    }
+
+    #[test]
+    fn it_supports_negative_values() {
+        let wb_shift = WBShift { red: -2, blue: 3 }.to_string();
+
+        assert_eq!(&wb_shift, "-2,3");
+        assert_eq!(
+            WBShift::from_str(&wb_shift),
+            Ok(WBShift { red: -2, blue: 3 })
+        );
+
+        let wb_shift = WBShift { red: 2, blue: -3 }.to_string();
+
+        assert_eq!(&wb_shift, "2,-3");
+        assert_eq!(
+            WBShift::from_str(&wb_shift),
+            Ok(WBShift { red: 2, blue: -3 })
+        );
+    }
+
+    #[test]
+    fn it_fails_when_empty() {
+        let result = WBShift::from_str("");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "Invalid Empty String".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn it_fails_empty_half() {
+        let result = WBShift::from_str("12,");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "Invalid Empty value in: 12,".to_string(),
+            })
+        );
+
+        let result = WBShift::from_str(",12");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "Invalid Empty value in: ,12".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn it_fails_when_missing_values() {
+        let result = WBShift::from_str("1");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "Wrong amount of values, should be 2 but got: 1".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn it_fails_when_more_values() {
+        let result = WBShift::from_str("1,3,4");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "Wrong amount of values, should be 2 but got: 3".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn it_fails_when_values_are_not_int() {
+        let result = WBShift::from_str("2.5, 3");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "2.5 is not a valid integer".to_string(),
+            })
+        );
+
+        let result = WBShift::from_str("2, 3.2");
+
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::WhiteBalanceShift,
+                reason: "3.2 is not a valid integer".to_string(),
+            })
+        );
     }
 }
