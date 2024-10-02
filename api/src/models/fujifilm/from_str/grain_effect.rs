@@ -27,19 +27,14 @@ impl FromStr for GrainEffect {
 
         if let (Some(str), None, None) = (caps.get(1), caps.get(3), caps.get(4)) {
             let strength = GrainStrength::from_str(str.as_str()).unwrap();
-            return Ok(GrainEffect::OnlyStrength {
-                strength,
-            });
+            return Ok(GrainEffect::OnlyStrength { strength });
         }
 
         if let (Some(str), Some(size)) = (caps.get(2), caps.get(4)) {
             let strength = GrainStrength::from_str(str.as_str()).unwrap();
             let size = GrainSize::from_str(size.as_str()).unwrap();
 
-            return Ok(GrainEffect::StrengthAndSize {
-                strength,
-                size,
-            });
+            return Ok(GrainEffect::StrengthAndSize { strength, size });
         }
 
         Err(Error::Parse {
@@ -52,7 +47,10 @@ impl FromStr for GrainEffect {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fujifilm::{GrainStrength, GrainSize, from_str::{Error, ParseKey}};
+    use crate::models::fujifilm::{
+        from_str::{Error, ParseKey},
+        GrainSize, GrainStrength,
+    };
 
     #[test]
     fn it_parses_off() {
@@ -64,8 +62,14 @@ mod tests {
 
     #[test]
     fn it_parses_strength_only() {
-        let strong = GrainEffect::OnlyStrength { strength: GrainStrength::Strong }.to_string();
-        let weak = GrainEffect::OnlyStrength { strength: GrainStrength::Weak }.to_string();
+        let strong = GrainEffect::OnlyStrength {
+            strength: GrainStrength::Strong,
+        }
+        .to_string();
+        let weak = GrainEffect::OnlyStrength {
+            strength: GrainStrength::Weak,
+        }
+        .to_string();
 
         assert_eq!(&strong, "Strong");
         assert_eq!(
@@ -89,19 +93,23 @@ mod tests {
         let strong_small = GrainEffect::StrengthAndSize {
             strength: GrainStrength::Strong,
             size: GrainSize::Small,
-        }.to_string();
+        }
+        .to_string();
         let strong_large = GrainEffect::StrengthAndSize {
             strength: GrainStrength::Strong,
             size: GrainSize::Large,
-        }.to_string();
+        }
+        .to_string();
         let weak_small = GrainEffect::StrengthAndSize {
             strength: GrainStrength::Weak,
             size: GrainSize::Small,
-        }.to_string();
+        }
+        .to_string();
         let weak_large = GrainEffect::StrengthAndSize {
             strength: GrainStrength::Weak,
             size: GrainSize::Large,
-        }.to_string();
+        }
+        .to_string();
 
         assert_eq!(&strong_small, "Strong, Small");
         assert_eq!(
@@ -142,7 +150,7 @@ mod tests {
 
     #[test]
     fn it_fails_on_empty_grain_effect() {
-        let result = GrainEffect::from_str("").map_err(|e| e);
+        let result = GrainEffect::from_str("");
         let expected = Error::Parse {
             key: ParseKey::GrainEffect,
             reason: "invalid GrainEffect: ''".to_string(),
@@ -153,7 +161,7 @@ mod tests {
 
     #[test]
     fn it_fails_on_wrong_grain_effect() {
-        let result = GrainEffect::from_str("whatever man").map_err(|e| e);
+        let result = GrainEffect::from_str("whatever man");
         let expected = Error::Parse {
             key: ParseKey::GrainEffect,
             reason: "invalid GrainEffect: 'whatever man'".to_string(),
