@@ -1,5 +1,5 @@
 use crate::models::fujifilm::{
-    from_str::{Error, ParseKey},
+    str::{Error, ParseKey},
     WBShift,
 };
 use once_cell::sync::Lazy;
@@ -76,7 +76,7 @@ impl FromStr for WBShift {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fujifilm::from_str::{Error, ParseKey};
+    use crate::models::fujifilm::str::{Error, ParseKey};
 
     #[test]
     fn it_parses_a_valid_wb_shift() {

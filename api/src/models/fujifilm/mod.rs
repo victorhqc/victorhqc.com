@@ -1,6 +1,6 @@
 mod builder;
 pub mod db;
-mod from_str;
+mod str;
 mod from_tuple;
 mod recipe;
 

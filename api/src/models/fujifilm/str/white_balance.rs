@@ -1,5 +1,5 @@
 use crate::models::fujifilm::{
-    from_str::{Error, ParseKey},
+    str::{Error, ParseKey},
     WBShift, WhiteBalance,
 };
 use once_cell::sync::Lazy;
@@ -97,7 +97,7 @@ impl FromStr for WhiteBalance {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fujifilm::from_str::{Error, ParseKey};
+    use crate::models::fujifilm::str::{Error, ParseKey};
 
     #[test]
     fn it_converts_wb_to_string() {

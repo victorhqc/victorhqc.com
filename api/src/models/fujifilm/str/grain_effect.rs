@@ -1,5 +1,5 @@
 use crate::models::fujifilm::{
-    from_str::{Error, ParseKey},
+    str::{Error, ParseKey},
     GrainEffect, GrainSize, GrainStrength,
 };
 use once_cell::sync::Lazy;
@@ -48,7 +48,7 @@ impl FromStr for GrainEffect {
 mod tests {
     use super::*;
     use crate::models::fujifilm::{
-        from_str::{Error, ParseKey},
+        str::{Error, ParseKey},
         GrainSize, GrainStrength,
     };
 
