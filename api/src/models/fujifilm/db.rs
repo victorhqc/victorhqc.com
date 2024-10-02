@@ -1,4 +1,11 @@
-use crate::models::fujifilm::{builder::SettingsBuilder, from_str::Error as RecipeError, from_tuple::{grain_effect::Error as GrainEffectError, FromTuple}, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange, FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength, ToneCurve, TransSensor, WBShift, WhiteBalance};
+use crate::models::fujifilm::{
+    builder::SettingsBuilder,
+    from_str::Error as RecipeError,
+    from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
+    Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
+    FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength,
+    ToneCurve, TransSensor, WBShift, WhiteBalance,
+};
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, SqlitePool};
 use std::str::FromStr;
@@ -167,9 +174,7 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             highlights: value.highlight_tone,
         };
 
-        let color = Color {
-            value: value.color,
-        };
+        let color = Color { value: value.color };
 
         // let
 
