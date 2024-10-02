@@ -5,13 +5,13 @@ mod grain_effect;
 mod wb_shift;
 mod white_balance;
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Snafu, PartialEq)]
 pub enum Error {
     #[snafu(display("Failed to Parse {}: {}", key, reason))]
     Parse { key: ParseKey, reason: String },
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, PartialEq)]
 pub enum ParseKey {
     WhiteBalance,
     WhiteBalanceShift,
