@@ -1,9 +1,16 @@
+use std::fmt::Display;
 use crate::models::fujifilm::{
     from_str::{Error, ParseKey},
     WBShift,
 };
 use rocket::http::ext::IntoOwned;
 use std::str::FromStr;
+
+impl Display for WBShift {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", format!("{},{}", self.red, self.blue))
+    }
+}
 
 impl FromStr for WBShift {
     type Err = Error;
