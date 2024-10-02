@@ -116,7 +116,7 @@ pub enum GrainSize {
     Large,
 }
 
-#[derive(Debug, Clone, Deserialize, Display, Default)]
+#[derive(Debug, Clone, Deserialize, Display, PartialEq, Default)]
 pub enum GrainEffect {
     #[default]
     #[strum(to_string = "Off")]
@@ -268,28 +268,28 @@ pub struct ColorChromeEffectFxBlue {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ToneCurve {
-    pub highlights: f32,
-    pub shadows: f32,
+    pub highlights: f64,
+    pub shadows: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Color {
-    pub value: i32,
+    pub value: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Sharpness {
-    pub value: i32,
+    pub value: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct HighISONoiseReduction {
-    pub value: i32,
+    pub value: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Clarity {
-    pub value: i32,
+    pub value: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

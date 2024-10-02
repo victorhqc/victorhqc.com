@@ -1,4 +1,4 @@
-use crate::models::fujifilm::{builder::SettingsBuilder, from_str::Error as RecipeError, from_tuple::{grain_effect::Error as GrainEffectError, FromTuple}, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange, FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength, TransSensor, WBShift, WhiteBalance};
+use crate::models::fujifilm::{builder::SettingsBuilder, from_str::Error as RecipeError, from_tuple::{grain_effect::Error as GrainEffectError, FromTuple}, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange, FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength, ToneCurve, TransSensor, WBShift, WhiteBalance};
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, SqlitePool};
 use std::str::FromStr;
@@ -162,13 +162,26 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             None
         };
 
+        let tone_curve = ToneCurve {
+            shadows: value.shadow_tone,
+            highlights: value.highlight_tone,
+        };
+
+        let color = Color {
+            value: value.color,
+        };
+
+        // let
+
         builder
             .with_white_balance(Some(white_balance))
             .with_dynamic_range(Some(dynamic_range))
             .with_d_range_priority(d_range_priority)
             .with_grain_effect(Some(grain_effect))
             .with_color_chrome_effect(color_chrome_effect)
-            .with_color_chrome_fx_blue(color_chrome_fx_blue);
+            .with_color_chrome_fx_blue(color_chrome_fx_blue)
+            .with_tone_curve(Some(tone_curve))
+            .with_color(Some(color));
 
         todo!()
     }
