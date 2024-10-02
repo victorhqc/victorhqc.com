@@ -68,7 +68,6 @@ mod tests {
         let weak = GrainEffect::OnlyStrength { strength: GrainStrength::Weak }.to_string();
 
         assert_eq!(&strong, "Strong");
-
         assert_eq!(
             GrainEffect::from_str(&strong).unwrap(),
             GrainEffect::OnlyStrength {
@@ -77,7 +76,6 @@ mod tests {
         );
 
         assert_eq!(&weak, "Weak");
-
         assert_eq!(
             GrainEffect::from_str(&weak).unwrap(),
             GrainEffect::OnlyStrength {
