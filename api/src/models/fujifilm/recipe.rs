@@ -203,7 +203,7 @@ impl Default for WhiteBalance {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Default)]
 pub struct WBShift {
     pub red: i32,
     pub blue: i32,
