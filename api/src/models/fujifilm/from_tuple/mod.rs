@@ -1,5 +1,4 @@
 pub mod grain_effect;
-mod tone_curve;
 
 pub trait FromTuple<F, D> {
     type Err;
