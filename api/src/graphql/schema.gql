@@ -9,12 +9,83 @@ type ExifMeta {
 	cropFactor: Float!
 	cameraName: String!
 	lensName: String
+	fujifilmRecipe: FujifilmRecipe
 }
 
 enum FileType {
 	JPEG
 }
 
+
+type FujifilmRecipe {
+	id: ID!
+	name: String!
+	src: String!
+	filmSimulation: String!
+	sensor: String!
+	settings: FujifilmRecipeSettings!
+}
+
+union FujifilmRecipeSettings = FujifilmRecipeTransISettings | FujifilmRecipeTransIISettings | FujifilmRecipeTransIIISettings | FujifilmRecipeTransIVSettings | FujifilmRecipeTransVSettings
+
+type FujifilmRecipeTransIIISettings {
+	whiteBalance: String!
+	dynamicRange: String!
+	grainEffect: String!
+	toneCurve: String!
+	color: String!
+	monochromaticColor: String!
+	sharpness: String!
+	highIsoNoiseReduction: String!
+}
+
+type FujifilmRecipeTransIISettings {
+	whiteBalance: String!
+	dynamicRange: String!
+	toneCurve: String!
+	color: String!
+	sharpness: String!
+	highIsoNoiseReduction: String!
+}
+
+type FujifilmRecipeTransISettings {
+	whiteBalance: String!
+	dynamicRange: String!
+	toneCurve: String!
+	color: String!
+	sharpness: String!
+	highIsoNoiseReduction: String!
+}
+
+type FujifilmRecipeTransIVSettings {
+	whiteBalance: String!
+	dynamicRange: String!
+	dRangePriority: String!
+	grainEffect: String!
+	colorChromeEffect: String!
+	colorChromeFxBlue: String!
+	toneCurve: String!
+	color: String!
+	monochromaticColor: String!
+	sharpness: String!
+	highIsoNoiseReduction: String!
+	clarity: String!
+}
+
+type FujifilmRecipeTransVSettings {
+	whiteBalance: String!
+	dynamicRange: String!
+	dRangePriority: String!
+	grainEffect: String!
+	colorChromeEffect: String!
+	colorChromeFxBlue: String!
+	toneCurve: String!
+	color: String!
+	monochromaticColor: String!
+	sharpness: String!
+	highIsoNoiseReduction: String!
+	clarity: String!
+}
 
 
 
@@ -44,6 +115,7 @@ type RootQuery {
 	photos: [Photo!]!
 	exifMeta(id: ID!): ExifMeta!
 	tag(name: String!): Tag!
+	fujifilmRecipes(filmSimulation: String!): [FujifilmRecipe!]!
 }
 
 
