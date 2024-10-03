@@ -7,12 +7,38 @@ use crate::models::fujifilm::{
     MonochromaticColor, SettingStrength, Sharpness, ToneCurve, TransSensor, WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
-use sqlx::{error::Error as SqlxError, SqlitePool};
+use sqlx::{error::Error as SqlxError, FromRow, SqlitePool};
 use std::str::FromStr;
 use strum_macros::Display;
 
 #[derive(Clone, Debug)]
 pub struct DBFujifilmRecipe {
+    pub id: String,
+    pub name: String,
+    pub author: String,
+    pub src: String,
+    pub sensor: String,
+    pub film_simulation: String,
+    pub white_balance: String,
+    pub white_balance_shift: String,
+    pub dynamic_range: String,
+    pub d_range_priority: Option<String>,
+    pub highlight_tone: f64,
+    pub shadow_tone: f64,
+    pub color: i64,
+    pub sharpness: i64,
+    pub clarity: Option<i64>,
+    pub high_iso_noise_reduction: i64,
+    pub grain_strength: Option<String>,
+    pub grain_size: Option<String>,
+    pub color_chrome_effect: Option<String>,
+    pub color_chrome_fx_blue: Option<String>,
+    pub monochromatic_color: Option<String>,
+}
+
+#[derive(FromRow)]
+pub struct DBExifMetaFujifilmRecipe {
+    pub exif_meta_id: String,
     pub id: String,
     pub name: String,
     pub author: String,
@@ -42,6 +68,13 @@ impl FujifilmRecipe {
         name: &str,
     ) -> Result<Vec<FujifilmRecipe>, Error> {
         find_by_film_simulation(pool, name).await
+    }
+
+    pub async fn find_by_exif_meta_ids(
+        pool: &SqlitePool,
+        ids: &Vec<String>,
+    ) -> Result<Vec<(String, FujifilmRecipe)>, Error> {
+        find_by_exif_meta_ids(pool, ids).await
     }
 }
 
@@ -86,6 +119,90 @@ async fn find_by_film_simulation(
     .context(SqlxSnafu)?;
 
     let recipes = recipes.into_iter().map(|r| r.try_into().unwrap()).collect();
+
+    Ok(recipes)
+}
+
+async fn find_by_exif_meta_ids(
+    pool: &SqlitePool,
+    ids: &Vec<String>,
+) -> Result<Vec<(String, FujifilmRecipe)>, Error> {
+    let params = format!("?{}", ", ?".repeat(ids.len() - 1));
+
+    let query = format!(
+        r#"
+    SELECT
+        e.id exif_meta_id,
+        r.id,
+        r.name,
+        r.author,
+        sensor,
+        src,
+        film_simulation,
+        white_balance,
+        white_balance_shift,
+        dynamic_range,
+        d_range_priority,
+        highlight_tone,
+        shadow_tone,
+        color,
+        sharpness,
+        clarity,
+        high_iso_noise_reduction,
+        grain_strength,
+        grain_size,
+        color_chrome_effect,
+        color_chrome_fx_blue,
+        monochromatic_color
+    FROM
+        fuji_recipes r
+    JOIN exif_metas e ON e.fuji_recipe_id = r.id
+    WHERE
+        r.id IN ( { } )
+    "#,
+        params
+    );
+
+    let mut query = sqlx::query_as::<_, DBExifMetaFujifilmRecipe>(&query);
+
+    for id in ids {
+        query = query.bind(id);
+    }
+
+    let recipes = query.fetch_all(pool).await.context(SqlxSnafu)?;
+
+    let recipes: Vec<(String, FujifilmRecipe)> = recipes
+        .into_iter()
+        .map(|r| {
+            (
+                r.exif_meta_id,
+                DBFujifilmRecipe {
+                    id: r.id,
+                    name: r.name,
+                    author: r.author,
+                    src: r.src,
+                    sensor: r.sensor,
+                    film_simulation: r.film_simulation,
+                    white_balance: r.white_balance,
+                    white_balance_shift: r.white_balance_shift,
+                    dynamic_range: r.dynamic_range,
+                    d_range_priority: r.d_range_priority,
+                    highlight_tone: r.highlight_tone,
+                    shadow_tone: r.shadow_tone,
+                    color: r.color,
+                    sharpness: r.sharpness,
+                    clarity: r.clarity,
+                    high_iso_noise_reduction: r.high_iso_noise_reduction,
+                    grain_strength: r.grain_strength,
+                    grain_size: r.grain_size,
+                    color_chrome_effect: r.color_chrome_effect,
+                    color_chrome_fx_blue: r.color_chrome_fx_blue,
+                    monochromatic_color: r.monochromatic_color,
+                },
+            )
+        })
+        .map(|(id, r)| (id, r.try_into().unwrap()))
+        .collect();
 
     Ok(recipes)
 }
