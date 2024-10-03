@@ -1,5 +1,5 @@
+use crate::models::fujifilm::FujifilmRecipe as FujifilmRecipeModel;
 use async_graphql::{SimpleObject, ID};
-use crate::models::fujifilm::{FilmSimulation, FujifilmRecipe as FujifilmRecipeModel};
 
 #[derive(SimpleObject, Clone)]
 pub struct FujifilmRecipe {

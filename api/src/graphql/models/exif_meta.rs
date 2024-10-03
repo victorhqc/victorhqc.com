@@ -5,10 +5,7 @@ use crate::{
     },
     models::exif_meta::{ExifMeta as ExifMetaModel, Maker},
 };
-use async_graphql::{
-    dataloader::{DataLoader, Loader},
-    ComplexObject, Context, Result, SimpleObject, ID,
-};
+use async_graphql::{dataloader::DataLoader, ComplexObject, Context, Result, SimpleObject, ID};
 
 #[derive(SimpleObject, Clone)]
 #[graphql(complex)]
@@ -30,7 +27,7 @@ impl ExifMeta {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
         let id = FujifilmRecipeByExifMetaId::new(&self.id);
 
-        let recipe = (loader.load_one(id).await?);
+        let recipe = loader.load_one(id).await?;
 
         Ok(recipe)
     }
