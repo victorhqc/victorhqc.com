@@ -2,9 +2,9 @@ use crate::models::fujifilm::{
     builder::SettingsBuilder,
     from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
     str::Error as RecipeError,
-    Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
-    FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, MonochromaticColor,
-    SettingStrength, ToneCurve, TransSensor, WBShift, WhiteBalance,
+    Clarity, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
+    FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, HighISONoiseReduction,
+    MonochromaticColor, SettingStrength, Sharpness, ToneCurve, TransSensor, WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, SqlitePool};
@@ -182,6 +182,20 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             None
         };
 
+        let sharpness = Sharpness {
+            value: value.sharpness,
+        };
+
+        let high_iso_reduction = HighISONoiseReduction {
+            value: value.high_iso_noise_reduction,
+        };
+
+        let clarity = if let Some(c) = value.clarity {
+            Some(Clarity { value: c })
+        } else {
+            None
+        };
+
         builder
             .with_white_balance(Some(white_balance))
             .with_dynamic_range(Some(dynamic_range))
@@ -191,9 +205,20 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             .with_color_chrome_fx_blue(color_chrome_fx_blue)
             .with_tone_curve(Some(tone_curve))
             .with_color(Some(color))
-            .with_monochromatic_color(monochromatic_color);
+            .with_monochromatic_color(monochromatic_color)
+            .with_sharpness(Some(sharpness))
+            .with_high_iso_noise_reduction(Some(high_iso_reduction))
+            .with_clarity(clarity);
 
-        todo!()
+        let settings = trans_sensor.settings(builder);
+
+        Ok(FujifilmRecipe {
+            name: value.name,
+            src: value.src,
+            sensor: trans_sensor,
+            film_simulation,
+            settings,
+        })
     }
 }
 

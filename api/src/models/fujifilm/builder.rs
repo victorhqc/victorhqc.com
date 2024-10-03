@@ -170,3 +170,15 @@ impl SettingsBuilder {
         self
     }
 }
+
+impl TransSensor {
+    pub fn settings(&self, builder: SettingsBuilder) -> Settings {
+        match self {
+            TransSensor::TransI => Settings::TransI(builder.build_for_i()),
+            TransSensor::TransII => Settings::TransII(builder.build_for_ii()),
+            TransSensor::TransIII => Settings::TransIII(builder.build_for_iii()),
+            TransSensor::TransIV => Settings::TransIV(builder.build_for_iv()),
+            TransSensor::TransV => Settings::TransV(builder.build_for_v()),
+        }
+    }
+}

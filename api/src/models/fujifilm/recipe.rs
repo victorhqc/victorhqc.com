@@ -6,6 +6,7 @@ use strum_macros::{Display, EnumString};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FujifilmRecipe {
     pub name: String,
+    pub src: String,
     pub film_simulation: FilmSimulation,
     pub sensor: TransSensor,
     pub settings: Settings,
