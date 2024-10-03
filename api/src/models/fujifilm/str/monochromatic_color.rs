@@ -154,7 +154,8 @@ mod tests {
             result,
             Err(Error::Parse {
                 key: ParseKey::MonochromaticColor,
-                reason: "Failed to Parse MonochromaticColorShift: Invalid String: WC 2, MG-3".to_string(),
+                reason: "Failed to Parse MonochromaticColorShift: Invalid String: WC 2, MG-3"
+                    .to_string(),
             })
         );
     }
