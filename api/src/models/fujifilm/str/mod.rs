@@ -2,6 +2,7 @@ use snafu::Snafu;
 use strum_macros::Display;
 
 mod grain_effect;
+mod monochromatic_color;
 mod monochromatic_shift;
 mod tone_curve;
 mod wb_shift;
@@ -18,5 +19,6 @@ pub enum ParseKey {
     WhiteBalance,
     WhiteBalanceShift,
     GrainEffect,
+    MonochromaticColor,
     MonochromaticColorShift,
 }
