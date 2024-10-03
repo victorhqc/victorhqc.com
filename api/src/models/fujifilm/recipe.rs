@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize, Serializer};
-use snafu::prelude::*;
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
