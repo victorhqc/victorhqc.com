@@ -1,7 +1,7 @@
 use crate::models::fujifilm::{
     builder::SettingsBuilder,
-    str::Error as RecipeError,
     from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
+    str::Error as RecipeError,
     Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
     FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength,
     ToneCurve, TransSensor, WBShift, WhiteBalance,
