@@ -360,9 +360,7 @@ pub enum Error {
 pub enum ParseProperty {
     TransSensor,
     DynamicRange,
-    DRangePriority,
     GrainStrength,
-    GrainSize,
     ColorChromeEffect,
     ColorChromeFxBlue,
 }

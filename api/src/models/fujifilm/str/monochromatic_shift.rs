@@ -61,8 +61,8 @@ impl FromStr for MonochromaticColorShift {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use crate::models::fujifilm::MonochromaticColorShift;
+    use std::str::FromStr;
 
     #[test]
     fn it_parses_to_string() {

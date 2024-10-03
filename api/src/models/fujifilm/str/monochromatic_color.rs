@@ -2,6 +2,7 @@ use crate::models::fujifilm::{
     str::{Error, ParseKey},
     MonochromaticColor, MonochromaticColorShift,
 };
+use crate::utils::str::AddSign;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt::{Display, Formatter};
@@ -11,13 +12,7 @@ impl Display for MonochromaticColor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             MonochromaticColor::Strength { value } => {
-                let val = match value {
-                    v if v > &0 => format!("+{}", v),
-                    v if v <= &0 => format!("{}", v),
-                    _ => unreachable!(),
-                };
-
-                write!(f, "{}", &val)
+                write!(f, "{}", &value.add_sign())
             }
             MonochromaticColor::ColorShift { shift } => {
                 write!(f, "{}", shift)

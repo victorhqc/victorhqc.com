@@ -1,16 +1,9 @@
 use crate::models::fujifilm::{
     Clarity, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
-    FilmSimulation, GrainEffect, HighISONoiseReduction, MonochromaticColor, Settings, Sharpness,
-    ToneCurve, TransIIISettings, TransIISettings, TransISettings, TransIVSettings, TransSensor,
+    GrainEffect, HighISONoiseReduction, MonochromaticColor, Settings, Sharpness, ToneCurve,
+    TransIIISettings, TransIISettings, TransISettings, TransIVSettings, TransSensor,
     TransVSettings, WhiteBalance,
 };
-
-pub struct FujifilmRecipeBuilder {
-    name: String,
-    film_simulation: FilmSimulation,
-    sensor: TransSensor,
-    settings: Settings,
-}
 
 #[derive(Default)]
 pub struct SettingsBuilder {

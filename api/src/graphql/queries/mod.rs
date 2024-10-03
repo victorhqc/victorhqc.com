@@ -6,4 +6,9 @@ mod photo;
 mod tag;
 
 #[derive(MergedObject, Default)]
-pub struct RootQuery(photo::PhotoQuery, exif_meta::ExifMetaQuery, tag::TagQuery, fujifilm_recipe::FujifilmRecipeQuery);
+pub struct RootQuery(
+    photo::PhotoQuery,
+    exif_meta::ExifMetaQuery,
+    tag::TagQuery,
+    fujifilm_recipe::FujifilmRecipeQuery,
+);
