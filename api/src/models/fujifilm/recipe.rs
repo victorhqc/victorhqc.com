@@ -235,7 +235,7 @@ pub enum DRangePriority {
     Strong,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, PartialEq, Deserialize)]
 #[serde(tag = "type")]
 pub enum MonochromaticColor {
     ColorShift { shift: MonochromaticColorShift },
@@ -250,7 +250,7 @@ impl Default for MonochromaticColor {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Default)]
 pub struct MonochromaticColorShift {
     pub wc: i32,
     pub mg: i32,
