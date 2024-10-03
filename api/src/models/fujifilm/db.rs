@@ -3,8 +3,8 @@ use crate::models::fujifilm::{
     from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
     str::Error as RecipeError,
     Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
-    FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, SettingStrength,
-    ToneCurve, TransSensor, WBShift, WhiteBalance,
+    FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, MonochromaticColor,
+    SettingStrength, ToneCurve, TransSensor, WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, SqlitePool};
@@ -176,7 +176,11 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
 
         let color = Color { value: value.color };
 
-        // let
+        let monochromatic_color = if let Some(mc) = value.monochromatic_color {
+            Some(MonochromaticColor::from_str(&mc).context(RecipeSnafu)?)
+        } else {
+            None
+        };
 
         builder
             .with_white_balance(Some(white_balance))
@@ -186,7 +190,8 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             .with_color_chrome_effect(color_chrome_effect)
             .with_color_chrome_fx_blue(color_chrome_fx_blue)
             .with_tone_curve(Some(tone_curve))
-            .with_color(Some(color));
+            .with_color(Some(color))
+            .with_monochromatic_color(monochromatic_color);
 
         todo!()
     }
