@@ -1,6 +1,6 @@
 use crate::models::fujifilm::{
     str::{Error, ParseKey},
-    MonochromaticColorShift, WBShift,
+    MonochromaticColorShift,
 };
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -89,29 +89,38 @@ mod tests {
     fn it_fails_to_parse_empty_string() {
         let result = MonochromaticColorShift::from_str("");
 
-        assert_eq!(result, Err(Error::Parse {
-            key: ParseKey::MonochromaticColorShift,
-            reason: "Invalid Empty String".to_string(),
-        }));
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::MonochromaticColorShift,
+                reason: "Invalid Empty String".to_string(),
+            })
+        );
     }
 
     #[test]
     fn it_fails_to_parse_invalid_string() {
         let result = MonochromaticColorShift::from_str("MG 2, WC -3");
 
-        assert_eq!(result, Err(Error::Parse {
-            key: ParseKey::MonochromaticColorShift,
-            reason: "Invalid String: MG 2, WC -3".to_string(),
-        }));
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::MonochromaticColorShift,
+                reason: "Invalid String: MG 2, WC -3".to_string(),
+            })
+        );
     }
 
     #[test]
     fn it_fails_to_parse_invalid_numbers() {
         let result = MonochromaticColorShift::from_str("WC 3--1, MG 2");
 
-        assert_eq!(result, Err(Error::Parse {
-            key: ParseKey::MonochromaticColorShift,
-            reason: "Invalid number in: WC 3--1, MG 2".to_string(),
-        }));
+        assert_eq!(
+            result,
+            Err(Error::Parse {
+                key: ParseKey::MonochromaticColorShift,
+                reason: "Invalid number in: WC 3--1, MG 2".to_string(),
+            })
+        );
     }
 }
