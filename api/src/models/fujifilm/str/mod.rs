@@ -2,6 +2,7 @@ use snafu::Snafu;
 use strum_macros::Display;
 
 mod grain_effect;
+mod tone_curve;
 mod wb_shift;
 mod white_balance;
 
