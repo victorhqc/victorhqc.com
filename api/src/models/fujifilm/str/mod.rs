@@ -1,6 +1,7 @@
 use snafu::Snafu;
 use strum_macros::Display;
 
+mod film_simulation;
 mod grain_effect;
 mod monochromatic_color;
 mod monochromatic_shift;
@@ -16,6 +17,7 @@ pub enum Error {
 
 #[derive(Debug, Display, PartialEq)]
 pub enum ParseKey {
+    FilmSimulation,
     WhiteBalance,
     WhiteBalanceShift,
     GrainEffect,

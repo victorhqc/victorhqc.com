@@ -44,7 +44,7 @@ impl Serialize for TransSensor {
     }
 }
 
-#[derive(Debug, Deserialize, PartialEq, Display, EnumString)]
+#[derive(Debug, Deserialize, PartialEq, Display)]
 pub enum FilmSimulation {
     #[strum(serialize = "Provia", to_string = "Provia")]
     ProviaStandard,
@@ -60,15 +60,15 @@ pub enum FilmSimulation {
     ProNegHi,
     #[strum(serialize = "Pro Neg. Std", to_string = "Pro Neg. Std")]
     ProNegStd,
-    #[strum(serialize = "Classic Neg.", to_string = "Classic Negative")]
+    #[strum(serialize = "Classic Negative", to_string = "Classic Negative")]
     ClassicNeg,
-    #[strum(serialize = "Nostalgic Neg.", to_string = "Nostalgic Negative")]
+    #[strum(serialize = "Nostalgic Negative", to_string = "Nostalgic Negative")]
     NostalgicNeg,
     #[strum(serialize = "Eterna", to_string = "Eterna")]
     EternaCinema,
     #[strum(serialize = "Eterna Bleach Bypass", to_string = "Eterna Bleach Bypass")]
     BleachBypass,
-    #[strum(serialize = "Acros", to_string = "Acros{filter}")]
+    #[strum(serialize = "Acros{filter}", to_string = "Acros{filter}")]
     Acros { filter: MonochromaticFilter },
     #[strum(serialize = "Monochrome{filter}")]
     Monochrome { filter: MonochromaticFilter },

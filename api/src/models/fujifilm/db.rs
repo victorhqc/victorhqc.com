@@ -97,10 +97,7 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
         let mut builder = SettingsBuilder::default();
 
         let film_simulation =
-            FilmSimulation::from_str(&value.film_simulation).context(ParseSnafu {
-                key: ParseProperty::FilmSimulation,
-                value: value.film_simulation,
-            })?;
+            FilmSimulation::from_str(&value.film_simulation).context(RecipeSnafu)?;
 
         let trans_sensor = TransSensor::from_str(&value.sensor).context(ParseSnafu {
             key: ParseProperty::TransSensor,
@@ -243,7 +240,6 @@ pub enum Error {
 
 #[derive(Debug, Display)]
 pub enum ParseProperty {
-    FilmSimulation,
     TransSensor,
     DynamicRange,
     DRangePriority,
