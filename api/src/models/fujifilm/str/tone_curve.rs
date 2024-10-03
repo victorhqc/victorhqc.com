@@ -13,22 +13,23 @@ mod tests {
 
     #[test]
     fn it_parses_to_string() {
-        let expected = ToneCurve {
+        let result = ToneCurve {
             highlights: 1.5,
             shadows: 2.0,
         }
         .to_string();
 
-        assert_eq!(expected, "H1.5 S2");
+        assert_eq!(result, "H1.5 S2");
     }
 
     #[test]
     fn it_handles_negative_numbers() {
-        let expected = ToneCurve {
+        let result = ToneCurve {
             highlights: -2.0,
             shadows: -3.5,
-        }.to_string();
+        }
+        .to_string();
 
-        assert_eq!(expected, "H-2 S-3.5");
+        assert_eq!(result, "H-2 S-3.5");
     }
 }
