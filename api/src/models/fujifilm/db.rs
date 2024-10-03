@@ -15,7 +15,6 @@ use strum_macros::Display;
 pub struct DBFujifilmRecipe {
     pub id: String,
     pub name: String,
-    pub author: String,
     pub src: String,
     pub sensor: String,
     pub film_simulation: String,
@@ -41,7 +40,6 @@ pub struct DBExifMetaFujifilmRecipe {
     pub exif_meta_id: String,
     pub id: String,
     pub name: String,
-    pub author: String,
     pub src: String,
     pub sensor: String,
     pub film_simulation: String,
@@ -88,7 +86,6 @@ async fn find_by_film_simulation(
     SELECT
         id,
         name,
-        author,
         sensor,
         src,
         film_simulation,
@@ -135,7 +132,6 @@ async fn find_by_exif_meta_ids(
         e.id exif_meta_id,
         r.id,
         r.name,
-        r.author,
         sensor,
         src,
         film_simulation,
@@ -179,7 +175,6 @@ async fn find_by_exif_meta_ids(
                 DBFujifilmRecipe {
                     id: r.id,
                     name: r.name,
-                    author: r.author,
                     src: r.src,
                     sensor: r.sensor,
                     film_simulation: r.film_simulation,
