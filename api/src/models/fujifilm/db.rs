@@ -158,7 +158,7 @@ async fn find_by_exif_meta_ids(
         fuji_recipes r
     JOIN exif_metas e ON e.fuji_recipe_id = r.id
     WHERE
-        r.id IN ( { } )
+        exif_meta_id IN ( { } )
     "#,
         params
     );

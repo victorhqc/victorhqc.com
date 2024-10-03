@@ -1,7 +1,17 @@
-use crate::models::exif_meta::{ExifMeta as ExifMetaModel, Maker};
-use async_graphql::{SimpleObject, ID};
+use crate::{
+    graphql::{
+        loaders::{fujifilm_recipe::FujifilmRecipeByExifMetaId, AppLoader},
+        models::FujifilmRecipe,
+    },
+    models::exif_meta::{ExifMeta as ExifMetaModel, Maker},
+};
+use async_graphql::{
+    dataloader::{DataLoader, Loader},
+    ComplexObject, Context, Result, SimpleObject, ID,
+};
 
 #[derive(SimpleObject, Clone)]
+#[graphql(complex)]
 pub struct ExifMeta {
     pub id: ID,
     pub iso: i64,
@@ -12,6 +22,18 @@ pub struct ExifMeta {
     pub crop_factor: f64,
     pub camera_name: String,
     pub lens_name: Option<String>,
+}
+
+#[ComplexObject]
+impl ExifMeta {
+    async fn fujifilm_recipe(&self, ctx: &Context<'_>) -> Result<Option<FujifilmRecipe>> {
+        let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
+        let id = FujifilmRecipeByExifMetaId::new(&self.id);
+
+        let recipe = (loader.load_one(id).await?);
+
+        Ok(recipe)
+    }
 }
 
 impl From<ExifMetaModel> for ExifMeta {

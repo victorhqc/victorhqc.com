@@ -9,6 +9,7 @@ type ExifMeta {
 	cropFactor: Float!
 	cameraName: String!
 	lensName: String
+	fujifilmRecipe: FujifilmRecipe
 }
 
 enum FileType {
