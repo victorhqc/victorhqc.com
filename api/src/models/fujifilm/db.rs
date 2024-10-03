@@ -327,6 +327,7 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
         let settings = trans_sensor.settings(builder);
 
         Ok(FujifilmRecipe {
+            id: value.id,
             name: value.name,
             src: value.src,
             sensor: trans_sensor,

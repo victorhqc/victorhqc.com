@@ -16,6 +16,13 @@ enum FileType {
 }
 
 
+type FujifilmRecipe {
+	id: ID!
+	name: String!
+	src: String!
+	filmSimulation: String!
+}
+
 
 
 enum Maker {
@@ -44,6 +51,7 @@ type RootQuery {
 	photos: [Photo!]!
 	exifMeta(id: ID!): ExifMeta!
 	tag(name: String!): Tag!
+	fujifilmRecipes(filmSimulation: String!): [FujifilmRecipe!]!
 }
 
 

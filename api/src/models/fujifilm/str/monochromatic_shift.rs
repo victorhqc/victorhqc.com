@@ -4,7 +4,6 @@ use crate::models::fujifilm::{
 };
 use once_cell::sync::Lazy;
 use regex::Regex;
-use rocket::http::ext::IntoOwned;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -60,8 +59,9 @@ impl FromStr for MonochromaticColorShift {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use super::*;
+    use std::str::FromStr;
     use crate::models::fujifilm::MonochromaticColorShift;
 
     #[test]
