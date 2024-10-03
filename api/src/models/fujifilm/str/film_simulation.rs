@@ -54,7 +54,6 @@ impl FromStr for FilmSimulation {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::models::fujifilm::{
         str::{Error, ParseKey},
         FilmSimulation, MonochromaticFilter,

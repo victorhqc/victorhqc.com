@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 impl Display for WBShift {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("R{}, B{}", self.red, self.blue))
+        write!(f, "R{}, B{}", self.red, self.blue)
     }
 }
 

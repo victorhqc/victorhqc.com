@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 impl Display for MonochromaticColorShift {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("WC {}, MG {}", self.wc, self.mg))
+        write!(f, "WC {}, MG {}", self.wc, self.mg)
     }
 }
 
@@ -61,7 +61,10 @@ impl FromStr for MonochromaticColorShift {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::fujifilm::MonochromaticColorShift;
+    use crate::models::fujifilm::{
+        str::{Error, ParseKey},
+        MonochromaticColorShift,
+    };
     use std::str::FromStr;
 
     #[test]

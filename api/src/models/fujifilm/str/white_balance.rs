@@ -10,47 +10,45 @@ use std::str::FromStr;
 impl Display for WhiteBalance {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            WhiteBalance::Auto { shift } => write!(f, "{}", format!("Auto {}", shift.to_string())),
+            WhiteBalance::Auto { shift } => write!(f, "Auto {}", shift),
             WhiteBalance::AutoWhitePriority { shift } => {
-                write!(f, "{}", format!("AutoWhitePriority {}", shift.to_string()))
+                write!(f, "AutoWhitePriority {}", shift)
             }
-            WhiteBalance::AutoAmbiencePriority { shift } => write!(
-                f,
-                "{}",
-                format!("AutoAmbiencePriority {}", shift.to_string())
-            ),
+            WhiteBalance::AutoAmbiencePriority { shift } => {
+                write!(f, "AutoAmbiencePriority {}", shift)
+            }
             WhiteBalance::Custom1 { shift } => {
-                write!(f, "{}", format!("Custom1 {}", shift.to_string()))
+                write!(f, "Custom1 {}", shift)
             }
             WhiteBalance::Custom2 { shift } => {
-                write!(f, "{}", format!("Custom2 {}", shift.to_string()))
+                write!(f, "Custom2 {}", shift)
             }
             WhiteBalance::Custom3 { shift } => {
-                write!(f, "{}", format!("Custom3 {}", shift.to_string()))
+                write!(f, "Custom3 {}", shift)
             }
             WhiteBalance::Daylight { shift } => {
-                write!(f, "{}", format!("Daylight {}", shift.to_string()))
+                write!(f, "Daylight {}", shift)
             }
             WhiteBalance::Cloudy { shift } => {
-                write!(f, "{}", format!("Cloudy {}", shift.to_string()))
+                write!(f, "Cloudy {}", shift)
             }
             WhiteBalance::FluorescentLight1 { shift } => {
-                write!(f, "{}", format!("FluorescentLight1 {}", shift.to_string()))
+                write!(f, "FluorescentLight1 {}", shift)
             }
             WhiteBalance::FluorescentLight2 { shift } => {
-                write!(f, "{}", format!("FluorescentLight2 {}", shift.to_string()))
+                write!(f, "FluorescentLight2 {}", shift)
             }
             WhiteBalance::FluorescentLight3 { shift } => {
-                write!(f, "{}", format!("FluorescentLight3 {}", shift.to_string()))
+                write!(f, "FluorescentLight3 {}", shift)
             }
             WhiteBalance::Incandescent { shift } => {
-                write!(f, "{}", format!("Incandescent {}", shift.to_string()))
+                write!(f, "Incandescent {}", shift)
             }
             WhiteBalance::Underwater { shift } => {
-                write!(f, "{}", format!("Underwater {}", shift.to_string()))
+                write!(f, "Underwater {}", shift)
             }
             WhiteBalance::Kelvin { temperature, shift } => {
-                write!(f, "{}", format!("{}K {}", temperature, shift.to_string()))
+                write!(f, "{}K {}", temperature, shift)
             }
         }
     }
@@ -125,7 +123,6 @@ impl FromStr for WhiteBalance {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::fujifilm::str::{Error, ParseKey};
 
     #[test]
     fn it_converts_wb_to_string() {

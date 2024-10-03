@@ -46,13 +46,13 @@ impl FromStr for MonochromaticColor {
             };
         }
 
-        return match MonochromaticColorShift::from_str(s) {
+        match MonochromaticColorShift::from_str(s) {
             Ok(s) => Ok(MonochromaticColor::ColorShift { shift: s }),
             Err(e) => Err(Error::Parse {
                 key: ParseKey::MonochromaticColor,
                 reason: e.to_string(),
             }),
-        };
+        }
     }
 }
 

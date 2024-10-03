@@ -299,11 +299,7 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             value: value.high_iso_noise_reduction,
         };
 
-        let clarity = if let Some(c) = value.clarity {
-            Some(Clarity { value: c })
-        } else {
-            None
-        };
+        let clarity = value.clarity.map(|c| Clarity { value: c });
 
         builder
             .with_white_balance(Some(white_balance))

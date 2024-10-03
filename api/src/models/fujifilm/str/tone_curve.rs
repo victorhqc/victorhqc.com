@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 
 impl Display for ToneCurve {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("H{} S{}", self.highlights, self.shadows))
+        write!(f, "H{} S{}", self.highlights, self.shadows)
     }
 }
 

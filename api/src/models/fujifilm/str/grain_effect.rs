@@ -14,7 +14,7 @@ impl FromStr for GrainEffect {
             Lazy::new(|| Regex::new(r"(Off|(Strong|Weak)?(,\s)?(Small|Large)?)").unwrap());
         let caps = RE.captures(s).unwrap();
 
-        if &caps[1] == "" {
+        if caps[1].is_empty() {
             return Err(Error::Parse {
                 key: ParseKey::GrainEffect,
                 reason: format!("invalid GrainEffect: '{}'", s),
