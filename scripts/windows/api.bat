@@ -1,8 +1,8 @@
 @echo off
 setlocal
-@REM   SET RUST_BACKTRACE=1
   SET RUST_DEBUG=1
   SET RUST_LOG=api=debug,sqlx::query=debug,rocket=info
-  call cargo watch -i schema.gql -x run
+  SET DATABASE_URL=sqlite://test.db
+  call cargo watch -i schema.gql -x "run -p api"
 
 endlocal
