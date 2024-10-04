@@ -7,7 +7,7 @@ on:
     pull_request:
 
 env:
-    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
+    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/github.sqlite
     ROCKET_DATABASE_URL: sqlite://github.sqlite
 
 jobs:
