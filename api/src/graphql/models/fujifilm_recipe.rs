@@ -1,5 +1,5 @@
-use crate::models::fujifilm::{FujifilmRecipe as FujifilmRecipeModel, Settings as SettingsModel};
 use async_graphql::{SimpleObject, Union, ID};
+use core_victorhqc_com::models::fujifilm::{FujifilmRecipe as FujifilmRecipeModel, Settings as SettingsModel};
 
 #[derive(SimpleObject, Clone)]
 pub struct FujifilmRecipe {

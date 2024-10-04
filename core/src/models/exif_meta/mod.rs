@@ -1,7 +1,6 @@
 pub mod db;
 
-use async_graphql::Enum;
-use rocket::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use strum_macros::{Display as EnumDisplay, EnumString};
 
@@ -29,7 +28,6 @@ pub struct ExifMeta {
     EnumString,
     EnumDisplay,
     sqlx::Type,
-    Enum,
     Eq,
     PartialEq,
 )]

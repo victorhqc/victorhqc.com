@@ -1,10 +1,9 @@
-use crate::{
-    graphql::loaders::AppLoader,
-    graphql::models::Tag as GqlTag,
+use crate::{graphql::loaders::AppLoader, graphql::models::Tag as GqlTag};
+use async_graphql::{dataloader::Loader, Result};
+use core_victorhqc_com::{
     models::tag::{db::Error as DbError, Tag},
     utils::hashmap::InsertOrPush,
 };
-use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},

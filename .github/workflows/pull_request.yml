@@ -49,16 +49,16 @@ jobs:
 
             -   name: Run cargo test
                 run: cargo test
-                working-directory: api
+#                working-directory: api
 
             -   name: Run cargo check
                 run: cargo check
-                working-directory: api
+#                working-directory: api
 
             -   name: Run cargo fmt
                 run: cargo fmt --all --check
-                working-directory: api
+#                working-directory: api
 
             -   name: Run cargo clippy
                 run: cargo clippy -- -D warnings
-                working-directory: api
+#                working-directory: api

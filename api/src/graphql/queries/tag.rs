@@ -1,6 +1,6 @@
 use crate::graphql::{context::get_pool, models::Tag as GqlTag};
-use crate::models::tag::Tag;
 use async_graphql::{Context, Object, Result};
+use core_victorhqc_com::models::tag::Tag;
 
 #[derive(Default)]
 pub struct TagQuery;
