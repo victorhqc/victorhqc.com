@@ -1,10 +1,9 @@
-use crate::{
-    graphql::loaders::AppLoader,
-    graphql::models::Photo as GqlPhoto,
+use crate::{graphql::loaders::AppLoader, graphql::models::Photo as GqlPhoto};
+use async_graphql::{dataloader::Loader, Result};
+use core_victorhqc_com::{
     models::photo::{db::Error as DbError, Photo},
     utils::hashmap::InsertOrPush,
 };
-use async_graphql::{dataloader::Loader, Result};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},

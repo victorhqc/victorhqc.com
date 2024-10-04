@@ -1,5 +1,5 @@
-use crate::models::photo::Photo;
 use crate::AppState;
+use core_victorhqc_com::models::photo::Photo;
 use rocket::http::Status;
 use rocket::serde::json::Json;
 use rocket::State;

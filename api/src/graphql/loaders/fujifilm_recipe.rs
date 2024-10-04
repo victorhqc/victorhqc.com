@@ -1,9 +1,6 @@
-use crate::{
-    graphql::loaders::AppLoader,
-    graphql::models::FujifilmRecipe as GqlFujifilmRecipe,
-    models::fujifilm::{db::Error as DbError, FujifilmRecipe},
-};
+use crate::{graphql::loaders::AppLoader, graphql::models::FujifilmRecipe as GqlFujifilmRecipe};
 use async_graphql::{dataloader::Loader, Result};
+use core_victorhqc_com::models::fujifilm::{db::Error as DbError, FujifilmRecipe};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},

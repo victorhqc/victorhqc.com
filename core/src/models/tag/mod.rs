@@ -1,6 +1,6 @@
 pub mod db;
 
-use rocket::serde::Serialize;
+use serde::Serialize;
 use time::OffsetDateTime;
 
 #[derive(Clone, Debug, Serialize)]

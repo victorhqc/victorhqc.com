@@ -1,6 +1,6 @@
 use crate::graphql::{context::get_pool, models::Photo as GqlPhoto};
-use crate::models::photo::Photo;
 use async_graphql::{Context, Object, Result, ID};
+use core_victorhqc_com::models::photo::Photo;
 
 #[derive(Default)]
 pub struct PhotoQuery;

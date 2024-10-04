@@ -1,6 +1,6 @@
 use crate::graphql::{context::get_pool, models::FujifilmRecipe as GQLFujifilmRecipe};
-use crate::models::fujifilm::FujifilmRecipe;
 use async_graphql::{Context, Object, Result};
+use core_victorhqc_com::models::fujifilm::FujifilmRecipe;
 
 #[derive(Default)]
 pub struct FujifilmRecipeQuery;

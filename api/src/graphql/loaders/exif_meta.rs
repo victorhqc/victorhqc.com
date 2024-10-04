@@ -1,9 +1,6 @@
-use crate::{
-    graphql::loaders::AppLoader,
-    graphql::models::ExifMeta as GqlExifMeta,
-    models::exif_meta::{db::Error as DbError, ExifMeta},
-};
+use crate::{graphql::loaders::AppLoader, graphql::models::ExifMeta as GqlExifMeta};
 use async_graphql::{dataloader::Loader, Result};
+use core_victorhqc_com::models::exif_meta::{db::Error as DbError, ExifMeta};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},

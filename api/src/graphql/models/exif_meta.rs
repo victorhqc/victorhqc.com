@@ -1,11 +1,28 @@
-use crate::{
-    graphql::{
-        loaders::{fujifilm_recipe::FujifilmRecipeByExifMetaId, AppLoader},
-        models::FujifilmRecipe,
-    },
-    models::exif_meta::{ExifMeta as ExifMetaModel, Maker},
+use crate::graphql::{
+    loaders::{fujifilm_recipe::FujifilmRecipeByExifMetaId, AppLoader},
+    models::FujifilmRecipe,
 };
-use async_graphql::{dataloader::DataLoader, ComplexObject, Context, Result, SimpleObject, ID};
+use async_graphql::{
+    dataloader::DataLoader, ComplexObject, Context, Enum, Result, SimpleObject, ID,
+};
+use core_victorhqc_com::models::exif_meta::{ExifMeta as ExifMetaModel, Maker as CoreMaker};
+
+#[derive(Clone, Copy, Debug, Enum, Eq, PartialEq)]
+pub enum Maker {
+    Fujifilm,
+    Konica,
+    Canon,
+}
+
+impl From<CoreMaker> for Maker {
+    fn from(value: CoreMaker) -> Self {
+        match value {
+            CoreMaker::Fujifilm => Maker::Fujifilm,
+            CoreMaker::Konica => Maker::Konica,
+            CoreMaker::Canon => Maker::Canon,
+        }
+    }
+}
 
 #[derive(SimpleObject, Clone)]
 #[graphql(complex)]
@@ -41,7 +58,7 @@ impl From<ExifMetaModel> for ExifMeta {
             focal_length: value.focal_length,
             exposure_compensation: value.exposure_compensation,
             aperture: value.aperture,
-            maker: value.maker,
+            maker: value.maker.into(),
             crop_factor: value.crop_factor,
             camera_name: value.camera_name,
             lens_name: value.lens_name,

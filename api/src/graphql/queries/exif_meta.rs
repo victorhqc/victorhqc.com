@@ -1,6 +1,6 @@
 use crate::graphql::{context::get_pool, models::ExifMeta as GqlExifMeta};
-use crate::models::exif_meta::ExifMeta;
 use async_graphql::{Context, Object, Result, ID};
+use core_victorhqc_com::models::exif_meta::ExifMeta;
 
 #[derive(Default)]
 pub struct ExifMetaQuery;

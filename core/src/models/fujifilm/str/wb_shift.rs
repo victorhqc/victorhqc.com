@@ -4,7 +4,6 @@ use crate::models::fujifilm::{
 };
 use once_cell::sync::Lazy;
 use regex::Regex;
-use rocket::http::ext::IntoOwned;
 use std::fmt::Display;
 use std::str::FromStr;
 
@@ -67,8 +66,8 @@ impl FromStr for WBShift {
         let blue: &i32 = shifts.get(1).unwrap_or(&0);
 
         Ok(WBShift {
-            red: red.into_owned(),
-            blue: blue.into_owned(),
+            red: red.to_owned(),
+            blue: blue.to_owned(),
         })
     }
 }

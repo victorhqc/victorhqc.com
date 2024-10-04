@@ -6,15 +6,14 @@ use crate::graphql::loaders::AppLoader;
 use crate::graphql::routes::{graphql_playground, graphql_query, graphql_request};
 use crate::graphql::{graph::RootSchema, queries::RootQuery, sdl_gen};
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
+use core_victorhqc_com::db::{migrate, Error as DBError};
 use log::info;
 use rocket::tokio::spawn;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
 
 mod graphql;
-mod models;
 mod routes;
-mod utils;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -37,16 +36,13 @@ async fn main() -> Result<(), Error> {
         .await
         .context(SqlxSnafu)?;
 
-    let context = Context::default(db_pool.clone());
-    let loader = AppLoader::default(db_pool.clone());
-
     #[cfg(debug_assertions)]
     {
-        sqlx::migrate!()
-            .run(&db_pool)
-            .await
-            .context(MigrationSnafu)?;
+        migrate(&db_pool).await.context(MigrationSnafu)?;
     }
+
+    let context = Context::default(db_pool.clone());
+    let loader = AppLoader::default(db_pool.clone());
 
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
         .data(context)
@@ -85,8 +81,9 @@ enum Error {
     #[snafu(display("There is a problem with the DB Initialization: {}", source))]
     Sqlx { source: sqlx::Error },
 
-    #[snafu(display("Failed to run migrations: {}", source))]
-    Migration { source: sqlx::migrate::MigrateError },
+    #[cfg(debug_assertions)]
+    #[snafu(display("{}", source))]
+    Migration { source: DBError },
 
     #[snafu(display("Rocket Error: {}", source))]
     Rocket { source: rocket::Error },
