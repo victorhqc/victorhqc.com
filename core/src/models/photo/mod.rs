@@ -19,16 +19,7 @@ pub struct Photo {
 }
 
 #[derive(
-    Clone,
-    Copy,
-    Debug,
-    Deserialize,
-    Serialize,
-    EnumString,
-    EnumDisplay,
-    sqlx::Type,
-    Eq,
-    PartialEq,
+    Clone, Copy, Debug, Deserialize, Serialize, EnumString, EnumDisplay, sqlx::Type, Eq, PartialEq,
 )]
 pub enum FileType {
     #[strum(serialize = "JPEG")]

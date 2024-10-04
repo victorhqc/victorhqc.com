@@ -6,11 +6,11 @@ use crate::graphql::loaders::AppLoader;
 use crate::graphql::routes::{graphql_playground, graphql_query, graphql_request};
 use crate::graphql::{graph::RootSchema, queries::RootQuery, sdl_gen};
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
+use core_victorhqc_com::db::{migrate, Error as DBError};
 use log::info;
 use rocket::tokio::spawn;
 use snafu::prelude::*;
 use sqlx::sqlite::SqlitePool;
-use core_victorhqc_com::db::{migrate, Error as DBError};
 
 mod graphql;
 mod routes;

@@ -2,10 +2,7 @@ use snafu::prelude::*;
 use sqlx::SqlitePool;
 
 pub async fn migrate(pool: &SqlitePool) -> Result<(), Error> {
-    sqlx::migrate!()
-        .run(pool)
-        .await
-        .context(MigrationsSnafu)?;
+    sqlx::migrate!().run(pool).await.context(MigrationsSnafu)?;
 
     Ok(())
 }

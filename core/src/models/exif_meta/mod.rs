@@ -20,16 +20,7 @@ pub struct ExifMeta {
 }
 
 #[derive(
-    Clone,
-    Copy,
-    Debug,
-    Deserialize,
-    Serialize,
-    EnumString,
-    EnumDisplay,
-    sqlx::Type,
-    Eq,
-    PartialEq,
+    Clone, Copy, Debug, Deserialize, Serialize, EnumString, EnumDisplay, sqlx::Type, Eq, PartialEq,
 )]
 pub enum Maker {
     #[strum(serialize = "FUJIFILM")]
