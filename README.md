@@ -41,12 +41,6 @@ DB and uploads the file to an S3 Bucket.
 
 ## API Development
 
-Make sure you're in the `api` path first.
-
-```sh
-cd api
-```
-
 Prepare the environment variables by creating an `.env` file
 
 ```sh
@@ -56,17 +50,25 @@ cp .env.example .env
 Create an initial DB
 
 ```sh
-sqlx db create
-sqlx db setup
+./scripts/db.sh
+```
+
+For Windows
+
+```bat
+scripts\db.bat
 ```
 
 Run the project
 
 ```sh
-cargo run
+./scripts/unix/api.sh
+```
 
-# To recompile on change
-cargo watch -x run
+For Windows
+
+```bat
+scripts\windows\api.bat
 ```
 
 ## Database

@@ -8,7 +8,9 @@ use std::{
 
 pub fn sdl_gen(schema: &RootSchema) -> Result<()> {
     let sdl = schema.sdl();
-    let path = Path::new("src/graphql/schema.gql");
+    // let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let path = Path::new("api/src/graphql/schema.gql");
 
     let mut output = File::create(path).context(FileCreationSnafu)?;
     write!(output, "{}", sdl).context(SDLWriteSnafu)?;

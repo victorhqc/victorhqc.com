@@ -7,7 +7,7 @@ on:
     pull_request:
 
 env:
-    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/api/github.sqlite
+    DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/github.sqlite
     ROCKET_DATABASE_URL: sqlite://github.sqlite
 
 jobs:
@@ -44,21 +44,19 @@ jobs:
 
             -   name: Init DB
                 run: |
-                    cd core
-                    sqlx db setup
+                    sqlx database create
+                    sqlx db setup --source=core/migrations
+                    cargo sqlx prepare --workspace
+                    cargo sqlx prepare --check --workspace
 
             -   name: Run cargo test
                 run: cargo test
-#                working-directory: api
 
             -   name: Run cargo check
                 run: cargo check
-#                working-directory: api
 
             -   name: Run cargo fmt
                 run: cargo fmt --all --check
-#                working-directory: api
 
             -   name: Run cargo clippy
                 run: cargo clippy -- -D warnings
-#                working-directory: api

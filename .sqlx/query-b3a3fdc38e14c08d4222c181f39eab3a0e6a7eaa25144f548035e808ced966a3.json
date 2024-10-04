@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    SELECT\n        id,\n        src,\n        filename,\n        rating,\n        filetype,\n        date_taken as \"date_taken: Timestamp\",\n        city,\n        created_at as \"created_at: Timestamp\",\n        updated_at as \"updated_at: Timestamp\",\n        deleted\n    FROM\n        photos\n    WHERE\n        deleted = false\n        AND id = ?\n    ORDER BY\n        created_at DESC\n    ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "src",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "filename",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "filetype",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_taken: Timestamp",
+        "ordinal": 5,
+        "type_info": "Date"
+      },
+      {
+        "name": "city",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: Timestamp",
+        "ordinal": 7,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "updated_at: Timestamp",
+        "ordinal": 8,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "deleted",
+        "ordinal": 9,
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b3a3fdc38e14c08d4222c181f39eab3a0e6a7eaa25144f548035e808ced966a3"
+}
