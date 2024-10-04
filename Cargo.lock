@@ -55,7 +55,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
-name = "api"
+name = "api-victorhqc-com"
 version = "0.1.0"
 dependencies = [
  "async-graphql",
