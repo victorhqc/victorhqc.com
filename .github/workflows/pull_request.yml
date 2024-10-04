@@ -44,7 +44,7 @@ jobs:
 
             -   name: Init DB
                 run: |
-                    cd api
+                    cd core
                     sqlx db setup
 
             -   name: Run cargo test
