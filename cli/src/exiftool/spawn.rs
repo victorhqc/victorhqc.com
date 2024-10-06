@@ -8,7 +8,7 @@ use std::process::Command;
 use winapi::um::winbase::CREATE_NO_WINDOW;
 use serde_json::Value;
 
-fn read_metadata(img_path: &Path) -> Result<Value, Error> {
+pub fn read_metadata(img_path: &Path) -> Result<Value, Error> {
     let path = exiftool_path()?;
     debug!("Exiftool Dir {:?}", path);
     let mut cmd = spawn_exiftool(&path);
@@ -20,7 +20,7 @@ fn read_metadata(img_path: &Path) -> Result<Value, Error> {
         .arg("-a")
         .arg("-m")
         .arg("-j")
-        .arg(path)
+        .arg(img_path)
         .output()
         .context(ExiftoolSnafu)?;
 
@@ -56,7 +56,7 @@ pub fn spawn_exiftool(_: &Path) -> Command {
 }
 
 #[cfg(target_os = "windows")]
-pub fn spawn_exiftool(exiftool_path: &Path) -> Command {
+fn spawn_exiftool(exiftool_path: &Path) -> Command {
     let mut cmd = Command::new(exiftool_path);
     cmd.creation_flags(CREATE_NO_WINDOW);
 

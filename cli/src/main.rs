@@ -4,6 +4,7 @@ use clap::Parser;
 use dirs::home_dir;
 use log::debug;
 use snafu::ResultExt;
+use std::path::Path;
 
 fn main() {
     let path = std::env::current_dir().unwrap();
@@ -14,6 +15,11 @@ fn main() {
 
     let args = Args::parse();
     debug!("Arguments: {:?}", args);
+
+    let src = Path::new(&args.source);
+
+    let data = exiftool::spawn::read_metadata(&src).unwrap();
+    debug!("Exiftool parsed data: {:?}", data);
 }
 
 #[derive(Debug, Parser)]
