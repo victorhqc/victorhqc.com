@@ -29,17 +29,6 @@ and photos management, but that's a maybe and definitely in the future.
   cargo install sqlx-cli
   cargo install cargo-watch
   ```
-  
-## CLI Backoffice
-
-Since this Site won't have a UI or any kind of management outside my computer,
-all the CRUD operations will happen locally, and I'll just ship the DB on every
-release, I have to have someway of managing it, so a simple CLI will do.
-
-This CLI reads the EXIF information using the trusty exiftool, stores it in the
-DB and uploads the file to an S3 Bucket.
-
-## API Development
 
 Prepare the environment variables by creating an `.env` file
 
@@ -47,7 +36,7 @@ Prepare the environment variables by creating an `.env` file
 cp .env.example .env
 ```
 
-Create an initial DB
+Create the initial DB
 
 ```sh
 ./scripts/db.sh
@@ -58,6 +47,29 @@ For Windows
 ```bat
 scripts\db.bat
 ```
+  
+## CLI Backoffice
+
+Since this Site won't have a UI or any kind of management outside my computer,
+all the CRUD operations will happen locally, and I'll just ship the DB on every
+release, I have to have someway of managing it, so a simple CLI will do.
+
+This CLI reads the EXIF information using [exiftool](https://exiftool.org/),
+then stores it in the DB and uploads the file to an S3 Bucket.
+
+For this, make sure to run the exiftool installation
+
+```sh
+./scripts/unix/exiftool.sh
+```
+
+For Windows
+
+```bat
+scripts\windows\exiftool.bat
+```
+
+## API Development
 
 Run the project
 

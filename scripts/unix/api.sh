@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export RUST_LOG=api=debug,sqlx::query=debug,rocket=info
 export RUST_DEBUG=1
