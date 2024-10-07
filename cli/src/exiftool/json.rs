@@ -7,7 +7,7 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
     type Error = Error;
 
     fn try_from(value: JsonValue) -> Result<Self, Self::Error> {
-        let mut fields: Vec<ExifData> = value.0
+        let fields: Vec<ExifData> = value.0
             .as_object()
             .context(EmptySnafu)?
             .into_iter()
@@ -39,8 +39,6 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
                 }
             })
             .collect();
-
-        fields.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
 
         Ok(fields)
     }
