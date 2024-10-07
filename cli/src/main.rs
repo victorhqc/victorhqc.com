@@ -1,7 +1,6 @@
 mod exiftool;
 
 use clap::Parser;
-use dirs::home_dir;
 use log::debug;
 use std::path::Path;
 
@@ -24,8 +23,6 @@ fn main() {
 #[derive(Debug, Parser)]
 struct Args {
     /// Image Source
-    #[clap(
-        short, long, default_value_t = home_dir().unwrap().into_os_string().into_string().unwrap()
-    )]
+    #[clap(short, long)]
     source: String,
 }
