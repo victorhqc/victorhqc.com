@@ -7,8 +7,18 @@ use std::process::Command;
 #[cfg(target_os = "windows")]
 use winapi::um::winbase::CREATE_NO_WINDOW;
 use serde_json::Value;
+const EXTENSIONS: [&str; 3] = ["jpg", "png", "jpeg"];
 
 pub fn read_metadata(img_path: &Path) -> Result<Value, Error> {
+    let extension = img_path.extension().unwrap_or("none".as_ref());
+    let extension = extension.to_str().unwrap_or("none").to_lowercase();
+
+    if img_path.is_dir() || !EXTENSIONS.contains(&extension.as_str()) {
+        return Err(Error::Path {
+            path: img_path.to_str().unwrap_or("NONE").to_string(),
+        });
+    }
+
     let path = exiftool_path()?;
     debug!("Exiftool Dir {:?}", path);
     let mut cmd = spawn_exiftool(&path);
