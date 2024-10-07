@@ -1,7 +1,7 @@
-use std::num::{ParseFloatError, ParseIntError};
 use once_cell::sync::Lazy;
-use regex::Regex;
+use regex::{Captures, Regex};
 use snafu::prelude::*;
+use std::num::{ParseFloatError, ParseIntError};
 
 pub mod json;
 
@@ -9,7 +9,7 @@ pub type Tag = String;
 pub type Value = String;
 
 #[derive(Debug, Clone)]
-pub struct ExifData(Tag,Value);
+pub struct ExifData(Tag, Value);
 
 impl ExifData {
     pub fn tag(&self) -> &str {
@@ -52,12 +52,7 @@ impl TryFrom<ExifData> for i64 {
         static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i:([+\-0-9]+))").unwrap());
 
         let captures = RE.captures(exif.value()).context(NotFoundSnafu)?;
-
-        let value = if let Some(v) = captures.get(1) {
-            String::from(v.as_str())
-        } else {
-            return Err(Error::NotFound);
-        };
+        let value = get_first_match(captures)?;
 
         let value = value.parse::<i64>().context(ParseIntSnafu)?;
 
@@ -72,16 +67,19 @@ impl TryFrom<ExifData> for f64 {
         static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i:([+\-0-9.]+))").unwrap());
 
         let captures = RE.captures(exif.value()).context(NotFoundSnafu)?;
-
-        let value = if let Some(v) = captures.get(1) {
-            String::from(v.as_str())
-        } else {
-            return Err(Error::NotFound);
-        };
+        let value = get_first_match(captures)?;
 
         let value = value.parse::<f64>().context(ParseFloatSnafu)?;
 
         Ok(value)
+    }
+}
+
+fn get_first_match(captures: Captures) -> Result<String, Error> {
+    if let Some(v) = captures.get(1) {
+        Ok(String::from(v.as_str()))
+    } else {
+        Err(Error::NotFound)
     }
 }
 
