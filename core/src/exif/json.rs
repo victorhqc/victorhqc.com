@@ -1,5 +1,6 @@
 use log::trace;
 use snafu::prelude::*;
+use super::ExifData;
 
 pub struct JsonValue(pub serde_json::Value);
 
@@ -17,9 +18,9 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
                 if let Some(value) = value.as_str() {
                     let value = value.to_string().trim().to_string();
 
-                    Some((tag.clone(), value))
+                    Some(ExifData(tag.clone(), value))
                 } else if let Some(value) = value.as_number() {
-                    Some((tag.clone(), value.to_string()))
+                    Some(ExifData(tag.clone(), value.to_string()))
                 } else if let Some(values) = value.as_array() {
                     let value: String = values.iter().fold(String::from(""), |acc, value| {
                         let value: String = if let Some(value) = value.as_str() {
@@ -33,7 +34,7 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
                         value
                     });
 
-                    Some((tag.clone(), value))
+                    Some(ExifData(tag.clone(), value))
                 } else {
                     None
                 }
@@ -43,10 +44,6 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
         Ok(fields)
     }
 }
-
-pub type Tag = String;
-pub type Value = String;
-pub type ExifData = (Tag, Value);
 
 #[derive(Debug, Snafu)]
 pub enum Error {
