@@ -9,7 +9,7 @@ uploaded to an S3 Bucket and recording its location in a SQLite DB.
 
 Could this be done differently? Most likely, but I don't really want to
 over-complicate it for now. Even if the deployment needs to upload the binary
-and  SQLite DB to the server.
+and SQLite DB to the server.
 
 An additional consideration is to avoid S3 fees from Amazon. It's virtually
 free to upload to a bucket, but every time data is transferred from the bucket
@@ -34,6 +34,26 @@ Prepare the environment variables by creating an `.env` file
 
 ```sh
 cp .env.example .env
+cp .cargo/config.toml.example .cargo/config.toml 
+```
+
+The `.cargo/config.toml` requires an update, replace the `<ROOT_PATH>` with the
+current path you have the project saved in.
+
+```sh
+pwd
+```
+
+In unix systems it should like
+
+```
+DATABASE_URL = "sqlite:/users/user/victorhqc.com/development.db"
+```
+
+In Windows it should look like
+
+```
+DATABASE_URL = "sqlite:C:\\Users\\user\\victorhqc.com\\development.db"
 ```
 
 Create the initial DB
@@ -47,7 +67,7 @@ For Windows
 ```bat
 scripts\db.bat
 ```
-  
+
 ## CLI Backoffice
 
 Since this Site won't have a UI or any kind of management outside my computer,
@@ -69,18 +89,19 @@ For Windows
 scripts\windows\exiftool.bat
 ```
 
+And to run the CLI
+
+```sh
+cargo run -p cli-victorhqc-com
+cargo run -p cli-victorhqc-com -- --help
+```
+
 ## API Development
 
 Run the project
 
 ```sh
-./scripts/unix/api.sh
-```
-
-For Windows
-
-```bat
-scripts\windows\api.bat
+cargo run -p api-victorhqc-com
 ```
 
 ## Database
@@ -91,7 +112,8 @@ Add a new migration
 sqlx migrate add -r <name>
 ```
 
-Run  migrations again
+Run migrations again
+
 ```sh
 sqlx migrate run
 ```

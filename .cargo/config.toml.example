@@ -1,0 +1,4 @@
+[env]
+RUST_DEBUG = "1"
+RUST_LOG = "api=debug,sqlx::query=debug,rocket=info"
+DATABASE_URL = "sqlite:<ROOT_PATH>development.db"
