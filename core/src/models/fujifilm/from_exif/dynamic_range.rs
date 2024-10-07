@@ -6,7 +6,7 @@ impl FromExifData for DynamicRange {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("DynamicRangeSetting")?;
 
-        debug!("DynamicRange::from_exif: \"{}\"", exif);
+        debug!("DynamicRange::from_exif: {:?}", exif);
 
         match exif.value().to_lowercase().as_str() {
             "auto" => Some(DynamicRange::Auto),

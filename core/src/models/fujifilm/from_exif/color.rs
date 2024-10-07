@@ -6,7 +6,7 @@ impl FromExifData for Color {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("Saturation")?;
 
-        debug!("Color::from_exif: \"{}\"", exif);
+        debug!("Color::from_exif: {:?}", exif);
 
         let value: i64 = if let Ok(n) = exif.try_into() {
             n
