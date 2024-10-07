@@ -3,7 +3,6 @@ mod exiftool;
 use clap::Parser;
 use dirs::home_dir;
 use log::debug;
-use snafu::ResultExt;
 use std::path::Path;
 
 fn main() {

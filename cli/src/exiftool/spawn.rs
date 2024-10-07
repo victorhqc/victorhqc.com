@@ -1,3 +1,4 @@
+use crate::exiftool::json::{Error as JsonError, ExifData, JsonValue};
 use log::debug;
 use snafu::prelude::*;
 #[cfg(target_os = "windows")]
@@ -6,10 +7,10 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 #[cfg(target_os = "windows")]
 use winapi::um::winbase::CREATE_NO_WINDOW;
-use serde_json::Value;
+
 const EXTENSIONS: [&str; 3] = ["jpg", "png", "jpeg"];
 
-pub fn read_metadata(img_path: &Path) -> Result<Value, Error> {
+pub fn read_metadata(img_path: &Path) -> Result<Vec<ExifData>, Error> {
     let extension = img_path.extension().unwrap_or("none".as_ref());
     let extension = extension.to_str().unwrap_or("none").to_lowercase();
 
@@ -37,9 +38,11 @@ pub fn read_metadata(img_path: &Path) -> Result<Value, Error> {
     if output.status.success() {
         let stdout = String::from_utf8_lossy(&output.stdout);
         let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-        let result = json.as_array().unwrap().first().unwrap();
+        let json = json.as_array().unwrap().first().unwrap();
+        let value = JsonValue(json.clone());
+        let result: Vec<ExifData> = value.try_into().context(JsonSnafu)?;
 
-        Ok(result.clone())
+        Ok(result)
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
 
@@ -78,9 +81,15 @@ pub enum Error {
     #[snafu(display("Failed to get current dir: {:?}", source))]
     CurrentDir { source: std::io::Error },
 
+    #[snafu(display("Invalid File: {:?}", path))]
+    Path { path: String },
+
     #[snafu(display("Failed to run exiftool: {:?}", source))]
     Exiftool { source: std::io::Error },
 
     #[snafu(display("Something went wrong while running exiftool: {}", stderr))]
-    Stderr { stderr: String }
+    Stderr { stderr: String },
+
+    #[snafu(display("Failed to parse JSON: {:?}", source))]
+    Json { source: JsonError },
 }
