@@ -8,11 +8,7 @@ impl FromExifData for Color {
 
         debug!("Color::from_exif: {:?}", exif);
 
-        let value: i64 = if let Ok(n) = exif.try_into() {
-            n
-        } else {
-            return None;
-        };
+        let value: i64 = exif.try_into().ok()?;
 
         Some(Color { value })
     }

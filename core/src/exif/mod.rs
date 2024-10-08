@@ -8,7 +8,7 @@ pub mod json;
 pub type Tag = String;
 pub type Value = String;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ExifData(Tag, Value);
 
 impl ExifData {
@@ -45,6 +45,18 @@ impl FindExifData for &[ExifData] {
     }
 }
 
+impl From<ExifData> for Option<i64> {
+    fn from(exif: ExifData) -> Self {
+        let val: i64 = if let Ok(v) = exif.try_into() {
+            v
+        } else {
+            return None;
+        };
+        
+        Some(val)
+    }
+}
+
 impl TryFrom<ExifData> for i64 {
     type Error = Error;
 
@@ -57,6 +69,18 @@ impl TryFrom<ExifData> for i64 {
         let value = value.parse::<i64>().context(ParseIntSnafu)?;
 
         Ok(value)
+    }
+}
+
+impl From<ExifData> for Option<f64> {
+    fn from(exif: ExifData) -> Self {
+        let val: f64 = if let Ok(v) = exif.try_into() {
+            v
+        } else {
+            return None;
+        };
+
+        Some(val)
     }
 }
 
