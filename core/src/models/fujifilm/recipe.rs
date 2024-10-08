@@ -287,7 +287,7 @@ pub struct HighISONoiseReduction {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Clarity {
     pub value: i64,
 }

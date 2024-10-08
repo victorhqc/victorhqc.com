@@ -12,6 +12,10 @@ pub type Value = String;
 pub struct ExifData(Tag, Value);
 
 impl ExifData {
+    pub fn new(tag: &str, value: &str) -> Self {
+        ExifData(tag.to_string(), value.to_string())
+    }
+
     pub fn tag(&self) -> &str {
         &self.0
     }
@@ -52,7 +56,7 @@ impl From<ExifData> for Option<i64> {
         } else {
             return None;
         };
-        
+
         Some(val)
     }
 }
