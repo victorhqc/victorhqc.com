@@ -1,4 +1,7 @@
-use core_victorhqc_com::exif::{json::{Error as JsonError, JsonValue}, ExifData};
+use core_victorhqc_com::exif::{
+    json::{Error as JsonError, JsonValue},
+    ExifData,
+};
 use log::debug;
 use snafu::prelude::*;
 #[cfg(target_os = "windows")]
