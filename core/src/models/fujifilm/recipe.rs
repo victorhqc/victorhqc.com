@@ -272,7 +272,7 @@ pub struct ToneCurve {
     pub shadows: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Color {
     pub value: i64,
 }

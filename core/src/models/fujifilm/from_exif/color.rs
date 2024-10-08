@@ -13,3 +13,31 @@ impl FromExifData for Color {
         Some(Color { value })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::exif::ExifData;
+    use crate::models::fujifilm::Color;
+
+    #[test]
+    fn it_parses_positive_numbers() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Saturation", "3")];
+
+        assert_eq!(Color::from_exif(&exif), Some(Color { value: 3 }));
+    }
+
+    #[test]
+    fn it_parses_negative_numbers() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Saturation", "-3")];
+
+        assert_eq!(Color::from_exif(&exif), Some(Color { value: -3 }));
+    }
+
+    #[test]
+    fn it_does_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "3")];
+
+        assert_eq!(Color::from_exif(&exif), None);
+    }
+}
