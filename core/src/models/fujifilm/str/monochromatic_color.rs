@@ -35,7 +35,7 @@ impl FromStr for MonochromaticColor {
         let caps = RE.captures(s);
 
         if let Some(cap) = caps {
-            let str = &cap["str"].parse::<i32>();
+            let str = &cap["str"].parse::<i64>();
             return if let Ok(str) = str {
                 Ok(MonochromaticColor::Strength { value: *str })
             } else {

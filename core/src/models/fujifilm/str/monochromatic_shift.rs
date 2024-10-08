@@ -44,8 +44,8 @@ impl FromStr for MonochromaticColorShift {
         };
 
         let parsed = (
-            caps.get(2).unwrap().as_str().parse::<i32>(),
-            caps.get(4).unwrap().as_str().parse::<i32>(),
+            caps.get(2).unwrap().as_str().parse::<i64>(),
+            caps.get(4).unwrap().as_str().parse::<i64>(),
         );
 
         if let (Ok(wc), Ok(mg)) = parsed {
