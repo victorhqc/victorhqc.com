@@ -321,4 +321,11 @@ mod tests {
             Some(FilmSimulation::Sepia)
         );
     }
+
+    #[test]
+    fn it_does_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "3")];
+
+        assert_eq!(FilmSimulation::from_exif(&exif), None);
+    }
 }
