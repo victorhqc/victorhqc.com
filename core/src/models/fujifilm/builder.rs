@@ -1,3 +1,4 @@
+use crate::exif::{ExifData, FromExifData};
 use crate::models::fujifilm::{
     Clarity, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
     GrainEffect, HighISONoiseReduction, MonochromaticColor, Settings, Sharpness, ToneCurve,
@@ -161,6 +162,40 @@ impl SettingsBuilder {
     pub fn with_clarity(&mut self, clarity: Option<Clarity>) -> &mut Self {
         self.clarity = clarity;
         self
+    }
+}
+
+impl FromExifData for SettingsBuilder {
+    fn from_exif(data: &[ExifData]) -> Option<Self> {
+        let white_balance = WhiteBalance::from_exif(data);
+        let dynamic_range = DynamicRange::from_exif(data);
+        let d_range_priority = DRangePriority::from_exif(data);
+        let grain_effect = GrainEffect::from_exif(data);
+        let color_chrome_effect = ColorChromeEffect::from_exif(data);
+        let color_chrome_fx_blue = ColorChromeEffectFxBlue::from_exif(data);
+        let tone_curve = ToneCurve::from_exif(data);
+        let color = Color::from_exif(data);
+        let monochromatic_color = MonochromaticColor::from_exif(data);
+        let sharpness = Sharpness::from_exif(data);
+        let high_iso_noise_reduction = HighISONoiseReduction::from_exif(data);
+        let clarity = Clarity::from_exif(data);
+
+        let builder = SettingsBuilder {
+            white_balance,
+            dynamic_range,
+            d_range_priority,
+            grain_effect,
+            color_chrome_effect,
+            color_chrome_fx_blue,
+            tone_curve,
+            color,
+            monochromatic_color,
+            sharpness,
+            high_iso_noise_reduction,
+            clarity,
+        };
+
+        Some(builder)
     }
 }
 

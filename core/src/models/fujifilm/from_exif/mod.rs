@@ -5,6 +5,7 @@ mod color_chrome_fx_blue;
 mod d_range_priority;
 mod dynamic_range;
 mod film_simulation;
+mod fujifilm_recipe;
 mod grain_effect;
 mod high_iso_noise_reduction;
 mod monochromatic_color;
