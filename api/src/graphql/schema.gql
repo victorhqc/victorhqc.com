@@ -2,11 +2,10 @@
 type ExifMeta {
 	id: ID!
 	iso: Int!
-	focalLength: Float!
+	focalLength: FocalLength!
 	exposureCompensation: Float!
 	aperture: Float!
 	maker: Maker!
-	cropFactor: Float!
 	cameraName: String!
 	lensName: String
 	fujifilmRecipe: FujifilmRecipe
@@ -16,6 +15,12 @@ enum FileType {
 	JPEG
 }
 
+
+type FocalLength {
+	value: Float!
+	eq35Mm: Float!
+	cropFactor: Float!
+}
 
 type FujifilmRecipe {
 	id: ID!

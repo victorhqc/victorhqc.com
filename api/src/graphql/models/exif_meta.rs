@@ -25,15 +25,21 @@ impl From<CoreMaker> for Maker {
 }
 
 #[derive(SimpleObject, Clone)]
+pub struct FocalLength {
+    pub value: f64,
+    pub eq_35mm: f64,
+    pub crop_factor: f64,
+}
+
+#[derive(SimpleObject, Clone)]
 #[graphql(complex)]
 pub struct ExifMeta {
     pub id: ID,
     pub iso: i64,
-    pub focal_length: f64,
+    pub focal_length: FocalLength,
     pub exposure_compensation: f64,
     pub aperture: f64,
     pub maker: Maker,
-    pub crop_factor: f64,
     pub camera_name: String,
     pub lens_name: Option<String>,
 }
@@ -54,12 +60,15 @@ impl From<ExifMetaModel> for ExifMeta {
     fn from(value: ExifMetaModel) -> Self {
         ExifMeta {
             id: value.id.into(),
-            iso: value.iso,
-            focal_length: value.focal_length,
-            exposure_compensation: value.exposure_compensation,
-            aperture: value.aperture,
+            iso: value.iso.0,
+            focal_length: FocalLength {
+                value: value.focal_length.value,
+                eq_35mm: value.focal_length.eq_35mm,
+                crop_factor: value.focal_length.crop_factor,
+            },
+            exposure_compensation: value.exposure_compensation.0,
+            aperture: value.aperture.0,
             maker: value.maker.into(),
-            crop_factor: value.crop_factor,
             camera_name: value.camera_name,
             lens_name: value.lens_name,
         }

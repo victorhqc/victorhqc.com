@@ -1,4 +1,7 @@
-use super::{str::maker::Error as MakerError, ExifMeta, Maker};
+use super::{
+    str::maker::Error as MakerError, Aperture, ExifMeta, ExposureCompensation, FocalLength, Iso,
+    Maker,
+};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
@@ -107,12 +110,15 @@ impl TryFrom<DBExifMeta> for ExifMeta {
 
         Ok(ExifMeta {
             id: value.id,
-            iso: value.iso,
-            focal_length: value.focal_length,
-            exposure_compensation: value.exposure_compensation,
-            aperture: value.aperture,
+            iso: Iso(value.iso),
+            focal_length: FocalLength {
+                value: value.focal_length,
+                eq_35mm: value.focal_length * value.crop_factor,
+                crop_factor: value.crop_factor,
+            },
+            exposure_compensation: ExposureCompensation(value.exposure_compensation),
+            aperture: Aperture(value.aperture),
             maker,
-            crop_factor: value.crop_factor,
             camera_name: value.camera_name,
             lens_name: value.lens_name,
             photo_id: value.photo_id,
