@@ -1,4 +1,4 @@
-use super::{Error as MakerError, ExifMeta, Maker};
+use super::{str::maker::Error as MakerError, ExifMeta, Maker};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
