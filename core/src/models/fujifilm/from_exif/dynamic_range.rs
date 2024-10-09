@@ -21,8 +21,6 @@ impl FromExifData for DynamicRange {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::exif::ExifData;
-    use crate::models::fujifilm::DynamicRange;
 
     #[test]
     fn it_parses_auto_dynamic_range() {

@@ -28,8 +28,6 @@ impl FromExifData for DRangePriority {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::exif::ExifData;
-    use crate::models::fujifilm::DRangePriority;
 
     #[test]
     fn it_parses_auto_priority() {

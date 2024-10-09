@@ -17,8 +17,6 @@ impl FromExifData for Color {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::exif::ExifData;
-    use crate::models::fujifilm::Color;
 
     #[test]
     fn it_parses_positive_numbers() {

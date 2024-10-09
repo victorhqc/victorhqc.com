@@ -25,8 +25,6 @@ impl FromExifData for ColorChromeEffect {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::exif::ExifData;
-    use crate::models::fujifilm::ColorChromeEffect;
 
     #[test]
     fn it_parses_strong_effect() {
