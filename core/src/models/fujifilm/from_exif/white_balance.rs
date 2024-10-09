@@ -36,7 +36,7 @@ impl FromExifData for WhiteBalance {
             "incandescent" => Some(WhiteBalance::Incandescent { shift }),
             "underwater" => Some(WhiteBalance::Underwater { shift }),
             "kelvin" => {
-                if let Some(exif) = data.find("Color Temperature") {
+                if let Some(exif) = data.find("ColorTemperature") {
                     debug!("WhiteBalance::Temperature {:?}", exif.value());
 
                     if let Ok(temperature) = exif.value().parse::<i32>() {
@@ -347,7 +347,7 @@ mod tests {
     fn it_parses_white_balance_kelvin() {
         let exif: Vec<ExifData> = vec![
             ExifData::new("WhiteBalance", "Kelvin"),
-            ExifData::new("Color Temperature", "6500"),
+            ExifData::new("ColorTemperature", "6500"),
         ];
         assert_eq!(
             WhiteBalance::from_exif(&exif),
@@ -360,7 +360,7 @@ mod tests {
         let exif: Vec<ExifData> = vec![
             ExifData::new("WhiteBalance", "Kelvin"),
             ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
-            ExifData::new("Color Temperature", "6500"),
+            ExifData::new("ColorTemperature", "6500"),
         ];
         assert_eq!(
             WhiteBalance::from_exif(&exif),
