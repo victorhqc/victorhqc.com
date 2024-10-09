@@ -44,3 +44,38 @@ impl FromExifData for WBShift {
         Some(WBShift { red, blue })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_should_parse_white_balance_shift() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalanceFineTune", "red 40, blue -60")];
+        assert_eq!(
+            WBShift::from_exif(&exif),
+            Some(WBShift { red: 2, blue: -3 })
+        );
+
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalanceFineTune", "red -80, blue 20")];
+        assert_eq!(
+            WBShift::from_exif(&exif),
+            Some(WBShift { red: -4, blue: 1 })
+        );
+    }
+
+    #[test]
+    fn it_should_should_not_parse_when_bad_number() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalanceFineTune", "red 40.5, blue -60")];
+        assert_eq!(WBShift::from_exif(&exif), None);
+
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalanceFineTune", "red 20, blue hello")];
+        assert_eq!(WBShift::from_exif(&exif), None);
+    }
+
+    #[test]
+    fn it_should_should_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "red 40, blue -60")];
+        assert_eq!(WBShift::from_exif(&exif), None);
+    }
+}
