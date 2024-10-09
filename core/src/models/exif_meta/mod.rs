@@ -1,4 +1,5 @@
 pub mod db;
+mod from_exif;
 pub mod str;
 
 use serde::{Deserialize, Serialize};
@@ -18,10 +19,10 @@ pub struct ExifMeta {
     pub fuji_recipe_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Iso(pub i64);
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FocalLength {
     pub value: f64,
     pub eq_35mm: f64,
