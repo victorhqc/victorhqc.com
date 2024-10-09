@@ -6,7 +6,7 @@ use regex::Regex;
 
 impl FromExifData for WhiteBalance {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
-        let shift = WBShift::from_exif(data)?;
+        let shift = WBShift::from_exif(data).unwrap_or_default();
         let exif = data.find("WhiteBalance")?;
 
         debug!("WhiteBalance::from_exif: {:?}", exif);
@@ -50,5 +50,32 @@ impl FromExifData for WhiteBalance {
             }
             _ => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_parses_white_balance_auto() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Auto")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Auto {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Auto"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Auto {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
     }
 }
