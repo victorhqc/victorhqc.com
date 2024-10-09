@@ -19,3 +19,47 @@ impl FromExifData for MonochromaticColor {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_parses_monochromatic_color() {
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("BWAdjustment", "3"),
+            ExifData::new("BWMagentaGreen", "-5"),
+        ];
+
+        assert_eq!(
+            MonochromaticColor::from_exif(&exif),
+            Some(MonochromaticColor::ColorShift {
+                shift: MonochromaticColorShift { wc: 3, mg: -5 },
+            })
+        );
+    }
+
+    #[test]
+    fn it_does_not_parse_when_invalid_numbers() {
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("BWAdjustment", "hello"),
+            ExifData::new("BWMagentaGreen", "-5"),
+        ];
+
+        assert_eq!(MonochromaticColor::from_exif(&exif), None,);
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("BWAdjustment", "3"),
+            ExifData::new("BWMagentaGreen", "bad"),
+        ];
+
+        assert_eq!(MonochromaticColor::from_exif(&exif), None,);
+    }
+
+    #[test]
+    fn it_does_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "3")];
+
+        assert_eq!(MonochromaticColor::from_exif(&exif), None,);
+    }
+}
