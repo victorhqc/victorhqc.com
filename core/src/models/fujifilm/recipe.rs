@@ -266,7 +266,7 @@ pub struct ColorChromeEffectFxBlue {
     pub strength: SettingStrength,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ToneCurve {
     pub highlights: f64,
     pub shadows: f64,
