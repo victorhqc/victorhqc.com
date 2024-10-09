@@ -47,3 +47,131 @@ impl FromExifData for TransSensor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_parses_trans_i_sensor() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-Pro1")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransI));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-E1")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransI));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-M1")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransI));
+    }
+
+    #[test]
+    fn it_parses_trans_ii_sensor() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X100S")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-E2")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T1")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X100T")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T10")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-E2S")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X70")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X20")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "XQ1")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X30")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "XQ2")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransII));
+    }
+
+    #[test]
+    fn it_parses_trans_iii_sensor() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-Pro2")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T2")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X100F")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T20")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-E3")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIII));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-H1")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIII));
+    }
+
+    #[test]
+    fn it_parses_trans_iv_sensor() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T3")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T4")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T30")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T30 II")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-Pro3")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X100V")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-S10")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-S20")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-E4")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+    }
+
+    #[test]
+    fn it_parses_trans_v_sensor() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-H2S")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-H2")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T5")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-T50")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X100VI")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransV));
+    }
+
+    #[test]
+    fn it_does_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "X100VI")];
+        assert_eq!(TransSensor::from_exif(&exif), None);
+    }
+}
