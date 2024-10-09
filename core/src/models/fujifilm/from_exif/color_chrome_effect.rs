@@ -32,21 +32,36 @@ mod tests {
     fn it_parses_strong_effect() {
         let exif: Vec<ExifData> = vec![ExifData::new("ColorChromeEffect", "Strong")];
 
-        assert_eq!(ColorChromeEffect::from_exif(&exif), Some(ColorChromeEffect { strength: SettingStrength::Strong }));
+        assert_eq!(
+            ColorChromeEffect::from_exif(&exif),
+            Some(ColorChromeEffect {
+                strength: SettingStrength::Strong
+            })
+        );
     }
 
     #[test]
     fn it_parses_weak_effect() {
         let exif: Vec<ExifData> = vec![ExifData::new("ColorChromeEffect", "Weak")];
 
-        assert_eq!(ColorChromeEffect::from_exif(&exif), Some(ColorChromeEffect { strength: SettingStrength::Weak }));
+        assert_eq!(
+            ColorChromeEffect::from_exif(&exif),
+            Some(ColorChromeEffect {
+                strength: SettingStrength::Weak
+            })
+        );
     }
 
     #[test]
     fn it_parses_off_effect() {
         let exif: Vec<ExifData> = vec![ExifData::new("ColorChromeEffect", "")];
 
-        assert_eq!(ColorChromeEffect::from_exif(&exif), Some(ColorChromeEffect { strength: SettingStrength::Off }));
+        assert_eq!(
+            ColorChromeEffect::from_exif(&exif),
+            Some(ColorChromeEffect {
+                strength: SettingStrength::Off
+            })
+        );
     }
 
     #[test]

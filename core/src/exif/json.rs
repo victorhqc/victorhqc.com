@@ -1,6 +1,6 @@
+use super::ExifData;
 use log::trace;
 use snafu::prelude::*;
-use super::ExifData;
 
 pub struct JsonValue(pub serde_json::Value);
 
@@ -8,7 +8,8 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
     type Error = Error;
 
     fn try_from(value: JsonValue) -> Result<Self, Self::Error> {
-        let fields: Vec<ExifData> = value.0
+        let fields: Vec<ExifData> = value
+            .0
             .as_object()
             .context(EmptySnafu)?
             .into_iter()
@@ -26,7 +27,7 @@ impl TryFrom<JsonValue> for Vec<ExifData> {
                         let value: String = if let Some(value) = value.as_str() {
                             let value = value.to_string().trim().to_string();
 
-                            format!("{}, {}", acc,value)
+                            format!("{}, {}", acc, value)
                         } else {
                             acc
                         };

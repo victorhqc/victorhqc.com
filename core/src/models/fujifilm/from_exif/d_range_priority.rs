@@ -52,10 +52,7 @@ mod tests {
     fn it_parses_weak_priority() {
         let exif: Vec<ExifData> = vec![ExifData::new("DRangePriority", "weak")];
 
-        assert_eq!(
-            DRangePriority::from_exif(&exif),
-            Some(DRangePriority::Weak)
-        );
+        assert_eq!(DRangePriority::from_exif(&exif), Some(DRangePriority::Weak));
     }
 
     #[test]

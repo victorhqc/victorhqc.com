@@ -22,14 +22,20 @@ mod tests {
     fn it_parses_positive_numbers() {
         let exif: Vec<ExifData> = vec![ExifData::new("NoiseReduction", "3")];
 
-        assert_eq!(HighISONoiseReduction::from_exif(&exif), Some(HighISONoiseReduction { value: 3 }));
+        assert_eq!(
+            HighISONoiseReduction::from_exif(&exif),
+            Some(HighISONoiseReduction { value: 3 })
+        );
     }
 
     #[test]
     fn it_parses_negative_numbers() {
         let exif: Vec<ExifData> = vec![ExifData::new("NoiseReduction", "-3")];
 
-        assert_eq!(HighISONoiseReduction::from_exif(&exif), Some(HighISONoiseReduction { value: -3 }));
+        assert_eq!(
+            HighISONoiseReduction::from_exif(&exif),
+            Some(HighISONoiseReduction { value: -3 })
+        );
     }
 
     #[test]
