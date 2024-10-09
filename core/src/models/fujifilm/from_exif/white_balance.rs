@@ -78,4 +78,302 @@ mod tests {
             })
         );
     }
+
+    #[test]
+    fn it_parses_white_balance_auto_white_priority() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Auto (White Priority)")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::AutoWhitePriority {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Auto (White Priority)"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::AutoWhitePriority {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_auto_ambience_priority() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Auto (Ambiance Priority)")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::AutoAmbiencePriority {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Auto (Ambiance Priority)"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::AutoAmbiencePriority {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_custom() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Custom")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Custom1 {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Custom"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Custom1 {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_custom2() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Custom2")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Custom2 {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Custom2"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Custom2 {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_custom3() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Custom3")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Custom3 {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Custom3"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Custom3 {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_daylight() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Daylight")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Daylight {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Daylight"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Daylight {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_cloudy() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Cloudy")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Cloudy {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Cloudy"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Cloudy {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_fluorescent1() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Daylight Fluorescent")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::FluorescentLight1 {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Daylight Fluorescent"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::FluorescentLight1 {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_fluorescent2() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Day White Fluorescent")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::FluorescentLight2 {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Day White Fluorescent"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::FluorescentLight2 {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_fluorescent3() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "White Fluorescent")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::FluorescentLight3 {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "White Fluorescent"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::FluorescentLight3 {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_incandescent() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Incandescent")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Incandescent {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Incandescent"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Incandescent {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_underwater() {
+        let exif: Vec<ExifData> = vec![ExifData::new("WhiteBalance", "Underwater")];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Underwater {
+                shift: WBShift { red: 0, blue: 0 }
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Underwater"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Underwater {
+                shift: WBShift { red: 2, blue: -3 }
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_white_balance_kelvin() {
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Kelvin"),
+            ExifData::new("Color Temperature", "6500"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Kelvin {
+                shift: WBShift { red: 0, blue: 0 },
+                temperature: 6500,
+            })
+        );
+
+        let exif: Vec<ExifData> = vec![
+            ExifData::new("WhiteBalance", "Kelvin"),
+            ExifData::new("WhiteBalanceFineTune", "red 40, blue -60"),
+            ExifData::new("Color Temperature", "6500"),
+        ];
+        assert_eq!(
+            WhiteBalance::from_exif(&exif),
+            Some(WhiteBalance::Kelvin {
+                shift: WBShift { red: 2, blue: -3 },
+                temperature: 6500,
+            })
+        );
+    }
+
+    #[test]
+    fn it_does_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "Auto")];
+        assert_eq!(WhiteBalance::from_exif(&exif), None,);
+    }
 }
