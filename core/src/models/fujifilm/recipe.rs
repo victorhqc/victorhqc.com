@@ -261,7 +261,7 @@ pub struct ColorChromeEffect {
     pub strength: SettingStrength,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ColorChromeEffectFxBlue {
     pub strength: SettingStrength,
 }

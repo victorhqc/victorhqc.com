@@ -21,3 +21,53 @@ impl FromExifData for ColorChromeEffectFxBlue {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::exif::ExifData;
+    use crate::models::fujifilm::ColorChromeEffectFxBlue;
+
+    #[test]
+    fn it_parses_strong_effect() {
+        let exif: Vec<ExifData> = vec![ExifData::new("ColorChromeFXBlue", "Strong")];
+
+        assert_eq!(
+            ColorChromeEffectFxBlue::from_exif(&exif),
+            Some(ColorChromeEffectFxBlue {
+                strength: SettingStrength::Strong
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_weak_effect() {
+        let exif: Vec<ExifData> = vec![ExifData::new("ColorChromeFXBlue", "Weak")];
+
+        assert_eq!(
+            ColorChromeEffectFxBlue::from_exif(&exif),
+            Some(ColorChromeEffectFxBlue {
+                strength: SettingStrength::Weak
+            })
+        );
+    }
+
+    #[test]
+    fn it_parses_off_effect() {
+        let exif: Vec<ExifData> = vec![ExifData::new("ColorChromeFXBlue", "")];
+
+        assert_eq!(
+            ColorChromeEffectFxBlue::from_exif(&exif),
+            Some(ColorChromeEffectFxBlue {
+                strength: SettingStrength::Off
+            })
+        );
+    }
+
+    #[test]
+    fn it_does_not_parse_when_not_found() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Foo", "3")];
+
+        assert_eq!(ColorChromeEffectFxBlue::from_exif(&exif), None);
+    }
+}
