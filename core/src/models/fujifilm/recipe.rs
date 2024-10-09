@@ -282,7 +282,7 @@ pub struct Sharpness {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct HighISONoiseReduction {
     pub value: i64,
 }
