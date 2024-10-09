@@ -239,7 +239,7 @@ pub enum DRangePriority {
 #[serde(tag = "type")]
 pub enum MonochromaticColor {
     ColorShift { shift: MonochromaticColorShift },
-    Strength { value: i32 },
+    Strength { value: i64 },
 }
 
 impl Default for MonochromaticColor {
@@ -252,42 +252,42 @@ impl Default for MonochromaticColor {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct MonochromaticColorShift {
-    pub wc: i32,
-    pub mg: i32,
+    pub wc: i64,
+    pub mg: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ColorChromeEffect {
     pub strength: SettingStrength,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ColorChromeEffectFxBlue {
     pub strength: SettingStrength,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ToneCurve {
     pub highlights: f64,
     pub shadows: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Color {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Sharpness {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct HighISONoiseReduction {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Clarity {
     pub value: i64,
 }

@@ -1,4 +1,4 @@
-use super::{ExifMeta, Maker};
+use super::{Error as MakerError, ExifMeta, Maker};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
@@ -127,5 +127,5 @@ pub enum Error {
     Sqlx { source: SqlxError },
 
     #[snafu(display("Failed to parse Maker {:?}", source))]
-    Maker { source: strum::ParseError },
+    Maker { source: MakerError },
 }

@@ -9,7 +9,7 @@ uploaded to an S3 Bucket and recording its location in a SQLite DB.
 
 Could this be done differently? Most likely, but I don't really want to
 over-complicate it for now. Even if the deployment needs to upload the binary
-and  SQLite DB to the server.
+and SQLite DB to the server.
 
 An additional consideration is to avoid S3 fees from Amazon. It's virtually
 free to upload to a bucket, but every time data is transferred from the bucket
@@ -29,25 +29,34 @@ and photos management, but that's a maybe and definitely in the future.
   cargo install sqlx-cli
   cargo install cargo-watch
   ```
-  
-## CLI Backoffice
-
-Since this Site won't have a UI or any kind of management outside my computer,
-all the CRUD operations will happen locally, and I'll just ship the DB on every
-release, I have to have someway of managing it, so a simple CLI will do.
-
-This CLI reads the EXIF information using the trusty exiftool, stores it in the
-DB and uploads the file to an S3 Bucket.
-
-## API Development
 
 Prepare the environment variables by creating an `.env` file
 
 ```sh
 cp .env.example .env
+cp .cargo/config.toml.example .cargo/config.toml 
 ```
 
-Create an initial DB
+The `.cargo/config.toml` requires an update, replace the `<ROOT_PATH>` with the
+current path you have the project saved in.
+
+```sh
+pwd
+```
+
+In unix systems it should like
+
+```
+DATABASE_URL = "sqlite:/users/user/victorhqc.com/development.db"
+```
+
+In Windows it should look like
+
+```
+DATABASE_URL = "sqlite:C:\\Users\\user\\victorhqc.com\\development.db"
+```
+
+Create the initial DB
 
 ```sh
 ./scripts/db.sh
@@ -59,16 +68,40 @@ For Windows
 scripts\db.bat
 ```
 
-Run the project
+## CLI Backoffice
+
+Since this Site won't have a UI or any kind of management outside my computer,
+all the CRUD operations will happen locally, and I'll just ship the DB on every
+release, I have to have someway of managing it, so a simple CLI will do.
+
+This CLI reads the EXIF information using [exiftool](https://exiftool.org/),
+then stores it in the DB and uploads the file to an S3 Bucket.
+
+For this, make sure to run the exiftool installation
 
 ```sh
-./scripts/unix/api.sh
+./scripts/unix/exiftool.sh
 ```
 
 For Windows
 
 ```bat
-scripts\windows\api.bat
+scripts\windows\exiftool.bat
+```
+
+And to run the CLI
+
+```sh
+cargo run -p cli-victorhqc-com
+cargo run -p cli-victorhqc-com -- --help
+```
+
+## API Development
+
+Run the project
+
+```sh
+cargo run -p api-victorhqc-com
 ```
 
 ## Database
@@ -79,7 +112,8 @@ Add a new migration
 sqlx migrate add -r <name>
 ```
 
-Run  migrations again
+Run migrations again
+
 ```sh
 sqlx migrate run
 ```

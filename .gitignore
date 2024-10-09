@@ -1,8 +1,13 @@
 /.idea
 /target
+/deps
 
 .env
+
+.DS_Store
 
 *.db
 *.db-shm
 *.db-wal
+
+/.cargo/config.toml

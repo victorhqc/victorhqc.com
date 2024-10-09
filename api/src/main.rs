@@ -47,6 +47,7 @@ async fn main() -> Result<(), Error> {
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
         .data(context)
         .data(DataLoader::new(loader, spawn))
+        // .limit_depth(4)
         .finish();
 
     #[cfg(debug_assertions)]
