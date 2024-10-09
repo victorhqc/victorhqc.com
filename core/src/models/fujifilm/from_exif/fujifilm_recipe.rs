@@ -11,9 +11,9 @@ impl FromExifData for FujifilmRecipe {
         let settings = sensor.settings(builder);
 
         Some(FujifilmRecipe {
-            id: String::from("TODO"),
-            name: String::from("TODO"),
-            src: String::from("TODO"),
+            id: String::from("UNKNOWN"),
+            name: String::from("UNKNOWN"),
+            src: String::from("UNKNOWN"),
             film_simulation,
             sensor,
             settings,
