@@ -28,9 +28,6 @@ CREATE TABLE IF NOT EXISTS photos (
     src TEXT NOT NULL UNIQUE,
     filename TEXT NOT NULL UNIQUE,
     filetype TEXT NOT NULL,
-    rating INTEGER NOT NULL,
-    date_taken DATE NULL,
-    city TEXT NULL,
     created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
     updated_at TIMESTAMP DEFAULT current_timestamp NOT NULL,
     deleted BOOLEAN NOT NULL DEFAULT FALSE
@@ -38,6 +35,9 @@ CREATE TABLE IF NOT EXISTS photos (
 
 CREATE TABLE IF NOT EXISTS exif_metas (
   id TEXT PRIMARY KEY NOT NULL,
+  rating INTEGER NOT NULL,
+  date_taken DATE NULL,
+  city TEXT NULL,
   iso INTEGER NOT NULL,
   focal_length REAL NOT NULL,
   exposure_compensation REAL NOT NULL,

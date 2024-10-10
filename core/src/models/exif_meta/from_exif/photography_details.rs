@@ -1,11 +1,24 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::{
-    Aperture, ExposureCompensation, FocalLength, Iso, Maker, PhotographyDetails,
+    Aperture, City, DateTaken, ExposureCompensation, FocalLength, Iso, Maker, PhotographyDetails,
+    Rating,
 };
 use log::debug;
 
 impl FromExifData for PhotographyDetails {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
+        let rating = Rating::from_exif(data).or_else(|| {
+            debug!("Rating Missing");
+            None
+        })?;
+        let city = City::from_exif(data).or_else(|| {
+            debug!("City Missing");
+            None
+        });
+        let date_taken = DateTaken::from_exif(data).or_else(|| {
+            debug!("Date Taken Missing");
+            None
+        });
         let aperture = Aperture::from_exif(data).or_else(|| {
             debug!("Aperture Missing");
             None
@@ -33,6 +46,9 @@ impl FromExifData for PhotographyDetails {
         })?;
 
         Some(PhotographyDetails {
+            rating,
+            date_taken,
+            city,
             camera_name: camera_name.value().to_string(),
             lens_name,
             aperture,
@@ -51,6 +67,9 @@ mod tests {
     #[test]
     fn it_parses_photography_details_from_exif() {
         let exif: Vec<ExifData> = vec![
+            ExifData::new("Rating", "3"),
+            ExifData::new("City", "Berlin"),
+            ExifData::new("DateTimeOriginal", "2024:09:12 18:55:14.13+02:00"),
             ExifData::new("Model", "X-T5"),
             ExifData::new("LensModel", "XF23mmF1.4 R LM WR"),
             ExifData::new("Aperture", "2.8"),
@@ -64,6 +83,9 @@ mod tests {
         assert_eq!(
             PhotographyDetails::from_exif(&exif),
             Some(PhotographyDetails {
+                rating: Rating(3),
+                city: Some(City("Berlin".to_string())),
+                date_taken: Some(DateTaken("2024:09:12 18:55:14.13+02:00".to_string())),
                 camera_name: "X-T5".to_string(),
                 lens_name: Some("XF23mmF1.4 R LM WR".to_string()),
                 aperture: Aperture(2.8),
@@ -82,6 +104,9 @@ mod tests {
     #[test]
     fn it_does_not_parse_if_any_property_is_missing() {
         let exif: Vec<ExifData> = vec![
+            ExifData::new("Rating", "3"),
+            ExifData::new("City", "Berlin"),
+            ExifData::new("DateTimeOriginal", "2024:09:12 18:55:14.13+02:00"),
             ExifData::new("Model", "X-T5"),
             ExifData::new("LensModel", "XF23mmF1.4 R LM WR"),
             ExifData::new("ExposureCompensation", "+0.67"),

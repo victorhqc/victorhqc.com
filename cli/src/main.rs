@@ -48,6 +48,8 @@ fn main() {
         .expect("Failed to capture the title of the photograph");
 
     debug!("Title: {}", title);
+
+    print!("");
 }
 
 #[derive(Debug, Parser)]

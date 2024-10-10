@@ -13,6 +13,9 @@ ALTER TABLE exif_metas RENAME TO exif_metas_OLD;
 
 CREATE TABLE IF NOT EXISTS exif_metas (
   id TEXT PRIMARY KEY NOT NULL,
+  rating INTEGER NOT NULL,
+  date_taken DATE NULL,
+  city TEXT NULL,
   iso INTEGER NOT NULL,
   focal_length REAL NOT NULL,
   exposure_compensation REAL NOT NULL,
@@ -42,6 +45,9 @@ CREATE TABLE IF NOT EXISTS exif_metas (
 INSERT INTO
 exif_metas (
   id,
+  rating,
+  date_taken,
+  city,
   iso,
   focal_length,
   exposure_compensation,
@@ -55,6 +61,9 @@ exif_metas (
 )
 SELECT
   id,
+  rating,
+  date_taken,
+  city,
   iso,
   focal_length,
   exposure_compensation,

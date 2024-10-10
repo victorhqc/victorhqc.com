@@ -35,6 +35,9 @@ pub struct FocalLength {
 #[graphql(complex)]
 pub struct ExifMeta {
     pub id: ID,
+    pub rating: i64,
+    pub city: Option<String>,
+    pub date_taken: Option<String>,
     pub iso: i64,
     pub focal_length: FocalLength,
     pub exposure_compensation: f64,
@@ -60,6 +63,9 @@ impl From<ExifMetaModel> for ExifMeta {
     fn from(value: ExifMetaModel) -> Self {
         ExifMeta {
             id: value.id.into(),
+            rating: value.details.rating.0.into(),
+            city: value.details.city.map(|c| c.0),
+            date_taken: value.details.date_taken.map(|d| d.0),
             iso: value.details.iso.0,
             focal_length: FocalLength {
                 value: value.details.focal_length.value,

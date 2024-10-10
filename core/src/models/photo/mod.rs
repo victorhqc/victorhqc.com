@@ -2,7 +2,7 @@ pub mod db;
 
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display as EnumDisplay, EnumString};
-use time::{Date, OffsetDateTime};
+use time::OffsetDateTime;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Photo {
@@ -10,10 +10,7 @@ pub struct Photo {
     pub title: String,
     pub src: String,
     pub filename: String,
-    pub rating: i8,
     pub filetype: FileType,
-    pub date_taken: Option<Date>,
-    pub city: Option<String>,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
     pub deleted: bool,
