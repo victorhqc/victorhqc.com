@@ -60,17 +60,17 @@ impl From<ExifMetaModel> for ExifMeta {
     fn from(value: ExifMetaModel) -> Self {
         ExifMeta {
             id: value.id.into(),
-            iso: value.iso.0,
+            iso: value.details.iso.0,
             focal_length: FocalLength {
-                value: value.focal_length.value,
-                eq_35mm: value.focal_length.eq_35mm,
-                crop_factor: value.focal_length.crop_factor,
+                value: value.details.focal_length.value,
+                eq_35mm: value.details.focal_length.eq_35mm,
+                crop_factor: value.details.focal_length.crop_factor,
             },
-            exposure_compensation: value.exposure_compensation.0,
-            aperture: value.aperture.0,
-            maker: value.maker.into(),
-            camera_name: value.camera_name,
-            lens_name: value.lens_name,
+            exposure_compensation: value.details.exposure_compensation.0,
+            aperture: value.details.aperture.0,
+            maker: value.details.maker.into(),
+            camera_name: value.details.camera_name,
+            lens_name: value.details.lens_name,
         }
     }
 }

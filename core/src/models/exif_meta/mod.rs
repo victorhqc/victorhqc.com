@@ -8,6 +8,13 @@ use strum_macros::Display as EnumDisplay;
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ExifMeta {
     pub id: String,
+    pub photo_id: String,
+    pub fuji_recipe_id: Option<String>,
+    pub details: PhotographyDetails,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct PhotographyDetails {
     pub iso: Iso,
     pub focal_length: FocalLength,
     pub exposure_compensation: ExposureCompensation,
@@ -15,8 +22,6 @@ pub struct ExifMeta {
     pub maker: Maker,
     pub camera_name: String,
     pub lens_name: Option<String>,
-    pub photo_id: String,
-    pub fuji_recipe_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

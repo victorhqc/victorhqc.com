@@ -1,6 +1,6 @@
 use super::{
     str::maker::Error as MakerError, Aperture, ExifMeta, ExposureCompensation, FocalLength, Iso,
-    Maker,
+    Maker, PhotographyDetails,
 };
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
@@ -110,19 +110,21 @@ impl TryFrom<DBExifMeta> for ExifMeta {
 
         Ok(ExifMeta {
             id: value.id,
-            iso: Iso(value.iso),
-            focal_length: FocalLength {
-                value: value.focal_length,
-                eq_35mm: value.focal_length * value.crop_factor,
-                crop_factor: value.crop_factor,
-            },
-            exposure_compensation: ExposureCompensation(value.exposure_compensation),
-            aperture: Aperture(value.aperture),
-            maker,
-            camera_name: value.camera_name,
-            lens_name: value.lens_name,
             photo_id: value.photo_id,
             fuji_recipe_id: value.fuji_recipe_id,
+            details: PhotographyDetails {
+                iso: Iso(value.iso),
+                focal_length: FocalLength {
+                    value: value.focal_length,
+                    eq_35mm: value.focal_length * value.crop_factor,
+                    crop_factor: value.crop_factor,
+                },
+                exposure_compensation: ExposureCompensation(value.exposure_compensation),
+                aperture: Aperture(value.aperture),
+                maker,
+                camera_name: value.camera_name,
+                lens_name: value.lens_name,
+            },
         })
     }
 }
