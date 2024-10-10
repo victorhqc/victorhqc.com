@@ -32,7 +32,7 @@ pub struct FocalLength {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ExposureCompensation(pub f64);
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Aperture(pub f64);
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, EnumDisplay, sqlx::Type, Eq, PartialEq)]
