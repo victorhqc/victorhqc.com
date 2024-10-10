@@ -9,6 +9,8 @@ use core_victorhqc_com::{
     },
 };
 use log::debug;
+use std::io;
+use std::io::Write;
 use std::path::Path;
 
 fn main() {
@@ -36,6 +38,16 @@ fn main() {
         let recipe = FujifilmRecipeDetails::from_exif(data.as_slice()).unwrap();
         debug!("{:?}", recipe);
     }
+
+    print!("Please, type the title for the Photograph: ");
+    io::stdout().flush().unwrap();
+
+    let mut title = String::new();
+    io::stdin()
+        .read_line(&mut title)
+        .expect("Failed to capture the title of the photograph");
+
+    debug!("Title: {}", title);
 }
 
 #[derive(Debug, Parser)]
