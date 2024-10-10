@@ -1,10 +1,12 @@
 mod exiftool;
 
 use clap::Parser;
-use core_victorhqc_com::models::exif_meta::PhotographyDetails;
 use core_victorhqc_com::{
     exif::FromExifData,
-    models::{exif_meta::Maker, fujifilm::FujifilmRecipe},
+    models::{
+        exif_meta::{Maker, PhotographyDetails},
+        fujifilm::FujifilmRecipeDetails,
+    },
 };
 use log::debug;
 use std::path::Path;
@@ -31,8 +33,8 @@ fn main() {
     debug!("{:?}", photography_details);
 
     if maker == Maker::Fujifilm {
-        let recipe = FujifilmRecipe::from_exif(data.as_slice()).unwrap();
-        debug!("Fujifilm Recipe: {:?}", recipe);
+        let recipe = FujifilmRecipeDetails::from_exif(data.as_slice()).unwrap();
+        debug!("{:?}", recipe);
     }
 }
 

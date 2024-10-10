@@ -92,9 +92,9 @@ impl From<FujifilmRecipeModel> for FujifilmRecipe {
             id: model.id.into(),
             name: model.name,
             src: model.src,
-            film_simulation: model.film_simulation.to_string(),
-            sensor: model.sensor.to_string(),
-            settings: model.settings.into(),
+            film_simulation: model.details.film_simulation.to_string(),
+            sensor: model.details.sensor.to_string(),
+            settings: model.details.settings.into(),
         }
     }
 }
