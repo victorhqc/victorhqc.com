@@ -3,8 +3,9 @@ use crate::models::fujifilm::{
     from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
     str::Error as RecipeError,
     Clarity, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
-    FilmSimulation, FujifilmRecipe, GrainEffect, GrainSize, GrainStrength, HighISONoiseReduction,
-    MonochromaticColor, SettingStrength, Sharpness, ToneCurve, TransSensor, WBShift, WhiteBalance,
+    FilmSimulation, FujifilmRecipe, FujifilmRecipeDetails, GrainEffect, GrainSize, GrainStrength,
+    HighISONoiseReduction, MonochromaticColor, SettingStrength, Sharpness, ToneCurve, TransSensor,
+    WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, FromRow, SqlitePool};
@@ -321,9 +322,11 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
             id: value.id,
             name: value.name,
             src: value.src,
-            sensor: trans_sensor,
-            film_simulation,
-            settings,
+            details: FujifilmRecipeDetails {
+                sensor: trans_sensor,
+                film_simulation,
+                settings,
+            },
         })
     }
 }
