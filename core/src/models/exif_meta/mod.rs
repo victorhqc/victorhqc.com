@@ -29,7 +29,7 @@ pub struct FocalLength {
     pub crop_factor: f64,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ExposureCompensation(pub f64);
 
 #[derive(Debug, Clone, Serialize)]
