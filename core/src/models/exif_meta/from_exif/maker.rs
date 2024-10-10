@@ -1,6 +1,7 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::Maker;
 use log::debug;
+use std::str::FromStr;
 
 impl FromExifData for Maker {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
@@ -8,11 +9,9 @@ impl FromExifData for Maker {
 
         debug!("Maker::from_exif: {:?}", exif);
 
-        match exif.value().to_lowercase().as_str() {
-            "fujifilm" => Some(Maker::Fujifilm),
-            "konica" => Some(Maker::Konica),
-            "canon" => Some(Maker::Canon),
-            _ => None,
+        match Maker::from_str(exif.value()) {
+            Ok(maker) => Some(maker),
+            Err(_) => None,
         }
     }
 }
