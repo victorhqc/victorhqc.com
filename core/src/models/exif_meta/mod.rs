@@ -5,7 +5,7 @@ pub mod str;
 use serde::{Deserialize, Serialize};
 use strum_macros::Display as EnumDisplay;
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ExifMeta {
     pub id: String,
     pub iso: Iso,
