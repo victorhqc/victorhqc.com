@@ -7,6 +7,7 @@ use time::{Date, OffsetDateTime};
 #[derive(Clone, Debug, Serialize)]
 pub struct Photo {
     pub id: String,
+    pub title: String,
     pub src: String,
     pub filename: String,
     pub rating: i8,

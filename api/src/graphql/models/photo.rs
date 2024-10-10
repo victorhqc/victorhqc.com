@@ -23,6 +23,7 @@ impl From<CoreFileType> for FileType {
 #[graphql(complex)]
 pub struct Photo {
     pub id: ID,
+    pub title: String,
     pub src: String,
     pub filename: String,
     pub rating: i8,
@@ -69,6 +70,7 @@ impl From<CorePhoto> for Photo {
 
         Photo {
             id: photo.id.into(),
+            title: photo.title,
             src: photo.src,
             filename: photo.filename,
             rating: photo.rating,

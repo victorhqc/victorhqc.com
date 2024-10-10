@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n    SELECT\n        id,\n        src,\n        filename,\n        rating,\n        filetype,\n        date_taken as \"date_taken: Timestamp\",\n        city,\n        created_at as \"created_at: Timestamp\",\n        updated_at as \"updated_at: Timestamp\",\n        deleted\n    FROM\n        photos AS p\n    WHERE\n        deleted = false\n    ORDER BY\n        created_at DESC\n    ",
+  "query": "\n    SELECT\n        id,\n        title,\n        src,\n        filename,\n        rating,\n        filetype,\n        date_taken as \"date_taken: Timestamp\",\n        city,\n        created_at as \"created_at: Timestamp\",\n        updated_at as \"updated_at: Timestamp\",\n        deleted\n    FROM\n        photos AS p\n    WHERE\n        deleted = false\n    ORDER BY\n        created_at DESC\n    ",
   "describe": {
     "columns": [
       {
@@ -9,48 +9,53 @@
         "type_info": "Text"
       },
       {
-        "name": "src",
+        "name": "title",
         "ordinal": 1,
         "type_info": "Text"
       },
       {
-        "name": "filename",
+        "name": "src",
         "ordinal": 2,
         "type_info": "Text"
       },
       {
-        "name": "rating",
+        "name": "filename",
         "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 4,
         "type_info": "Integer"
       },
       {
         "name": "filetype",
-        "ordinal": 4,
+        "ordinal": 5,
         "type_info": "Text"
       },
       {
         "name": "date_taken: Timestamp",
-        "ordinal": 5,
+        "ordinal": 6,
         "type_info": "Date"
       },
       {
         "name": "city",
-        "ordinal": 6,
+        "ordinal": 7,
         "type_info": "Text"
       },
       {
         "name": "created_at: Timestamp",
-        "ordinal": 7,
-        "type_info": "Datetime"
-      },
-      {
-        "name": "updated_at: Timestamp",
         "ordinal": 8,
         "type_info": "Datetime"
       },
       {
-        "name": "deleted",
+        "name": "updated_at: Timestamp",
         "ordinal": 9,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "deleted",
+        "ordinal": 10,
         "type_info": "Bool"
       }
     ],
@@ -63,6 +68,7 @@
       false,
       false,
       false,
+      false,
       true,
       true,
       false,
@@ -70,5 +76,5 @@
       false
     ]
   },
-  "hash": "16cbcc76e0b7180ccbc761fb593629a23599c37cec0e0fa86a4f4d04227cdef7"
+  "hash": "476abcc1ec061f81f178e00543b48caa45acabf1bbd1f1b49f656eb34a683d46"
 }

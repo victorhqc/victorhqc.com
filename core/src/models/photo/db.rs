@@ -9,6 +9,7 @@ use time::OffsetDateTime;
 #[derive(FromRow)]
 struct DBPhoto {
     id: String,
+    title: String,
     src: String,
     filename: String,
     rating: i64,
@@ -24,6 +25,7 @@ struct DBPhoto {
 struct DBTagPhoto {
     tag_id: String,
     id: String,
+    title: String,
     src: String,
     filename: String,
     rating: i64,
@@ -58,6 +60,7 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
         r#"
     SELECT
         id,
+        title,
         src,
         filename,
         rating,
@@ -90,6 +93,7 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         r#"
     SELECT
         id,
+        title,
         src,
         filename,
         rating,
@@ -127,6 +131,7 @@ async fn find_by_tag_ids(
     SELECT
         tag_id,
         p.id,
+        title,
         src,
         filename,
         rating,
@@ -162,6 +167,7 @@ async fn find_by_tag_ids(
                 p.tag_id,
                 DBPhoto {
                     id: p.id,
+                    title: p.title,
                     src: p.src,
                     filename: p.filename,
                     rating: p.rating,
@@ -213,6 +219,7 @@ impl TryFrom<DBPhoto> for Photo {
 
         Ok(Photo {
             id: photo.id,
+            title: photo.title,
             src: photo.src,
             filename: photo.filename,
             rating: photo.rating as i8,
