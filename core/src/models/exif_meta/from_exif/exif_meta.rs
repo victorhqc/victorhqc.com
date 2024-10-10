@@ -3,19 +3,20 @@ use crate::models::exif_meta::{Aperture, ExifMeta, ExposureCompensation, FocalLe
 
 impl FromExifData for ExifMeta {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
-        let aperture = Aperture::from_exif(data)?;
-        let exposure_compensation = ExposureCompensation::from_exif(data)?;
-        let focal_length = FocalLength::from_exif(data)?;
-        let iso = Iso::from_exif(data)?;
-        let maker = Maker::from_exif(data)?;
-        let lens_name = data.find("LensModel")?;
-        let camera_name = data.find("Model")?;
+        let aperture = Aperture::from_exif(data).expect("Aperture Missing");
+        let exposure_compensation =
+            ExposureCompensation::from_exif(data).expect("Exposure Compensation Missing");
+        let focal_length = FocalLength::from_exif(data).expect("Focal Length Missing");
+        let iso = Iso::from_exif(data).expect("Iso Missing");
+        let maker = Maker::from_exif(data).expect("Maker Missing");
+        let lens_name = data.find("LensModel").map(|n| n.value().to_string());
+        let camera_name = data.find("Model").expect("Camera Model Missing");
 
         Some(ExifMeta {
             id: String::from("UNKNOWN"),
             photo_id: String::from("UNKNOWN"),
             camera_name: camera_name.value().to_string(),
-            lens_name: Some(lens_name.value().to_string()),
+            lens_name,
             fuji_recipe_id: None,
             aperture,
             exposure_compensation,

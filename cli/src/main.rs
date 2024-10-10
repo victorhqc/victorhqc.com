@@ -7,6 +7,7 @@ use core_victorhqc_com::{
 };
 use log::debug;
 use std::path::Path;
+use core_victorhqc_com::models::exif_meta::ExifMeta;
 
 fn main() {
     let path = std::env::current_dir().unwrap();
@@ -24,7 +25,10 @@ fn main() {
     debug!("Exiftool parsed data: {:?}", data);
 
     let maker = Maker::from_exif(data.as_slice()).unwrap();
-    debug!("Maker found: {:?}", maker);
+    debug!("{:?}", maker);
+    
+    let exif_meta = ExifMeta::from_exif(data.as_slice()).unwrap();
+    debug!("{:?}", exif_meta);
 
     if maker == Maker::Fujifilm {
         let recipe = FujifilmRecipe::from_exif(data.as_slice()).unwrap();
