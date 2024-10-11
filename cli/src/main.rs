@@ -2,12 +2,16 @@ mod exiftool;
 
 use clap::Parser;
 use core_victorhqc_com::{
-    exif::{FindExifData, FromExifData},
-    models::{exif_meta::Maker, fujifilm::FujifilmRecipe},
+    exif::FromExifData,
+    models::{
+        exif_meta::{Maker, PhotographyDetails},
+        fujifilm::FujifilmRecipeDetails,
+    },
 };
 use log::debug;
+use std::io;
+use std::io::Write;
 use std::path::Path;
-use std::str::FromStr;
 
 fn main() {
     let path = std::env::current_dir().unwrap();
@@ -24,14 +28,28 @@ fn main() {
     let data = exiftool::spawn::read_metadata(src).unwrap();
     debug!("Exiftool parsed data: {:?}", data);
 
-    let maker = data.as_slice().find("Make").unwrap();
-    let maker = Maker::from_str(maker.value()).unwrap();
-    debug!("Maker found: {:?}", maker);
+    let maker = Maker::from_exif(data.as_slice()).unwrap();
+    debug!("{:?}", maker);
+
+    let photography_details = PhotographyDetails::from_exif(data.as_slice()).unwrap();
+    debug!("{:?}", photography_details);
 
     if maker == Maker::Fujifilm {
-        let recipe = FujifilmRecipe::from_exif(data.as_slice()).unwrap();
-        debug!("Fujifilm Recipe: {:?}", recipe);
+        let recipe = FujifilmRecipeDetails::from_exif(data.as_slice()).unwrap();
+        debug!("{:?}", recipe);
     }
+
+    print!("Please, type the title for the Photograph: ");
+    io::stdout().flush().unwrap();
+
+    let mut title = String::new();
+    io::stdin()
+        .read_line(&mut title)
+        .expect("Failed to capture the title of the photograph");
+
+    debug!("Title: {}", title);
+
+    print!("");
 }
 
 #[derive(Debug, Parser)]

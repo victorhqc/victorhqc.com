@@ -6,6 +6,11 @@ pub struct FujifilmRecipe {
     pub id: String,
     pub name: String,
     pub src: String,
+    pub details: FujifilmRecipeDetails,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FujifilmRecipeDetails {
     pub film_simulation: FilmSimulation,
     pub sensor: TransSensor,
     pub settings: Settings,

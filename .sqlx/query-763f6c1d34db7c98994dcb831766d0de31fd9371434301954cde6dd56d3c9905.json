@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n    SELECT\n        id,\n        iso,\n        focal_length,\n        exposure_compensation,\n        aperture,\n        maker,\n        crop_factor,\n        camera_name,\n        lens_name,\n        photo_id,\n        fuji_recipe_id\n    FROM\n        exif_metas\n    WHERE\n        id = ?\n    ",
+  "query": "\n    SELECT\n        id,\n        rating,\n        city,\n        date_taken as \"date_taken: Timestamp\",\n        iso,\n        focal_length,\n        exposure_compensation,\n        aperture,\n        maker,\n        crop_factor,\n        camera_name,\n        lens_name,\n        photo_id,\n        fuji_recipe_id\n    FROM\n        exif_metas\n    WHERE\n        id = ?\n    ",
   "describe": {
     "columns": [
       {
@@ -9,53 +9,68 @@
         "type_info": "Text"
       },
       {
-        "name": "iso",
+        "name": "rating",
         "ordinal": 1,
         "type_info": "Integer"
       },
       {
-        "name": "focal_length",
+        "name": "city",
         "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_taken: Timestamp",
+        "ordinal": 3,
+        "type_info": "Date"
+      },
+      {
+        "name": "iso",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "focal_length",
+        "ordinal": 5,
         "type_info": "Float"
       },
       {
         "name": "exposure_compensation",
-        "ordinal": 3,
-        "type_info": "Float"
-      },
-      {
-        "name": "aperture",
-        "ordinal": 4,
-        "type_info": "Float"
-      },
-      {
-        "name": "maker",
-        "ordinal": 5,
-        "type_info": "Text"
-      },
-      {
-        "name": "crop_factor",
         "ordinal": 6,
         "type_info": "Float"
       },
       {
-        "name": "camera_name",
+        "name": "aperture",
         "ordinal": 7,
-        "type_info": "Text"
+        "type_info": "Float"
       },
       {
-        "name": "lens_name",
+        "name": "maker",
         "ordinal": 8,
         "type_info": "Text"
       },
       {
-        "name": "photo_id",
+        "name": "crop_factor",
         "ordinal": 9,
+        "type_info": "Float"
+      },
+      {
+        "name": "camera_name",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "lens_name",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "photo_id",
+        "ordinal": 12,
         "type_info": "Text"
       },
       {
         "name": "fuji_recipe_id",
-        "ordinal": 10,
+        "ordinal": 13,
         "type_info": "Text"
       }
     ],
@@ -64,6 +79,9 @@
     },
     "nullable": [
       false,
+      false,
+      true,
+      true,
       false,
       false,
       false,
@@ -76,5 +94,5 @@
       true
     ]
   },
-  "hash": "0824de515a6dfd0a2ba3b4511f56741334b749094a909d77a1cc203675161681"
+  "hash": "763f6c1d34db7c98994dcb831766d0de31fd9371434301954cde6dd56d3c9905"
 }

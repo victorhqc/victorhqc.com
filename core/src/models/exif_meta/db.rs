@@ -1,12 +1,20 @@
-use super::{Error as MakerError, ExifMeta, Maker};
+use super::{
+    str::maker::Error as MakerError, Aperture, City, DateTaken, ExifMeta, ExposureCompensation,
+    FocalLength, Iso, Maker, PhotographyDetails, Rating,
+};
+use crate::models::Timestamp;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
 use std::str::FromStr;
+use time::OffsetDateTime;
 
 #[derive(Debug, FromRow)]
 struct DBExifMeta {
     pub id: String,
+    pub rating: i64,
+    pub city: Option<String>,
+    pub date_taken: Option<Timestamp>,
     pub iso: i64,
     pub focal_length: f64,
     pub exposure_compensation: f64,
@@ -38,6 +46,9 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
         r#"
     SELECT
         id,
+        rating,
+        city,
+        date_taken as "date_taken: Timestamp",
         iso,
         focal_length,
         exposure_compensation,
@@ -69,6 +80,9 @@ async fn find_by_photo_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<E
         r#"
     SELECT
         id,
+        rating,
+        city,
+        date_taken as "date_taken: Timestamp",
         iso,
         focal_length,
         exposure_compensation,
@@ -104,19 +118,43 @@ impl TryFrom<DBExifMeta> for ExifMeta {
 
     fn try_from(value: DBExifMeta) -> Result<Self, Self::Error> {
         let maker = Maker::from_str(&value.maker).context(MakerSnafu)?;
+        let city = value.city.map(City);
+        let date_taken = value.date_taken.map(|d| {
+            let d = d.0 / 1000;
+            let d = OffsetDateTime::from_unix_timestamp(d).unwrap();
+
+            DateTaken(d.to_string())
+        });
+
+        /*
+        let created_at = {
+            // Time is in milliseconds
+            let timestamp = photo.created_at.0 / 1000;
+
+            OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
+        };
+         */
 
         Ok(ExifMeta {
             id: value.id,
-            iso: value.iso,
-            focal_length: value.focal_length,
-            exposure_compensation: value.exposure_compensation,
-            aperture: value.aperture,
-            maker,
-            crop_factor: value.crop_factor,
-            camera_name: value.camera_name,
-            lens_name: value.lens_name,
             photo_id: value.photo_id,
             fuji_recipe_id: value.fuji_recipe_id,
+            details: PhotographyDetails {
+                rating: Rating(value.rating as i8),
+                city,
+                date_taken,
+                iso: Iso(value.iso),
+                focal_length: FocalLength {
+                    value: value.focal_length,
+                    eq_35mm: value.focal_length * value.crop_factor,
+                    crop_factor: value.crop_factor,
+                },
+                exposure_compensation: ExposureCompensation(value.exposure_compensation),
+                aperture: Aperture(value.aperture),
+                maker,
+                camera_name: value.camera_name,
+                lens_name: value.lens_name,
+            },
         })
     }
 }
