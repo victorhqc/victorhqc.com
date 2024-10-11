@@ -62,8 +62,8 @@ impl FromExifData for PhotographyDetails {
 
 #[cfg(test)]
 mod tests {
-    use time::{Date, Month, OffsetDateTime, Time, UtcOffset};
     use super::*;
+    use time::{Date, Month, OffsetDateTime, Time, UtcOffset};
 
     #[test]
     fn it_parses_photography_details_from_exif() {
