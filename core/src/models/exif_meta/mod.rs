@@ -4,7 +4,7 @@ pub mod str;
 
 use serde::{Deserialize, Serialize};
 use strum_macros::Display as EnumDisplay;
-// use time::OffsetDateTime;
+use time::OffsetDateTime;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ExifMeta {
@@ -32,7 +32,7 @@ pub struct PhotographyDetails {
 pub struct Rating(pub i8);
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct DateTaken(pub String);
+pub struct DateTaken(pub OffsetDateTime);
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct City(pub String);

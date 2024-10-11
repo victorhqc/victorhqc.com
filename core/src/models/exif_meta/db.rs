@@ -7,7 +7,7 @@ use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
 use std::str::FromStr;
-use time::OffsetDateTime;
+use time::{error::ComponentRange, OffsetDateTime};
 
 #[derive(Debug, FromRow)]
 struct DBExifMeta {
@@ -119,21 +119,18 @@ impl TryFrom<DBExifMeta> for ExifMeta {
     fn try_from(value: DBExifMeta) -> Result<Self, Self::Error> {
         let maker = Maker::from_str(&value.maker).context(MakerSnafu)?;
         let city = value.city.map(City);
-        let date_taken = value.date_taken.map(|d| {
-            let d = d.0 / 1000;
-            let d = OffsetDateTime::from_unix_timestamp(d).unwrap();
+        let date_taken = match value.date_taken {
+            Some(d) => {
+                let d = d.0 / 1000;
+                let date = match OffsetDateTime::from_unix_timestamp(d) {
+                    Ok(d) => d,
+                    Err(err) => return Err(Error::Time { source: err }),
+                };
 
-            DateTaken(d.to_string())
-        });
-
-        /*
-        let created_at = {
-            // Time is in milliseconds
-            let timestamp = photo.created_at.0 / 1000;
-
-            OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
+                Some(DateTaken(date))
+            }
+            None => None,
         };
-         */
 
         Ok(ExifMeta {
             id: value.id,
@@ -166,4 +163,7 @@ pub enum Error {
 
     #[snafu(display("Failed to parse Maker {:?}", source))]
     Maker { source: MakerError },
+
+    #[snafu(display("Failed to parse date {:?}", source))]
+    Time { source: ComponentRange },
 }
