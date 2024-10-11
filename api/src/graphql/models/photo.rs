@@ -57,14 +57,6 @@ impl Photo {
 
 impl From<CorePhoto> for Photo {
     fn from(photo: CorePhoto) -> Self {
-        // let date_taken = if let Some(d) = photo.date_taken {
-        //     let format = format_description::parse("[year]-[month]-[day]").unwrap();
-        //     let formatted = d.format(&format).unwrap();
-        //     Some(formatted)
-        // } else {
-        //     None
-        // };
-
         Photo {
             id: photo.id.into(),
             title: photo.title,

@@ -63,6 +63,7 @@ impl FromExifData for PhotographyDetails {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use time::{Date, Month, OffsetDateTime, Time, UtcOffset};
 
     #[test]
     fn it_parses_photography_details_from_exif() {
@@ -80,12 +81,17 @@ mod tests {
             ExifData::new("Make", "FUJIFILM"),
         ];
 
+        let date = Date::from_calendar_date(2024, Month::September, 12).unwrap();
+        let time = Time::from_hms(18, 55, 14).unwrap();
+        let offset = UtcOffset::from_hms(2, 0, 0).unwrap();
+        let date_time = OffsetDateTime::new_in_offset(date, time, offset);
+
         assert_eq!(
             PhotographyDetails::from_exif(&exif),
             Some(PhotographyDetails {
                 rating: Rating(3),
                 city: Some(City("Berlin".to_string())),
-                date_taken: Some(DateTaken("2024:09:12 18:55:14.13+02:00".to_string())),
+                date_taken: Some(DateTaken(date_time)),
                 camera_name: "X-T5".to_string(),
                 lens_name: Some("XF23mmF1.4 R LM WR".to_string()),
                 aperture: Aperture(2.8),
