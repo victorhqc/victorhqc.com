@@ -14,7 +14,7 @@ pub struct FujifilmRecipe {
 impl FujifilmRecipe {
     pub fn new(name: String, details: FujifilmRecipeDetails) -> Self {
         let id = Uuid::new_v4().to_string();
-        
+
         FujifilmRecipe {
             id,
             name,

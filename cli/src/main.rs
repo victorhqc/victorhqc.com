@@ -2,6 +2,7 @@ mod exiftool;
 
 use clap::Parser;
 use core_victorhqc_com::db::get_pool;
+use core_victorhqc_com::models::exif_meta::ExifMeta;
 use core_victorhqc_com::models::fujifilm::FujifilmRecipe;
 use core_victorhqc_com::models::photo::Photo;
 use core_victorhqc_com::{
@@ -15,7 +16,6 @@ use log::debug;
 use std::io;
 use std::io::Write;
 use std::path::Path;
-use core_victorhqc_com::models::exif_meta::ExifMeta;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     io::stdin()
         .read_line(&mut title)
         .expect("Failed to capture the title of the photograph");
-    
+
     debug!("Title: {}", title);
 
     let mut tx = pool.begin().await?;
@@ -65,13 +65,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         recipe = FujifilmRecipe::find_by_details(&pool, &recipe_details)
             .await
             .expect("Failed to query for existing recipe");
-        
+
         if recipe.is_none() {
             let mut recipe_name = String::new();
             println!();
             print!("🎞️ Please, specify the name of the recipe used: ");
             io::stdout().flush().unwrap();
-            
+
             io::stdin()
                 .read_line(&mut recipe_name)
                 .expect("Failed to capture the recipe name");
@@ -80,14 +80,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let r = FujifilmRecipe::new(recipe_name, recipe_details);
 
-            r.save(&mut tx).await.expect("Failed to save Fujifilm recipe");
-            
+            r.save(&mut tx)
+                .await
+                .expect("Failed to save Fujifilm recipe");
+
             recipe = Some(r);
         }
     }
 
     debug!("{:?}", recipe);
-    
 
     let photo = Photo::new(title.trim(), src).unwrap();
 
@@ -97,7 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let exif = ExifMeta::new(photography_details, &photo, &recipe);
     exif.save(&mut tx).await.expect("Failed to save Exif");
-    
+
     debug!("{:?}", exif);
 
     tx.commit().await.expect("Failed to commit transaction");
