@@ -1,6 +1,7 @@
 mod exiftool;
 
 use clap::Parser;
+use core_victorhqc_com::models::photo::Photo;
 use core_victorhqc_com::{
     exif::FromExifData,
     models::{
@@ -49,7 +50,9 @@ fn main() {
 
     debug!("Title: {}", title);
 
-    print!("");
+    let photo = Photo::new(title.as_str(), src).unwrap();
+
+    debug!("{:?}", photo);
 }
 
 #[derive(Debug, Parser)]

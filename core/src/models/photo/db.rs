@@ -5,6 +5,7 @@ use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqlitePool};
 use std::str::FromStr;
 use time::OffsetDateTime;
+use uuid::Error as UuidError;
 
 #[derive(FromRow)]
 struct DBPhoto {
@@ -45,6 +46,11 @@ impl Photo {
 
     pub async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         find_all(pool).await
+    }
+
+    pub async fn save(&self, pool: &SqlitePool) -> Result<String, Error> {
+        let photo: DBPhoto = self.into();
+        insert_db(pool, &photo).await
     }
 }
 
@@ -168,22 +174,33 @@ async fn find_by_tag_ids(
     Ok(photos)
 }
 
+async fn insert_db(pool: &SqlitePool, photo: &DBPhoto) -> Result<String, Error> {
+    sqlx::query(
+        r#"
+    INSERT INTO photos (id, title, src, filename, filetype, created_at, updated_at, deleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    "#,
+    )
+    .bind(&photo.id)
+    .bind(&photo.title)
+    .bind(&photo.src)
+    .bind(&photo.filename)
+    .bind(&photo.filetype)
+    .bind(&photo.created_at)
+    .bind(&photo.updated_at)
+    .bind(photo.deleted)
+    .execute(pool)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(photo.id.clone())
+}
+
 impl TryFrom<DBPhoto> for Photo {
     type Error = Error;
 
     fn try_from(photo: DBPhoto) -> Result<Self, Error> {
         let filetype = FileType::from_str(&photo.filetype).context(FileTypeSnafu)?;
-
-        // let date_taken = if let Some(v) = photo.date_taken {
-        //     // Time is in milliseconds
-        //     let timestamp = v.0 / 1000;
-        //     let datetime =
-        //         OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?;
-        //
-        //     Some(datetime.date())
-        // } else {
-        //     None
-        // };
 
         let created_at = {
             // Time is in milliseconds
@@ -204,14 +221,26 @@ impl TryFrom<DBPhoto> for Photo {
             title: photo.title,
             src: photo.src,
             filename: photo.filename,
-            // rating: photo.rating as i8,
             filetype,
-            // date_taken,
-            // city: photo.city,
             created_at,
             updated_at,
             deleted: photo.deleted,
         })
+    }
+}
+
+impl From<&Photo> for DBPhoto {
+    fn from(photo: &Photo) -> Self {
+        DBPhoto {
+            id: photo.id.clone(),
+            title: photo.title.clone(),
+            src: photo.src.clone(),
+            filename: photo.filename.clone(),
+            filetype: photo.filetype.to_string(),
+            created_at: photo.created_at.into(),
+            updated_at: photo.created_at.into(),
+            deleted: photo.deleted,
+        }
     }
 }
 
@@ -221,8 +250,13 @@ pub enum Error {
     Sqlx { source: SqlxError },
 
     #[snafu(display("Failed to parse FileType {:?}", source))]
-    FileType { source: strum::ParseError },
+    FileType {
+        source: crate::models::photo::str::filetype::Error,
+    },
 
     #[snafu(display("Failed to parse timestamp: {:?}", source))]
     Timestamp { source: time::error::ComponentRange },
+
+    #[snafu(display("Invalid Uuid: {:?}", source))]
+    Uuid { source: UuidError },
 }
