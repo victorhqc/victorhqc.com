@@ -50,13 +50,13 @@ impl Photo {
 
     pub async fn save(&self, pool: &mut SqliteConnection) -> Result<String, Error> {
         let photo: DBPhoto = self.into();
-        insert_db(pool, &photo).await
+        insert(pool, photo).await
     }
 }
 
 async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
-    let photo = sqlx::query_as!(
-        DBPhoto,
+    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
+    let photo = sqlx::query_as::<_, DBPhoto>(
         r#"
     SELECT
         id,
@@ -75,8 +75,8 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
     ORDER BY
         created_at DESC
     "#,
-        id
     )
+    .bind(id)
     .fetch_one(pool)
     .await
     .context(SqlxSnafu)?;
@@ -85,8 +85,8 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
 }
 
 async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
-    let photos = sqlx::query_as!(
-        DBPhoto,
+    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
+    let photos = sqlx::query_as::<_, DBPhoto>(
         r#"
     SELECT
         id,
@@ -103,7 +103,7 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         deleted = false
     ORDER BY
         created_at DESC
-    "#
+    "#,
     )
     .fetch_all(pool)
     .await
@@ -174,7 +174,9 @@ async fn find_by_tag_ids(
     Ok(photos)
 }
 
-async fn insert_db(conn: &mut SqliteConnection, photo: &DBPhoto) -> Result<String, Error> {
+async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, Error> {
+    let id = photo.id.clone();
+
     sqlx::query(
         r#"
     INSERT INTO photos (id, title, src, filename, filetype, created_at, updated_at, deleted)
@@ -193,7 +195,7 @@ async fn insert_db(conn: &mut SqliteConnection, photo: &DBPhoto) -> Result<Strin
     .await
     .context(SqlxSnafu)?;
 
-    Ok(photo.id.clone())
+    Ok(id)
 }
 
 impl TryFrom<DBPhoto> for Photo {

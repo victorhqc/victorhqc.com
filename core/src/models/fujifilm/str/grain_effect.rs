@@ -6,6 +6,24 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::str::FromStr;
 
+impl GrainEffect {
+    pub fn grain_strength_to_string(&self) -> Option<String> {
+        match self {
+            GrainEffect::Off => None,
+            GrainEffect::OnlyStrength { strength } => Some(strength.to_string()),
+            GrainEffect::StrengthAndSize { strength, size: _ } => Some(strength.to_string()),
+        }
+    }
+
+    pub fn grain_size_to_string(&self) -> Option<String> {
+        match self {
+            GrainEffect::Off => None,
+            GrainEffect::OnlyStrength { strength: _ } => None,
+            GrainEffect::StrengthAndSize { strength: _, size } => Some(size.to_string()),
+        }
+    }
+}
+
 impl FromStr for GrainEffect {
     type Err = Error;
 

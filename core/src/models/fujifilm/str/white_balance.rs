@@ -7,6 +7,30 @@ use regex::Regex;
 use std::fmt::Display;
 use std::str::FromStr;
 
+impl WhiteBalance {
+    pub fn to_string_no_shift(&self) -> String {
+        match self {
+            WhiteBalance::Auto { shift: _ } => "Auto".to_string(),
+            WhiteBalance::AutoWhitePriority { shift: _ } => "AutoWhitePriority".to_string(),
+            WhiteBalance::AutoAmbiencePriority { shift: _ } => "AutoAmbiencePriority".to_string(),
+            WhiteBalance::Custom1 { shift: _ } => "Custom1".to_string(),
+            WhiteBalance::Custom2 { shift: _ } => "Custom2".to_string(),
+            WhiteBalance::Custom3 { shift: _ } => "Custom3".to_string(),
+            WhiteBalance::Daylight { shift: _ } => "Daylight".to_string(),
+            WhiteBalance::Cloudy { shift: _ } => "Cloudy".to_string(),
+            WhiteBalance::FluorescentLight1 { shift: _ } => "FluorescentLight1".to_string(),
+            WhiteBalance::FluorescentLight2 { shift: _ } => "FluorescentLight2".to_string(),
+            WhiteBalance::FluorescentLight3 { shift: _ } => "FluorescentLight3".to_string(),
+            WhiteBalance::Incandescent { shift: _ } => "Incandescent".to_string(),
+            WhiteBalance::Underwater { shift: _ } => "Underwater".to_string(),
+            WhiteBalance::Kelvin {
+                temperature,
+                shift: _,
+            } => format!("{}K", temperature),
+        }
+    }
+}
+
 impl Display for WhiteBalance {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -312,5 +336,93 @@ mod tests {
                 shift: WBShift::default()
             })
         );
+    }
+
+    #[test]
+    fn it_converts_to_string_no_shift() {
+        let wb = WhiteBalance::Auto {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Auto");
+
+        let wb = WhiteBalance::AutoWhitePriority {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "AutoWhitePriority");
+
+        let wb = WhiteBalance::AutoAmbiencePriority {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "AutoAmbiencePriority");
+
+        let wb = WhiteBalance::Custom1 {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Custom1");
+
+        let wb = WhiteBalance::Custom2 {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Custom2");
+
+        let wb = WhiteBalance::Custom3 {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Custom3");
+
+        let wb = WhiteBalance::Daylight {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Daylight");
+
+        let wb = WhiteBalance::Cloudy {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Cloudy");
+
+        let wb = WhiteBalance::FluorescentLight1 {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "FluorescentLight1");
+
+        let wb = WhiteBalance::FluorescentLight2 {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "FluorescentLight2");
+
+        let wb = WhiteBalance::FluorescentLight3 {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "FluorescentLight3");
+
+        let wb = WhiteBalance::Incandescent {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Incandescent");
+
+        let wb = WhiteBalance::Underwater {
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "Underwater");
+
+        let wb = WhiteBalance::Kelvin {
+            temperature: 9500,
+            shift: WBShift { red: 2, blue: -3 },
+        }
+        .to_string_no_shift();
+        assert_eq!(&wb, "9500K");
     }
 }
