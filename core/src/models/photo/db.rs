@@ -2,7 +2,7 @@ use super::{FileType, Photo};
 use crate::models::Timestamp;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
-use sqlx::{FromRow, SqlitePool};
+use sqlx::{FromRow, SqliteConnection, SqlitePool};
 use std::str::FromStr;
 use time::OffsetDateTime;
 use uuid::Error as UuidError;
@@ -48,7 +48,7 @@ impl Photo {
         find_all(pool).await
     }
 
-    pub async fn save(&self, pool: &SqlitePool) -> Result<String, Error> {
+    pub async fn save(&self, pool: &mut SqliteConnection) -> Result<String, Error> {
         let photo: DBPhoto = self.into();
         insert_db(pool, &photo).await
     }
@@ -174,7 +174,7 @@ async fn find_by_tag_ids(
     Ok(photos)
 }
 
-async fn insert_db(pool: &SqlitePool, photo: &DBPhoto) -> Result<String, Error> {
+async fn insert_db(conn: &mut SqliteConnection, photo: &DBPhoto) -> Result<String, Error> {
     sqlx::query(
         r#"
     INSERT INTO photos (id, title, src, filename, filetype, created_at, updated_at, deleted)
@@ -189,7 +189,7 @@ async fn insert_db(pool: &SqlitePool, photo: &DBPhoto) -> Result<String, Error> 
     .bind(&photo.created_at)
     .bind(&photo.updated_at)
     .bind(photo.deleted)
-    .execute(pool)
+    .execute(conn)
     .await
     .context(SqlxSnafu)?;
 

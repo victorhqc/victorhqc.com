@@ -58,11 +58,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     debug!("Title: {}", title);
 
+    let mut tx = pool.begin().await?;
+
     let photo = Photo::new(title.trim(), src).unwrap();
 
     debug!("{:?}", photo);
 
-    photo.save(&pool).await.expect("Failed to store Photo");
+    photo.save(&mut tx).await.expect("Failed to store Photo");
+
+    tx.commit().await.expect("Failed to commit transaction");
 
     Ok(())
 }
