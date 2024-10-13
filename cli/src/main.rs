@@ -50,7 +50,7 @@ fn main() {
 
     debug!("Title: {}", title);
 
-    let photo = Photo::new(title.as_str(), src).unwrap();
+    let photo = Photo::new(title.trim(), src).unwrap();
 
     debug!("{:?}", photo);
 }
