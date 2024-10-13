@@ -1,5 +1,5 @@
 use async_graphql::{Context as AsyncGraphqlContext, Error as AsyncGraphqlError};
-use sqlx::{Pool, Sqlite};
+use core_victorhqc_com::sqlx::{Pool, Sqlite};
 
 #[derive(Clone)]
 pub struct Context {

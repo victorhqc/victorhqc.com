@@ -118,7 +118,6 @@ dependencies = [
  "rocket",
  "serde",
  "snafu",
- "sqlx",
  "strum",
  "strum_macros",
  "time",

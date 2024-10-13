@@ -7,10 +7,10 @@ use crate::graphql::routes::{graphql_playground, graphql_query, graphql_request}
 use crate::graphql::{graph::RootSchema, queries::RootQuery, sdl_gen};
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use core_victorhqc_com::db::{get_pool, migrate, Error as DBError};
+use core_victorhqc_com::sqlx::sqlite::SqlitePool;
 use log::info;
 use rocket::tokio::spawn;
 use snafu::prelude::*;
-use sqlx::sqlite::SqlitePool;
 
 mod graphql;
 mod routes;
