@@ -1,4 +1,4 @@
-use sqlx::{Pool, Sqlite};
+use core_victorhqc_com::sqlx::{Pool, Sqlite};
 
 pub mod exif_meta;
 pub mod fujifilm_recipe;

@@ -8,14 +8,15 @@ use crate::models::fujifilm::{
     WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
-use sqlx::{error::Error as SqlxError, FromRow, SqlitePool};
+use sqlx::{error::Error as SqlxError, FromRow, SqliteConnection, SqlitePool};
 use std::str::FromStr;
 use strum_macros::Display;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, FromRow)]
 pub struct DBFujifilmRecipe {
     pub id: String,
     pub name: String,
+    pub author: String,
     pub src: String,
     pub sensor: String,
     pub film_simulation: String,
@@ -41,6 +42,7 @@ pub struct DBExifMetaFujifilmRecipe {
     pub exif_meta_id: String,
     pub id: String,
     pub name: String,
+    pub author: String,
     pub src: String,
     pub sensor: String,
     pub film_simulation: String,
@@ -75,18 +77,32 @@ impl FujifilmRecipe {
     ) -> Result<Vec<(String, FujifilmRecipe)>, Error> {
         find_by_exif_meta_ids(pool, ids).await
     }
+
+    pub async fn find_by_details(
+        pool: &SqlitePool,
+        details: &FujifilmRecipeDetails,
+    ) -> Result<Option<FujifilmRecipe>, Error> {
+        find_by_recipe_details(pool, details).await
+    }
+
+    pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
+        let recipe: DBFujifilmRecipe = self.into();
+
+        insert(conn, recipe).await
+    }
 }
 
 async fn find_by_film_simulation(
     pool: &SqlitePool,
     name: &str,
 ) -> Result<Vec<FujifilmRecipe>, Error> {
-    let recipes = sqlx::query_as!(
-        DBFujifilmRecipe,
+    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
+    let recipes = sqlx::query_as::<_, DBFujifilmRecipe>(
         r#"
     SELECT
         id,
         name,
+        author,
         sensor,
         src,
         film_simulation,
@@ -110,8 +126,8 @@ async fn find_by_film_simulation(
     WHERE
         film_simulation = ?
     "#,
-        name
     )
+    .bind(name)
     .fetch_all(pool)
     .await
     .context(SqlxSnafu)?;
@@ -133,6 +149,7 @@ async fn find_by_exif_meta_ids(
         e.id exif_meta_id,
         r.id,
         r.name,
+        author,
         sensor,
         src,
         film_simulation,
@@ -176,6 +193,7 @@ async fn find_by_exif_meta_ids(
                 DBFujifilmRecipe {
                     id: r.id,
                     name: r.name,
+                    author: r.author,
                     src: r.src,
                     sensor: r.sensor,
                     film_simulation: r.film_simulation,
@@ -201,6 +219,164 @@ async fn find_by_exif_meta_ids(
         .collect();
 
     Ok(recipes)
+}
+
+async fn find_by_recipe_details(
+    pool: &SqlitePool,
+    details: &FujifilmRecipeDetails,
+) -> Result<Option<FujifilmRecipe>, Error> {
+    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
+    let mut query = sqlx::query_as::<_, DBFujifilmRecipe>(
+        r#"
+    SELECT
+        id,
+        name,
+        author,
+        sensor,
+        src,
+        film_simulation,
+        white_balance,
+        white_balance_shift,
+        dynamic_range,
+        d_range_priority,
+        highlight_tone,
+        shadow_tone,
+        color,
+        sharpness,
+        clarity,
+        high_iso_noise_reduction,
+        grain_strength,
+        grain_size,
+        color_chrome_effect,
+        color_chrome_fx_blue,
+        monochromatic_color
+    FROM
+        fuji_recipes
+    WHERE
+        film_simulation = ?
+        AND sensor = ?
+        AND white_balance =?
+        AND white_balance_shift = ?
+        AND dynamic_range = ?
+        AND d_range_priority = ?
+        AND highlight_tone = ?
+        AND shadow_tone = ?
+        AND color = ?
+        AND sharpness = ?
+        AND clarity = ?
+        AND high_iso_noise_reduction = ?
+        AND grain_strength = ?
+        AND grain_size = ?
+        AND color_chrome_effect = ?
+        AND color_chrome_fx_blue = ?
+        AND monochromatic_color = ?
+    "#,
+    );
+
+    let (
+        white_balance,
+        dynamic_range,
+        d_range_priority,
+        tone,
+        color,
+        sharpness,
+        clarity,
+        high_iso_nr,
+        grain_effect,
+        color_chrome_effect,
+        color_chrome_fx_blue,
+        monochromatic_color,
+    ) = details.settings.get_values();
+
+    let shift = white_balance.get_shift();
+
+    query = query
+        .bind(details.film_simulation.to_string())
+        .bind(details.sensor.to_string())
+        .bind(white_balance.to_string_no_shift())
+        .bind(shift.to_string())
+        .bind(dynamic_range.to_string())
+        .bind(d_range_priority.map(|d| d.to_string()))
+        .bind(tone.highlights)
+        .bind(tone.shadows)
+        .bind(color.value)
+        .bind(sharpness.value)
+        .bind(clarity.map(|c| c.value))
+        .bind(high_iso_nr.value)
+        .bind(grain_effect.as_ref().map(|g| g.grain_strength_to_string()))
+        .bind(grain_effect.as_ref().map(|g| g.grain_size_to_string()))
+        .bind(color_chrome_effect.map(|c| c.to_string()))
+        .bind(color_chrome_fx_blue.map(|c| c.to_string()))
+        .bind(monochromatic_color.map(|c| c.to_string()));
+
+    let recipe = query.fetch_optional(pool).await.context(SqlxSnafu)?;
+
+    let recipe = if let Some(r) = recipe.map(|r| r.try_into()) {
+        Some(r?)
+    } else {
+        None
+    };
+
+    Ok(recipe)
+}
+
+async fn insert(conn: &mut SqliteConnection, recipe: DBFujifilmRecipe) -> Result<String, Error> {
+    let id = recipe.id.clone();
+
+    sqlx::query(
+        r#"
+    INSERT INTO fuji_recipes(
+    id,
+    name,
+    author,
+    sensor,
+    src,
+    film_simulation,
+    white_balance,
+    white_balance_shift,
+    dynamic_range,
+    d_range_priority,
+    highlight_tone,
+    shadow_tone,
+    color,
+    sharpness,
+    clarity,
+    high_iso_noise_reduction,
+    grain_strength,
+    grain_size,
+    color_chrome_effect,
+    color_chrome_fx_blue,
+    monochromatic_color
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    "#,
+    )
+    .bind(recipe.id)
+    .bind(recipe.name)
+    .bind(recipe.author)
+    .bind(recipe.sensor)
+    .bind(recipe.src)
+    .bind(recipe.film_simulation)
+    .bind(recipe.white_balance)
+    .bind(recipe.white_balance_shift)
+    .bind(recipe.dynamic_range)
+    .bind(recipe.d_range_priority)
+    .bind(recipe.highlight_tone)
+    .bind(recipe.shadow_tone)
+    .bind(recipe.color)
+    .bind(recipe.sharpness)
+    .bind(recipe.clarity)
+    .bind(recipe.high_iso_noise_reduction)
+    .bind(recipe.grain_strength)
+    .bind(recipe.grain_size)
+    .bind(recipe.color_chrome_effect)
+    .bind(recipe.color_chrome_fx_blue)
+    .bind(recipe.monochromatic_color)
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(id)
 }
 
 impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
@@ -321,6 +497,7 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
         Ok(FujifilmRecipe {
             id: value.id,
             name: value.name,
+            author: value.author,
             src: value.src,
             details: FujifilmRecipeDetails {
                 sensor: trans_sensor,
@@ -328,6 +505,51 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
                 settings,
             },
         })
+    }
+}
+
+impl From<&FujifilmRecipe> for DBFujifilmRecipe {
+    fn from(value: &FujifilmRecipe) -> Self {
+        let (
+            white_balance,
+            dynamic_range,
+            d_range_priority,
+            tone,
+            color,
+            sharpness,
+            clarity,
+            high_iso_nr,
+            grain_effect,
+            color_chrome_effect,
+            color_chrome_fx_blue,
+            monochromatic_color,
+        ) = value.details.settings.get_values();
+
+        DBFujifilmRecipe {
+            id: value.id.clone(),
+            name: value.name.clone(),
+            author: value.author.clone(),
+            src: value.src.clone(),
+            sensor: value.details.sensor.to_string(),
+            film_simulation: value.details.film_simulation.to_string(),
+            white_balance: white_balance.to_string_no_shift(),
+            white_balance_shift: white_balance.get_shift().to_string(),
+            dynamic_range: dynamic_range.to_string(),
+            d_range_priority: d_range_priority.map(|d| d.to_string()),
+            highlight_tone: tone.highlights,
+            shadow_tone: tone.shadows,
+            color: color.value,
+            sharpness: sharpness.value,
+            clarity: clarity.map(|c| c.value),
+            high_iso_noise_reduction: high_iso_nr.value,
+            grain_strength: grain_effect
+                .as_ref()
+                .and_then(|g| g.grain_strength_to_string()),
+            grain_size: grain_effect.as_ref().and_then(|g| g.grain_size_to_string()),
+            color_chrome_effect: color_chrome_effect.map(|c| c.to_string()),
+            color_chrome_fx_blue: color_chrome_fx_blue.map(|c| c.to_string()),
+            monochromatic_color: monochromatic_color.map(|m| m.to_string()),
+        }
     }
 }
 

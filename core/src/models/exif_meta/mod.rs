@@ -2,9 +2,12 @@ pub mod db;
 mod from_exif;
 pub mod str;
 
+use crate::models::fujifilm::FujifilmRecipe;
+use crate::models::photo::Photo;
 use serde::{Deserialize, Serialize};
 use strum_macros::Display as EnumDisplay;
 use time::OffsetDateTime;
+use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ExifMeta {
@@ -12,6 +15,24 @@ pub struct ExifMeta {
     pub photo_id: String,
     pub fuji_recipe_id: Option<String>,
     pub details: PhotographyDetails,
+}
+
+impl ExifMeta {
+    pub fn new(
+        details: PhotographyDetails,
+        photo: &Photo,
+        recipe: &Option<FujifilmRecipe>,
+    ) -> Self {
+        let id = Uuid::new_v4().to_string();
+        let fuji_recipe_id: Option<String> = recipe.clone().map(|r| r.id);
+
+        ExifMeta {
+            id,
+            photo_id: photo.id.clone(),
+            fuji_recipe_id,
+            details,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]

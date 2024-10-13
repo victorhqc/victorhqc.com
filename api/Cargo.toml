@@ -15,7 +15,6 @@ regex = "1.11.0"
 rocket = { version = "0.5.1", features = ["json"] }
 serde = { version = "1.0.210", features = ["derive"] }
 snafu = { version = "0.8.5", features = ["default", "backtrace"] }
-sqlx = { version = "0.8.2", features = [ "sqlite", "runtime-tokio", "macros", "migrate", "time" ] }
 strum = "0.26.3"
 strum_macros = "0.26.4"
 time = { version = "0.3.36", features = ["serde-human-readable", "formatting"] }

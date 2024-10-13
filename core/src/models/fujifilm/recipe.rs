@@ -1,12 +1,28 @@
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{Display, EnumString};
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FujifilmRecipe {
     pub id: String,
     pub name: String,
     pub src: String,
+    pub author: String,
     pub details: FujifilmRecipeDetails,
+}
+
+impl FujifilmRecipe {
+    pub fn new(name: String, details: FujifilmRecipeDetails) -> Self {
+        let id = Uuid::new_v4().to_string();
+
+        FujifilmRecipe {
+            id,
+            name,
+            src: "TODO".to_string(),
+            author: "TODO".to_string(),
+            details,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -175,6 +191,25 @@ pub enum WhiteBalance {
 }
 
 impl WhiteBalance {
+    pub fn get_shift(&self) -> &WBShift {
+        match self {
+            WhiteBalance::Auto { shift }
+            | WhiteBalance::AutoWhitePriority { shift }
+            | WhiteBalance::AutoAmbiencePriority { shift }
+            | WhiteBalance::Custom1 { shift }
+            | WhiteBalance::Custom2 { shift }
+            | WhiteBalance::Custom3 { shift }
+            | WhiteBalance::Daylight { shift }
+            | WhiteBalance::Cloudy { shift }
+            | WhiteBalance::FluorescentLight1 { shift }
+            | WhiteBalance::FluorescentLight2 { shift }
+            | WhiteBalance::FluorescentLight3 { shift }
+            | WhiteBalance::Incandescent { shift }
+            | WhiteBalance::Underwater { shift } => shift,
+            WhiteBalance::Kelvin { shift, .. } => shift,
+        }
+    }
+
     pub fn set_shift(&mut self, s: WBShift) {
         match self {
             WhiteBalance::Auto { shift }
@@ -360,3 +395,95 @@ pub struct TransISettings {
     pub sharpness: Sharpness,
     pub high_iso_noise_reduction: HighISONoiseReduction,
 }
+
+impl Settings {
+    pub fn get_values(&self) -> SettingsTuple {
+        match self.clone() {
+            Settings::TransI(settings) => (
+                settings.white_balance,
+                settings.dynamic_range,
+                None,
+                settings.tone_curve,
+                settings.color,
+                settings.sharpness,
+                None,
+                settings.high_iso_noise_reduction,
+                None,
+                None,
+                None,
+                None,
+            ),
+            Settings::TransII(settings) => (
+                settings.white_balance,
+                settings.dynamic_range,
+                None,
+                settings.tone_curve,
+                settings.color,
+                settings.sharpness,
+                None,
+                settings.high_iso_noise_reduction,
+                None,
+                None,
+                None,
+                None,
+            ),
+            Settings::TransIII(settings) => (
+                settings.white_balance,
+                settings.dynamic_range,
+                None,
+                settings.tone_curve,
+                settings.color,
+                settings.sharpness,
+                None,
+                settings.high_iso_noise_reduction,
+                Some(settings.grain_effect),
+                None,
+                None,
+                Some(settings.monochromatic_color),
+            ),
+            Settings::TransIV(settings) => (
+                settings.white_balance,
+                settings.dynamic_range,
+                Some(settings.d_range_priority),
+                settings.tone_curve,
+                settings.color,
+                settings.sharpness,
+                Some(settings.clarity),
+                settings.high_iso_noise_reduction,
+                Some(settings.grain_effect),
+                Some(settings.color_chrome_effect),
+                Some(settings.color_chrome_fx_blue),
+                Some(settings.monochromatic_color),
+            ),
+            Settings::TransV(settings) => (
+                settings.white_balance,
+                settings.dynamic_range,
+                Some(settings.d_range_priority),
+                settings.tone_curve,
+                settings.color,
+                settings.sharpness,
+                Some(settings.clarity),
+                settings.high_iso_noise_reduction,
+                Some(settings.grain_effect),
+                Some(settings.color_chrome_effect),
+                Some(settings.color_chrome_fx_blue),
+                Some(settings.monochromatic_color),
+            ),
+        }
+    }
+}
+
+pub type SettingsTuple = (
+    WhiteBalance,
+    DynamicRange,
+    Option<DRangePriority>,
+    ToneCurve,
+    Color,
+    Sharpness,
+    Option<Clarity>,
+    HighISONoiseReduction,
+    Option<GrainEffect>,
+    Option<ColorChromeEffect>,
+    Option<ColorChromeEffectFxBlue>,
+    Option<MonochromaticColor>,
+);

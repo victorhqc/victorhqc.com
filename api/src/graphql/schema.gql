@@ -1,6 +1,9 @@
 
 type ExifMeta {
 	id: ID!
+	rating: Int!
+	city: String
+	dateTaken: String
 	iso: Int!
 	focalLength: FocalLength!
 	exposureCompensation: Float!
@@ -102,12 +105,10 @@ enum Maker {
 
 type Photo {
 	id: ID!
+	title: String!
 	src: String!
 	filename: String!
-	rating: Int!
 	filetype: FileType!
-	dateTaken: String
-	city: String
 	createdAt: String!
 	updatedAt: String!
 	deleted: Boolean!
