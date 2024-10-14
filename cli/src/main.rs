@@ -36,7 +36,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     debug!("Arguments: {:?}", args);
 
     let src = Path::new(&args.source);
-
     let s3 = S3::new(&bucket_name).await;
 
     create(&pool, src, &s3).await?;
@@ -56,14 +55,7 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
         .expect("Could not get photography details from exiftool");
     debug!("{:?}", photography_details);
 
-    print!("📷  Please, type the title for the Photograph: ");
-    io::stdout().flush().unwrap();
-
-    let mut title = String::new();
-    io::stdin()
-        .read_line(&mut title)
-        .expect("Failed to capture the title of the photograph");
-
+    let title = capture("📷  Please, type the title for the Photograph: ");
     debug!("Title: {}", title);
 
     let mut tx = pool.begin().await?;
@@ -74,20 +66,13 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
             .expect("Could not get fujifilm recipe from exiftool");
         debug!("{:?}", recipe_details);
 
-        recipe = FujifilmRecipe::find_by_details(&pool, &recipe_details)
+        recipe = FujifilmRecipe::find_by_details(pool, &recipe_details)
             .await
             .expect("Failed to query for existing recipe");
 
         if recipe.is_none() {
-            let mut recipe_name = String::new();
             println!();
-            print!("🎞️  Please, specify the name of the recipe used: ");
-            io::stdout().flush().unwrap();
-
-            io::stdin()
-                .read_line(&mut recipe_name)
-                .expect("Failed to capture the recipe name");
-
+            let recipe_name = capture("🎞️  Please, specify the name of the recipe used: ");
             debug!("Recipe Name: {}", recipe_name);
 
             let r = FujifilmRecipe::new(recipe_name, recipe_details);
@@ -120,6 +105,18 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
     tx.commit().await.expect("Failed to commit transaction");
 
     Ok(())
+}
+
+fn capture(msg: &str) -> String {
+    let mut capture = String::new();
+    print!("{}", msg);
+    io::stdout().flush().unwrap();
+
+    io::stdin()
+        .read_line(&mut capture)
+        .expect("Failed to capture String");
+
+    capture
 }
 
 #[derive(Debug, Parser)]
