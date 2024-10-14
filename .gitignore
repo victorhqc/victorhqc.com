@@ -11,3 +11,5 @@
 *.db-wal
 
 /.cargo/config.toml
+
+*.txt
