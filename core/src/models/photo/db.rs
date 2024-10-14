@@ -129,8 +129,8 @@ async fn find_by_tag_ids(
         src,
         filename,
         filetype,
-        created_at,
-        updated_at,
+        p.created_at,
+        p.updated_at,
         p.deleted
     FROM
         photos as p
