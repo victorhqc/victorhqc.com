@@ -35,9 +35,10 @@ impl FromExifData for TransSensor {
             "x-t30 ii" => Some(TransSensor::TransIV),
             "x-pro3" => Some(TransSensor::TransIV),
             "x100v" => Some(TransSensor::TransIV),
+            "x-e4" => Some(TransSensor::TransIV),
             "x-s10" => Some(TransSensor::TransIV),
             "x-s20" => Some(TransSensor::TransIV),
-            "x-e4" => Some(TransSensor::TransIV),
+            "x-m5" => Some(TransSensor::TransIV),
             "x-h2s" => Some(TransSensor::TransV),
             "x-h2" => Some(TransSensor::TransV),
             "x-t5" => Some(TransSensor::TransV),
@@ -148,6 +149,9 @@ mod tests {
         assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
 
         let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-E4")];
+        assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
+
+        let exif: Vec<ExifData> = vec![ExifData::new("Model", "X-M5")];
         assert_eq!(TransSensor::from_exif(&exif), Some(TransSensor::TransIV));
     }
 
