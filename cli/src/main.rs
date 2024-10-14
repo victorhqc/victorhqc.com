@@ -14,7 +14,7 @@ use core_victorhqc_com::{
         fujifilm::FujifilmRecipeDetails,
     },
 };
-use log::debug;
+use log::{debug, trace};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn std::error::Error>> {
     let data =
         exiftool::spawn::read_metadata(src).expect("Failed to get exif metadata from exiftool");
-    debug!("Exiftool parsed data: {:?}", data);
+    trace!("Exiftool parsed data: {:?}", data);
 
     let maker = Maker::from_exif(data.as_slice()).expect("Could not get Maker from exiftool");
     debug!("{:?}", maker);

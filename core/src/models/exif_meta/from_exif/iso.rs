@@ -1,12 +1,12 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::Iso;
-use log::debug;
+use log::trace;
 
 impl FromExifData for Iso {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("ISO")?;
 
-        debug!("Iso::from_exif: {:?}", exif);
+        trace!("Iso::from_exif: {:?}", exif);
 
         let value: i64 = exif.try_into().ok()?;
 

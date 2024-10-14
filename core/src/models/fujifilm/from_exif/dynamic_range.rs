@@ -1,18 +1,18 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::fujifilm::DynamicRange;
-use log::debug;
+use log::trace;
 
 impl FromExifData for DynamicRange {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         if let Some(exif) = data.find("DynamicRangeSetting") {
-            debug!("DynamicRange::from_exif: {:?}", exif);
+            trace!("DynamicRange::from_exif: {:?}", exif);
 
             return Some(DynamicRange::Auto);
         };
 
         let exif = data.find("DevelopmentDynamicRange")?;
 
-        debug!("DynamicRange::from_exif: {:?}", exif);
+        trace!("DynamicRange::from_exif: {:?}", exif);
 
         match exif.value().to_lowercase().as_str() {
             "100" => Some(DynamicRange::DR100),

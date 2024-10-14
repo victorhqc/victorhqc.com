@@ -1,12 +1,12 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::City;
-use log::debug;
+use log::trace;
 
 impl FromExifData for City {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("City")?;
 
-        debug!("City::from_exif: {:?}", exif);
+        trace!("City::from_exif: {:?}", exif);
 
         Some(City(exif.value().to_string()))
     }

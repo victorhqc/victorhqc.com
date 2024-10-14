@@ -1,6 +1,6 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::FocalLength;
-use log::debug;
+use log::trace;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -9,8 +9,8 @@ impl FromExifData for FocalLength {
         let focal_length_exif = data.find("FocalLength")?;
         let equivalent_exif = data.find("FocalLength35efl")?;
 
-        debug!("FocalLength::from_exif: Value {:?}", focal_length_exif);
-        debug!("FocalLength::from_exif: Equivalent {:?}", equivalent_exif);
+        trace!("FocalLength::from_exif: Value {:?}", focal_length_exif);
+        trace!("FocalLength::from_exif: Equivalent {:?}", equivalent_exif);
 
         static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\d+\.\d+").unwrap());
 

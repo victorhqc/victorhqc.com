@@ -1,6 +1,6 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::fujifilm::{MonochromaticColor, MonochromaticColorShift};
-use log::debug;
+use log::trace;
 
 impl FromExifData for MonochromaticColor {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
@@ -8,8 +8,8 @@ impl FromExifData for MonochromaticColor {
         let exif_adjustment = data.find("BWAdjustment")?;
         let exif_magenta = data.find("BWMagentaGreen")?;
 
-        debug!("MonochromaticColor::from_exif: WC {:?}", exif_adjustment);
-        debug!("MonochromaticColor::from_exif: MG {:?}", exif_magenta);
+        trace!("MonochromaticColor::from_exif: WC {:?}", exif_adjustment);
+        trace!("MonochromaticColor::from_exif: MG {:?}", exif_magenta);
 
         let wc: i64 = exif_adjustment.try_into().ok()?;
         let mg: i64 = exif_magenta.try_into().ok()?;

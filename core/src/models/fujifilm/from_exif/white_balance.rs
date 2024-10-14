@@ -1,6 +1,6 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::fujifilm::{WBShift, WhiteBalance};
-use log::debug;
+use log::trace;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -9,7 +9,7 @@ impl FromExifData for WhiteBalance {
         let shift = WBShift::from_exif(data).unwrap_or_default();
         let exif = data.find("WhiteBalance")?;
 
-        debug!("WhiteBalance::from_exif: {:?}", exif);
+        trace!("WhiteBalance::from_exif: {:?}", exif);
 
         static RE: Lazy<Regex> = Lazy::new(|| {
             Regex::new(
@@ -19,7 +19,7 @@ impl FromExifData for WhiteBalance {
 
         let captures = RE.captures(exif.value())?;
 
-        debug!("WhiteBalance Captures: {:?}", captures);
+        trace!("WhiteBalance Captures: {:?}", captures);
 
         match captures[1].to_lowercase().as_str() {
             "auto" => Some(WhiteBalance::Auto { shift }),
@@ -37,7 +37,7 @@ impl FromExifData for WhiteBalance {
             "underwater" => Some(WhiteBalance::Underwater { shift }),
             "kelvin" => {
                 if let Some(exif) = data.find("ColorTemperature") {
-                    debug!("WhiteBalance::Temperature {:?}", exif.value());
+                    trace!("WhiteBalance::Temperature {:?}", exif.value());
 
                     if let Ok(temperature) = exif.value().parse::<i32>() {
                         Some(WhiteBalance::Kelvin { temperature, shift })

@@ -1,6 +1,6 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::DateTaken;
-use log::debug;
+use log::trace;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use time::{Date, Month, OffsetDateTime, Time, UtcOffset};
@@ -9,7 +9,7 @@ impl FromExifData for DateTaken {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("DateTimeOriginal")?;
 
-        debug!("DateTaken::from_exif: {:?}", exif);
+        trace!("DateTaken::from_exif: {:?}", exif);
 
         static RE: Lazy<Regex> = Lazy::new(|| {
             Regex::new(r"(?<date>[0-9]{4}[-:][09]{2}[-:][0-9]{2}) (?<time>[0-9]{2}:[0-9]{2}:[0-9]{2}).*(?<offset>[+\-0-9]{3}:[0-9]{2})").unwrap()

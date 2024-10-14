@@ -1,12 +1,12 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::ExposureCompensation;
-use log::debug;
+use log::trace;
 
 impl FromExifData for ExposureCompensation {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("ExposureCompensation")?;
 
-        debug!("ExposureCompensation::from_exif: {:?}", exif);
+        trace!("ExposureCompensation::from_exif: {:?}", exif);
 
         let value: f64 = exif.try_into().ok()?;
 
