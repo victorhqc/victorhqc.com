@@ -94,8 +94,8 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         src,
         filename,
         filetype,
-        created_at as "created_at: Timestamp",
-        updated_at as "updated_at: Timestamp",
+        created_at,
+        updated_at,
         deleted
     FROM
         photos AS p
@@ -129,8 +129,8 @@ async fn find_by_tag_ids(
         src,
         filename,
         filetype,
-        p.created_at,
-        p.updated_at,
+        created_at,
+        updated_at,
         p.deleted
     FROM
         photos as p

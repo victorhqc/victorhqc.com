@@ -59,13 +59,13 @@ DATABASE_URL = "sqlite:C:\\Users\\user\\victorhqc.com\\development.db"
 Create the initial DB
 
 ```sh
-./scripts/db.sh
+./scripts/unix/db.sh
 ```
 
 For Windows
 
 ```bat
-scripts\db.bat
+scripts\windows\db.bat
 ```
 
 ## CLI Backoffice
