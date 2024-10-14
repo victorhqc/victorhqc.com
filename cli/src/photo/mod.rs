@@ -3,10 +3,10 @@ use image::{
     codecs::jpeg::JpegEncoder, error::ImageError, imageops::FilterType::Lanczos3, DynamicImage,
     GenericImageView,
 };
+use log::debug;
 use snafu::prelude::*;
 use std::io::Cursor;
 use std::path::Path;
-use log::debug;
 
 pub struct ImagesToUpload {
     pub hd: Vec<u8>,
