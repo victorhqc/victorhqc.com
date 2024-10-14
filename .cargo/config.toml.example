@@ -2,3 +2,9 @@
 RUST_DEBUG = "1"
 RUST_LOG = "api_victorhqc_com=debug,cli_victorhqc_com=debug,sqlx::query=debug,rocket=info"
 DATABASE_URL = "sqlite:<ROOT_PATH>development.db"
+
+AWS_ACCESS_KEY_ID = "<AWS_ACCESS_KEY_ID>"
+AWS_SECRET_ACCESS_KEY = "<AWS_SECRET_ACCESS_KEY>"
+AWS_REGION = "eu-central-1"
+AWS_BUCKET_NAME = "victorhqc.com-development"
+

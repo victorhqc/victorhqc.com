@@ -1,10 +1,12 @@
 mod exiftool;
 
 use clap::Parser;
+use core_victorhqc_com::aws::S3;
 use core_victorhqc_com::db::get_pool;
 use core_victorhqc_com::models::exif_meta::ExifMeta;
 use core_victorhqc_com::models::fujifilm::FujifilmRecipe;
 use core_victorhqc_com::models::photo::Photo;
+use core_victorhqc_com::sqlx::SqlitePool;
 use core_victorhqc_com::{
     exif::FromExifData,
     models::{
@@ -25,6 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     pretty_env_logger::init();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL env variable is missing");
+    let bucket_name =
+        std::env::var("AWS_BUCKET_NAME").expect("AWS_BUCKET_NAME env variable is missing");
 
     let pool = get_pool(&db_url).await.unwrap();
 
@@ -33,6 +37,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let src = Path::new(&args.source);
 
+    let s3 = S3::new(&bucket_name).await;
+
+    create(&pool, src, &s3).await?;
+
+    Ok(())
+}
+
+async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn std::error::Error>> {
     let data =
         exiftool::spawn::read_metadata(src).expect("Failed to get exif metadata from exiftool");
     debug!("Exiftool parsed data: {:?}", data);
@@ -91,6 +103,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     debug!("{:?}", recipe);
 
     let photo = Photo::new(title.trim(), src).unwrap();
+
+    s3.upload_to_aws_s3(&photo, src)
+        .await
+        .expect("Failed to upload Photo");
 
     debug!("{:?}", photo);
 
