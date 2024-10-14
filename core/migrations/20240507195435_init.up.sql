@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS fuji_recipes (
 CREATE TABLE IF NOT EXISTS photos (
     id TEXT PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
-    src TEXT NOT NULL UNIQUE,
     filename TEXT NOT NULL UNIQUE,
     filetype TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT current_timestamp NOT NULL,

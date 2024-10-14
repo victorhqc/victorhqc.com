@@ -1,6 +1,6 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::fujifilm::{FilmSimulation, MonochromaticFilter};
-use log::debug;
+use log::trace;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -14,7 +14,7 @@ impl FromExifData for FilmSimulation {
             return None;
         };
 
-        debug!("FilmSimulation::from_exif: {:?}", exif);
+        trace!("FilmSimulation::from_exif: {:?}", exif);
 
         static RE: Lazy<Regex> = Lazy::new(|| {
             Regex::new(
@@ -24,7 +24,7 @@ impl FromExifData for FilmSimulation {
 
         let captures = RE.captures(exif.value())?;
 
-        debug!("FilmSimulation Captures: {:?}", captures);
+        trace!("FilmSimulation Captures: {:?}", captures);
 
         match captures[0].to_lowercase().as_str() {
             "provia" => Some(FilmSimulation::ProviaStandard),

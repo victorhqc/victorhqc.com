@@ -1,12 +1,12 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::fujifilm::TransSensor;
-use log::debug;
+use log::trace;
 
 impl FromExifData for TransSensor {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let exif = data.find("Model")?;
 
-        debug!("TransSensor::from_exif: {:?}", exif);
+        trace!("TransSensor::from_exif: {:?}", exif);
 
         match exif.value().to_lowercase().as_str() {
             "x-pro1" => Some(TransSensor::TransI),

@@ -1,16 +1,16 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::fujifilm::{GrainEffect, GrainSize, GrainStrength};
-use log::debug;
+use log::trace;
 
 impl FromExifData for GrainEffect {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let strength_exif = data.find("GrainEffectRoughness")?;
 
-        debug!("GrainStrength::from_exif: {:?}", strength_exif);
+        trace!("GrainStrength::from_exif: {:?}", strength_exif);
 
         let size_exif = data.find("GrainEffectSize").unwrap_or_default();
 
-        debug!("GrainSize::from_exif: {:?}", size_exif);
+        trace!("GrainSize::from_exif: {:?}", size_exif);
 
         let grain_size = match size_exif.value().to_lowercase().as_str() {
             "small" => Some(GrainSize::Small),

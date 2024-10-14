@@ -3,45 +3,45 @@ use crate::models::exif_meta::{
     Aperture, City, DateTaken, ExposureCompensation, FocalLength, Iso, Maker, PhotographyDetails,
     Rating,
 };
-use log::debug;
+use log::trace;
 
 impl FromExifData for PhotographyDetails {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
         let rating = Rating::from_exif(data).or_else(|| {
-            debug!("Rating Missing");
+            trace!("Rating Missing");
             None
         })?;
         let city = City::from_exif(data).or_else(|| {
-            debug!("City Missing");
+            trace!("City Missing");
             None
         });
         let date_taken = DateTaken::from_exif(data).or_else(|| {
-            debug!("Date Taken Missing");
+            trace!("Date Taken Missing");
             None
         });
         let aperture = Aperture::from_exif(data).or_else(|| {
-            debug!("Aperture Missing");
+            trace!("Aperture Missing");
             None
         })?;
         let exposure_compensation = ExposureCompensation::from_exif(data).or_else(|| {
-            debug!("Exposure Compensation Missing");
+            trace!("Exposure Compensation Missing");
             None
         })?;
         let focal_length = FocalLength::from_exif(data).or_else(|| {
-            debug!("Focal Length Missing");
+            trace!("Focal Length Missing");
             None
         })?;
         let iso = Iso::from_exif(data).or_else(|| {
-            debug!("Iso Missing");
+            trace!("Iso Missing");
             None
         })?;
         let maker = Maker::from_exif(data).or_else(|| {
-            debug!("Maker Missing");
+            trace!("Maker Missing");
             None
         })?;
         let lens_name = data.find("LensModel").map(|n| n.value().to_string());
         let camera_name = data.find("Model").or_else(|| {
-            debug!("Camera Model Missing");
+            trace!("Camera Model Missing");
             None
         })?;
 

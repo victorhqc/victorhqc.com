@@ -1,3 +1,4 @@
+use crate::utils::is_valid_extension;
 use core_victorhqc_com::exif::{
     json::{Error as JsonError, JsonValue},
     ExifData,
@@ -11,13 +12,8 @@ use std::process::Command;
 #[cfg(target_os = "windows")]
 use winapi::um::winbase::CREATE_NO_WINDOW;
 
-const EXTENSIONS: [&str; 3] = ["jpg", "png", "jpeg"];
-
 pub fn read_metadata(img_path: &Path) -> Result<Vec<ExifData>, Error> {
-    let extension = img_path.extension().unwrap_or("none".as_ref());
-    let extension = extension.to_str().unwrap_or("none").to_lowercase();
-
-    if img_path.is_dir() || !EXTENSIONS.contains(&extension.as_str()) {
+    if !is_valid_extension(img_path) {
         return Err(Error::Path {
             path: img_path.to_str().unwrap_or("NONE").to_string(),
         });
