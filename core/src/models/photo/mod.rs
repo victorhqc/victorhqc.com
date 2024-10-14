@@ -14,7 +14,7 @@ use uuid::Uuid;
 pub struct Photo {
     pub id: String,
     pub title: String,
-    pub src: String,
+    // pub src: String,
     pub filename: String,
     pub filetype: FileType,
     pub created_at: OffsetDateTime,
@@ -41,7 +41,7 @@ impl Photo {
             title: title.to_string(),
             filetype,
             filename: filename.to_string(),
-            src: "TODO".to_string(),
+            // src: "TODO".to_string(),
             created_at,
             updated_at,
             deleted: false,

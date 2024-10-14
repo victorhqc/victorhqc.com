@@ -11,7 +11,6 @@ use uuid::Error as UuidError;
 struct DBPhoto {
     id: String,
     title: String,
-    src: String,
     filename: String,
     filetype: String,
     created_at: Timestamp,
@@ -24,7 +23,6 @@ struct DBTagPhoto {
     tag_id: String,
     id: String,
     title: String,
-    src: String,
     filename: String,
     filetype: String,
     created_at: Timestamp,
@@ -61,7 +59,6 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
     SELECT
         id,
         title,
-        src,
         filename,
         filetype,
         created_at as "created_at: Timestamp",
@@ -91,7 +88,6 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
     SELECT
         id,
         title,
-        src,
         filename,
         filetype,
         created_at,
@@ -126,7 +122,6 @@ async fn find_by_tag_ids(
         tag_id,
         p.id,
         title,
-        src,
         filename,
         filetype,
         p.created_at,
@@ -159,7 +154,6 @@ async fn find_by_tag_ids(
                 DBPhoto {
                     id: p.id,
                     title: p.title,
-                    src: p.src,
                     filename: p.filename,
                     filetype: p.filetype,
                     created_at: p.created_at,
@@ -179,13 +173,12 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
 
     sqlx::query(
         r#"
-    INSERT INTO photos (id, title, src, filename, filetype, created_at, updated_at, deleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO photos (id, title, filename, filetype, created_at, updated_at, deleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     "#,
     )
     .bind(&photo.id)
     .bind(&photo.title)
-    .bind(&photo.src)
     .bind(&photo.filename)
     .bind(&photo.filetype)
     .bind(&photo.created_at)
@@ -221,7 +214,6 @@ impl TryFrom<DBPhoto> for Photo {
         Ok(Photo {
             id: photo.id,
             title: photo.title,
-            src: photo.src,
             filename: photo.filename,
             filetype,
             created_at,
@@ -236,7 +228,6 @@ impl From<&Photo> for DBPhoto {
         DBPhoto {
             id: photo.id.clone(),
             title: photo.title.clone(),
-            src: photo.src.clone(),
             filename: photo.filename.clone(),
             filetype: photo.filetype.to_string(),
             created_at: photo.created_at.into(),

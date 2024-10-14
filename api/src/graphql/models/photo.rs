@@ -4,7 +4,6 @@ use async_graphql::{
     dataloader::DataLoader, ComplexObject, Context, Enum, Result, SimpleObject, ID,
 };
 use core_victorhqc_com::models::photo::{FileType as CoreFileType, Photo as CorePhoto};
-// use time::format_description;
 
 #[derive(Enum, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FileType {
@@ -49,7 +48,7 @@ impl Photo {
         let loader = ctx.data_unchecked::<DataLoader<AppLoader>>();
         let id = TagByPhotoId::new(&self.id);
 
-        let tags = (loader.load_one(id).await?).unwrap_or_default();
+        let tags = loader.load_one(id).await?.unwrap_or_default();
 
         Ok(tags)
     }
@@ -60,7 +59,7 @@ impl From<CorePhoto> for Photo {
         Photo {
             id: photo.id.into(),
             title: photo.title,
-            src: photo.src,
+            src: "TODO".to_string(),
             filename: photo.filename,
             filetype: photo.filetype.into(),
             created_at: format!("{}", photo.created_at),
