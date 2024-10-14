@@ -6,45 +6,56 @@ use aws_sdk_s3::{
         get_object::{GetObjectError, GetObjectOutput},
         put_object::{PutObjectError, PutObjectOutput},
     },
-    primitives::{ByteStream, ByteStreamError},
+    primitives::ByteStream,
 };
 use snafu::prelude::*;
-use std::path::Path;
+use strum_macros::Display;
+
+#[derive(Debug, Display)]
+pub enum ImageSize {
+    Hd,
+    Md,
+    Sm,
+}
 
 impl S3 {
     pub async fn upload_to_aws_s3(
         &self,
-        photo: &Photo,
-        path: &Path,
+        data: (&Photo, ImageSize),
+        buffer: Vec<u8>,
     ) -> Result<PutObjectOutput, Error> {
-        let body = ByteStream::from_path(path).await.context(FileSnafu)?;
+        let body = ByteStream::from(buffer);
 
         self.client
             .put_object()
             .bucket(&self.bucket_name)
-            .key(&photo.id)
+            .key(key(data))
             .body(body)
             .send()
             .await
             .context(UploadSnafu)
     }
 
-    pub async fn download_from_aws_s3(&self, photo: &Photo) -> Result<GetObjectOutput, Error> {
+    pub async fn download_from_aws_s3(
+        &self,
+        data: (&Photo, ImageSize),
+    ) -> Result<GetObjectOutput, Error> {
         self.client
             .get_object()
             .bucket(&self.bucket_name)
-            .key(&photo.id)
+            .key(key(data))
             .send()
             .await
             .context(DownloadSnafu)
     }
 }
 
+fn key((photo, size): (&Photo, ImageSize)) -> String {
+    format!("{}_{}", photo.id, size)
+}
+
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("Failed to get file: {:?}", source))]
-    File { source: ByteStreamError },
-
     #[snafu(display("Failed to upload file: {:?}", source))]
     Upload { source: SdkError<PutObjectError> },
 

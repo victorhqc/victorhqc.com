@@ -1,7 +1,10 @@
 mod exiftool;
+mod photo;
+mod utils;
 
+use crate::photo::images_to_upload;
 use clap::Parser;
-use core_victorhqc_com::aws::S3;
+use core_victorhqc_com::aws::{photo::ImageSize, S3};
 use core_victorhqc_com::db::get_pool;
 use core_victorhqc_com::models::exif_meta::ExifMeta;
 use core_victorhqc_com::models::fujifilm::FujifilmRecipe;
@@ -51,6 +54,11 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
     let maker = Maker::from_exif(data.as_slice()).expect("Could not get Maker from exiftool");
     debug!("{:?}", maker);
 
+    debug!("Building Images to upload");
+    let buffers = images_to_upload(src)
+        .await
+        .expect("Failed to compress images");
+
     let photography_details = PhotographyDetails::from_exif(data.as_slice())
         .expect("Could not get photography details from exiftool");
     debug!("{:?}", photography_details);
@@ -89,9 +97,17 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
 
     let photo = Photo::new(title.trim(), src).unwrap();
 
-    s3.upload_to_aws_s3(&photo, src)
+    s3.upload_to_aws_s3((&photo, ImageSize::Hd), buffers.hd)
         .await
-        .expect("Failed to upload Photo");
+        .expect("Failed to upload HD Photo");
+
+    s3.upload_to_aws_s3((&photo, ImageSize::Md), buffers.md)
+        .await
+        .expect("Failed to upload MD Photo");
+
+    s3.upload_to_aws_s3((&photo, ImageSize::Sm), buffers.sm)
+        .await
+        .expect("Failed to upload SM Photo");
 
     debug!("{:?}", photo);
 
