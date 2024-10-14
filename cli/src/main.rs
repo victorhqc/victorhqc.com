@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("Could not get photography details from exiftool");
     debug!("{:?}", photography_details);
 
-    print!("📷 Please, type the title for the Photograph: ");
+    print!("📷  Please, type the title for the Photograph: ");
     io::stdout().flush().unwrap();
 
     let mut title = String::new();
@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if recipe.is_none() {
             let mut recipe_name = String::new();
             println!();
-            print!("🎞️ Please, specify the name of the recipe used: ");
+            print!("🎞️  Please, specify the name of the recipe used: ");
             io::stdout().flush().unwrap();
 
             io::stdin()

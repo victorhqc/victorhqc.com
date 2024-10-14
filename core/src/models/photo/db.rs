@@ -94,8 +94,8 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         src,
         filename,
         filetype,
-        created_at as "created_at: Timestamp",
-        updated_at as "updated_at: Timestamp",
+        created_at,
+        updated_at,
         deleted
     FROM
         photos AS p
