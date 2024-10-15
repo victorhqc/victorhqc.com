@@ -21,6 +21,7 @@ use log::{debug, trace};
 use std::io;
 use std::io::Write;
 use std::path::Path;
+use std::sync::mpsc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -54,10 +55,10 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
     let maker = Maker::from_exif(data.as_slice()).expect("Could not get Maker from exiftool");
     debug!("{:?}", maker);
 
+    let channel = mpsc::channel::<(ImageSize, Vec<u8>)>();
+
     debug!("Building Images to upload");
-    let buffers = images_to_upload(src)
-        .await
-        .expect("Failed to compress images");
+    let buffers = images_to_upload(src, channel).expect("Failed to compress images");
 
     let photography_details = PhotographyDetails::from_exif(data.as_slice())
         .expect("Could not get photography details from exiftool");
