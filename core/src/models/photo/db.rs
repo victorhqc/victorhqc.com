@@ -61,8 +61,8 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
         title,
         filename,
         filetype,
-        created_at as "created_at: Timestamp",
-        updated_at as "updated_at: Timestamp",
+        created_at,
+        updated_at,
         deleted
     FROM
         photos
