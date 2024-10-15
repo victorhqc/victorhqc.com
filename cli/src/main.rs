@@ -2,7 +2,7 @@ mod exiftool;
 mod photo;
 mod utils;
 
-use crate::photo::images_to_upload;
+use crate::photo::build_images;
 use clap::Parser;
 use core_victorhqc_com::aws::{photo::ImageSize, S3};
 use core_victorhqc_com::db::get_pool;
@@ -58,7 +58,7 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
     let channel = mpsc::channel::<(ImageSize, Vec<u8>)>();
 
     debug!("Building Images to upload");
-    let buffers = images_to_upload(src, channel).expect("Failed to compress images");
+    let buffers = build_images(src, channel).expect("Failed to compress images");
 
     let photography_details = PhotographyDetails::from_exif(data.as_slice())
         .expect("Could not get photography details from exiftool");
