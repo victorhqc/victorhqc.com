@@ -4,8 +4,7 @@ mod photo;
 mod utils;
 
 use clap::Parser;
-use core_victorhqc_com::aws::S3;
-use core_victorhqc_com::db::get_pool;
+use core_victorhqc_com::{aws::S3, db::get_pool};
 use log::debug;
 use std::path::Path;
 
@@ -28,7 +27,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let src = Path::new(&args.source);
     let s3 = S3::new(&bucket_name).await;
 
-    commands::create(&pool, src, &s3).await.expect("Failed to create Image");
+    commands::create(&pool, src, &s3)
+        .await
+        .expect("Failed to create Image");
 
     Ok(())
 }

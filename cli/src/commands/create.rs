@@ -1,11 +1,18 @@
 use crate::{
     exiftool,
-    photo::{build_images, upload},
+    photo::{
+        build_images::{build_images, Error as BuildImagesError},
+        upload::{upload, Error as UploadError},
+    },
     utils::capture,
 };
 use core_victorhqc_com::{
     aws::{photo::ImageSize, S3},
-    models::{exif_meta::ExifMeta, fujifilm::FujifilmRecipe, photo::Photo},
+    models::{
+        exif_meta::{db::Error as ExifMetaDbError, ExifMeta},
+        fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
+        photo::{db::Error as PhotoDbError, Error as PhotoError, Photo},
+    },
     sqlx::SqlitePool,
 };
 use core_victorhqc_com::{
@@ -14,45 +21,42 @@ use core_victorhqc_com::{
         exif_meta::{Maker, PhotographyDetails},
         fujifilm::FujifilmRecipeDetails,
     },
+    sqlx::error::Error as SqlxError,
 };
 use log::{debug, trace};
+use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
-pub async fn create(
-    pool: &SqlitePool,
-    src: &Path,
-    s3: &S3,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let data =
-        exiftool::spawn::read_metadata(src).expect("Failed to get exif metadata from exiftool");
+pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
+    let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
 
-    let maker = Maker::from_exif(data.as_slice()).expect("Could not get Maker from exiftool");
+    let maker = Maker::from_exif(data.as_slice()).context(MakerSnafu)?;
     debug!("{:?}", maker);
+
+    let photography_details =
+        PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
+    debug!("{:?}", photography_details);
 
     let channel = mpsc::channel::<(ImageSize, Vec<u8>)>();
 
     debug!("Building Images to upload");
-    let buffers = build_images(src, channel).expect("Failed to compress images");
-
-    let photography_details = PhotographyDetails::from_exif(data.as_slice())
-        .expect("Could not get photography details from exiftool");
-    debug!("{:?}", photography_details);
+    let buffers = build_images(src, channel).context(BuildImagesSnafu)?;
 
     let title = capture("📷  Please, type the title for the Photograph: ");
     debug!("Title: {}", title);
 
-    let mut tx = pool.begin().await?;
+    let mut tx = pool.begin().await.context(TxSnafu)?;
 
     let mut recipe: Option<FujifilmRecipe> = None;
     if maker == Maker::Fujifilm {
         let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice())
-            .expect("Could not get fujifilm recipe from exiftool");
+            .context(FujifilmRecipeDetailsSnafu)?;
         debug!("{:?}", recipe_details);
 
         recipe = FujifilmRecipe::find_by_details(pool, &recipe_details)
             .await
-            .expect("Failed to query for existing recipe");
+            .context(FujifilmFindRecipeSnafu)?;
 
         if recipe.is_none() {
             println!();
@@ -61,9 +65,7 @@ pub async fn create(
 
             let r = FujifilmRecipe::new(recipe_name, recipe_details);
 
-            r.save(&mut tx)
-                .await
-                .expect("Failed to save Fujifilm recipe");
+            r.save(&mut tx).await.context(FujifilmSaveRecipeSnafu)?;
 
             recipe = Some(r);
         }
@@ -71,22 +73,56 @@ pub async fn create(
 
     debug!("{:?}", recipe);
 
-    let photo = Photo::new(title, src).unwrap();
+    let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
 
-    upload(&photo, s3, buffers)
-        .await
-        .expect("Failed to upload photos");
-
+    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
+    photo.save(&mut tx).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
 
-    photo.save(&mut tx).await.expect("Failed to store Photo");
-
     let exif = ExifMeta::new(photography_details, &photo, &recipe);
-    exif.save(&mut tx).await.expect("Failed to save Exif");
-
+    exif.save(&mut tx).await.context(SaveExifSnafu)?;
     debug!("{:?}", exif);
 
-    tx.commit().await.expect("Failed to commit transaction");
+    tx.commit().await.context(TxSnafu)?;
 
     Ok(())
+}
+
+#[derive(Debug, Snafu)]
+pub enum Error {
+    #[snafu(display("Failed to get EXIF: {}", source))]
+    Exiftool { source: exiftool::spawn::Error },
+
+    #[snafu(display("Could not get Maker from EXIF"))]
+    Maker,
+
+    #[snafu(display("Could not find the PhotographyDetails from EXIF"))]
+    PhotographyDetails,
+
+    #[snafu(display("Could not find Fujifilm Recipe details from EXIF"))]
+    FujifilmRecipeDetails,
+
+    #[snafu(display("Failed to build images: {}", source))]
+    BuildImages { source: BuildImagesError },
+
+    #[snafu(display("Failed to execute Transaction: {}", source))]
+    Tx { source: SqlxError },
+
+    #[snafu(display("Failed to find recipe: {}", source))]
+    FujifilmFindRecipe { source: FujifilmDbError },
+
+    #[snafu(display("Failed to save the recipe: {}", source))]
+    FujifilmSaveRecipe { source: FujifilmDbError },
+
+    #[snafu(display("Failed to create a photo object: {}", source))]
+    NewPhoto { source: PhotoError },
+
+    #[snafu(display("Failed to upload the images: {}", source))]
+    Upload { source: UploadError },
+
+    #[snafu(display("Failed to save the photo: {}", source))]
+    SavePhoto { source: PhotoDbError },
+
+    #[snafu(display("Failed to save the EXIF data: {}", source))]
+    SaveExif { source: ExifMetaDbError },
 }
