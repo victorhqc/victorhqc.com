@@ -25,10 +25,19 @@ impl FromStr for FilmSimulation {
             "Acros+Ye" => Ok(FilmSimulation::Acros {
                 filter: MonochromaticFilter::Yellow,
             }),
+            "Acros +Ye" => Ok(FilmSimulation::Acros {
+                filter: MonochromaticFilter::Yellow,
+            }),
             "Acros+R" => Ok(FilmSimulation::Acros {
                 filter: MonochromaticFilter::Red,
             }),
+            "Acros +R" => Ok(FilmSimulation::Acros {
+                filter: MonochromaticFilter::Red,
+            }),
             "Acros+G" => Ok(FilmSimulation::Acros {
+                filter: MonochromaticFilter::Green,
+            }),
+            "Acros +G" => Ok(FilmSimulation::Acros {
                 filter: MonochromaticFilter::Green,
             }),
             "Monochrome" => Ok(FilmSimulation::Monochrome {
@@ -37,10 +46,19 @@ impl FromStr for FilmSimulation {
             "Monochrome+Ye" => Ok(FilmSimulation::Monochrome {
                 filter: MonochromaticFilter::Yellow,
             }),
+            "Monochrome +Ye" => Ok(FilmSimulation::Monochrome {
+                filter: MonochromaticFilter::Yellow,
+            }),
             "Monochrome+R" => Ok(FilmSimulation::Monochrome {
                 filter: MonochromaticFilter::Red,
             }),
+            "Monochrome +R" => Ok(FilmSimulation::Monochrome {
+                filter: MonochromaticFilter::Red,
+            }),
             "Monochrome+G" => Ok(FilmSimulation::Monochrome {
+                filter: MonochromaticFilter::Green,
+            }),
+            "Monochrome +G" => Ok(FilmSimulation::Monochrome {
                 filter: MonochromaticFilter::Green,
             }),
             "Sepia" => Ok(FilmSimulation::Sepia),
@@ -138,6 +156,15 @@ mod tests {
                 filter: MonochromaticFilter::Yellow
             })
         );
+
+        let result = FilmSimulation::from_str("Acros +Ye");
+
+        assert_eq!(
+            result,
+            Ok(FilmSimulation::Acros {
+                filter: MonochromaticFilter::Yellow
+            })
+        );
     }
 
     #[test]
@@ -150,11 +177,29 @@ mod tests {
                 filter: MonochromaticFilter::Red
             })
         );
+
+        let result = FilmSimulation::from_str("Acros +R");
+
+        assert_eq!(
+            result,
+            Ok(FilmSimulation::Acros {
+                filter: MonochromaticFilter::Red
+            })
+        );
     }
 
     #[test]
     fn it_parses_acros_green_from_string() {
         let result = FilmSimulation::from_str("Acros+G");
+
+        assert_eq!(
+            result,
+            Ok(FilmSimulation::Acros {
+                filter: MonochromaticFilter::Green
+            })
+        );
+
+        let result = FilmSimulation::from_str("Acros +G");
 
         assert_eq!(
             result,
@@ -186,6 +231,15 @@ mod tests {
                 filter: MonochromaticFilter::Yellow
             })
         );
+
+        let result = FilmSimulation::from_str("Monochrome +Ye");
+
+        assert_eq!(
+            result,
+            Ok(FilmSimulation::Monochrome {
+                filter: MonochromaticFilter::Yellow
+            })
+        );
     }
 
     #[test]
@@ -198,11 +252,29 @@ mod tests {
                 filter: MonochromaticFilter::Red
             })
         );
+
+        let result = FilmSimulation::from_str("Monochrome +R");
+
+        assert_eq!(
+            result,
+            Ok(FilmSimulation::Monochrome {
+                filter: MonochromaticFilter::Red
+            })
+        );
     }
 
     #[test]
     fn it_parses_monochrome_green_from_string() {
         let result = FilmSimulation::from_str("Monochrome+G");
+
+        assert_eq!(
+            result,
+            Ok(FilmSimulation::Monochrome {
+                filter: MonochromaticFilter::Green
+            })
+        );
+
+        let result = FilmSimulation::from_str("Monochrome +G");
 
         assert_eq!(
             result,
