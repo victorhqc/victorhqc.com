@@ -14,7 +14,7 @@ use std::{
     thread,
 };
 
-pub struct ImagesToUpload {
+pub struct ImageBuffers {
     pub hd: Vec<u8>,
     pub md: Vec<u8>,
     pub sm: Vec<u8>,
@@ -30,7 +30,7 @@ type ImgData = (ImageSize, Vec<u8>);
 pub fn build_images(
     path: &Path,
     (tx, rx): (Sender<ImgData>, Receiver<ImgData>),
-) -> Result<ImagesToUpload, Error> {
+) -> Result<ImageBuffers, Error> {
     if !is_valid_extension(path) {
         return Err(Error::Extension {
             path: path.to_str().unwrap().to_string(),
@@ -112,7 +112,7 @@ pub fn build_images(
     }
 
     if let ((_, Some(hd)), (_, Some(md)), (_, Some(sm))) = (hd, md, sm) {
-        Ok(ImagesToUpload { hd, md, sm })
+        Ok(ImageBuffers { hd, md, sm })
     } else {
         Err(Error::MissingData)
     }

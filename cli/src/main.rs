@@ -2,7 +2,7 @@ mod exiftool;
 mod photo;
 mod utils;
 
-use crate::photo::build_images;
+use crate::photo::{build_images, upload};
 use clap::Parser;
 use core_victorhqc_com::aws::{photo::ImageSize, S3};
 use core_victorhqc_com::db::get_pool;
@@ -96,19 +96,11 @@ async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Box<dyn st
 
     debug!("{:?}", recipe);
 
-    let photo = Photo::new(title.trim(), src).unwrap();
+    let photo = Photo::new(title, src).unwrap();
 
-    s3.upload_to_aws_s3((&photo, ImageSize::Hd), buffers.hd)
+    upload(&photo, s3, buffers)
         .await
-        .expect("Failed to upload HD Photo");
-
-    s3.upload_to_aws_s3((&photo, ImageSize::Md), buffers.md)
-        .await
-        .expect("Failed to upload MD Photo");
-
-    s3.upload_to_aws_s3((&photo, ImageSize::Sm), buffers.sm)
-        .await
-        .expect("Failed to upload SM Photo");
+        .expect("Failed to upload photos");
 
     debug!("{:?}", photo);
 
@@ -133,7 +125,7 @@ fn capture(msg: &str) -> String {
         .read_line(&mut capture)
         .expect("Failed to capture String");
 
-    capture
+    capture.trim().to_string()
 }
 
 #[derive(Debug, Parser)]
