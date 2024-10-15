@@ -25,7 +25,6 @@ use core_victorhqc_com::{
 };
 use log::{debug, trace};
 use snafu::prelude::*;
-use std::any::Any;
 use std::{path::Path, sync::mpsc};
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
@@ -42,7 +41,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     let (tx, rx) = mpsc::channel::<(ImageSize, Vec<u8>)>();
 
     debug!("Building Images to upload");
-    let (handle_hd, handle_md, handle_sm) = start_build(src, tx).context(BuildImagesSnafu)?;
+    let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;
 
     let title = capture("📷  Please, type the title for the Photograph: ");
     debug!("Title: {}", title);
@@ -75,7 +74,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     debug!("{:?}", recipe);
 
     let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
-    
+
     photo.save(&mut tx).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
 
@@ -83,24 +82,10 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     exif.save(&mut tx).await.context(SaveExifSnafu)?;
     debug!("{:?}", exif);
 
-    let buffers = finish_build(rx).context(BuildImagesSnafu)?;
-
-    handle_hd
-        .join()
-        .map_err(|e| Error::ThreadPanic { err: e })?
-        .context(BuildImagesSnafu)?;
-
-    handle_md
-        .join()
-        .map_err(|e| Error::ThreadPanic { err: e })?
-        .context(BuildImagesSnafu)?;
-
-    handle_sm
-        .join()
-        .map_err(|e| Error::ThreadPanic { err: e })?
-        .context(BuildImagesSnafu)?;
-
+    let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
+    debug!("About to upload to S3");
     upload(&photo, s3, buffers).await.context(UploadSnafu)?;
+    debug!("Uploaded to S3");
 
     tx.commit().await.context(TxSnafu)?;
 
@@ -144,7 +129,4 @@ pub enum Error {
 
     #[snafu(display("Failed to save the EXIF data: {}", source))]
     SaveExif { source: ExifMetaDbError },
-
-    #[snafu(display("Thread panicked: {:?}", err))]
-    ThreadPanic { err: Box<dyn Any + Send> },
 }

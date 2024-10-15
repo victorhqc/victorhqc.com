@@ -7,6 +7,7 @@ use image::{
 use log::debug;
 use snafu::prelude::*;
 use std::{
+    any::Any,
     io::Cursor,
     path::Path,
     sync::mpsc::{Receiver, SendError, Sender},
@@ -21,70 +22,73 @@ pub struct ImageBuffers {
 
 type ImgData = (ImageSize, Vec<u8>);
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
+pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle), Error>>;
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
 /// - HD: 40% of the original image with JPEG quality of 80
 /// - MD: 25% of the original image with JPEG quality of 75
 /// - SM: 10% of the original image with JPEG quality of 30
-pub fn start_build(
-    path: &Path,
-    tx: Sender<ImgData>,
-) -> Result<(BuildHandle, BuildHandle, BuildHandle), Error> {
+pub fn start_build(path: &Path, tx: Sender<ImgData>) -> Result<MainHandle, Error> {
     if !is_valid_extension(path) {
         return Err(Error::Extension {
             path: path.to_str().unwrap().to_string(),
         });
     }
 
-    debug!("Opening Image");
-    let img = image::open(path).context(OpenSnafu)?;
+    let p = path.to_str().unwrap().to_string();
+    let main_handle: MainHandle = thread::spawn(move || {
+        debug!("Opening Image");
+        let img = image::open(Path::new(&p)).context(OpenSnafu)?;
 
-    let img_hd = img.clone();
-    let tx_hd = tx.clone();
-    let handle_hd = thread::spawn(move || {
-        debug!("Building HD Image");
-        let img_hd = resize(img_hd, 0.4);
-        let img_hd = match compress(img_hd, 80) {
-            Ok(v) => v,
-            Err(e) => return Err(e),
-        };
-        debug!("HD Image Processing completed");
+        let img_hd = img.clone();
+        let tx_hd = tx.clone();
+        let handle_hd = thread::spawn(move || {
+            debug!("Building HD Image");
+            let img_hd = resize(img_hd, 0.4);
+            let img_hd = match compress(img_hd, 80) {
+                Ok(v) => v,
+                Err(e) => return Err(e),
+            };
+            debug!("HD Image Processing completed");
 
-        tx_hd.send((ImageSize::Hd, img_hd)).context(ThreadSendSnafu)
+            tx_hd.send((ImageSize::Hd, img_hd)).context(ThreadSendSnafu)
+        });
+
+        let img_md = img.clone();
+        let tx_md = tx.clone();
+        let handle_md = thread::spawn(move || {
+            debug!("Building MD Image");
+            let img_md = resize(img_md, 0.25);
+            let img_md = match compress(img_md, 75) {
+                Ok(v) => v,
+                Err(e) => return Err(e),
+            };
+            debug!("MD Image Processing completed");
+
+            tx_md.send((ImageSize::Md, img_md)).context(ThreadSendSnafu)
+        });
+
+        let img_sm = img.clone();
+        let handle_sm = thread::spawn(move || {
+            debug!("Building SM Image");
+            let img_sm = resize(img_sm, 0.1);
+            let img_sm = match compress(img_sm, 30) {
+                Ok(v) => v,
+                Err(e) => return Err(e),
+            };
+            debug!("SM Image Processing completed");
+
+            tx.send((ImageSize::Sm, img_sm)).context(ThreadSendSnafu)
+        });
+
+        Ok((handle_hd, handle_md, handle_sm))
     });
 
-    let img_md = img.clone();
-    let tx_md = tx.clone();
-    let handle_md = thread::spawn(move || {
-        debug!("Building MD Image");
-        let img_md = resize(img_md, 0.25);
-        let img_md = match compress(img_md, 75) {
-            Ok(v) => v,
-            Err(e) => return Err(e),
-        };
-        debug!("MD Image Processing completed");
-
-        tx_md.send((ImageSize::Md, img_md)).context(ThreadSendSnafu)
-    });
-
-    let img_sm = img.clone();
-    let handle_sm = thread::spawn(move || {
-        debug!("Building SM Image");
-        let img_sm = resize(img_sm, 0.1);
-        let img_sm = match compress(img_sm, 30) {
-            Ok(v) => v,
-            Err(e) => return Err(e),
-        };
-        debug!("SM Image Processing completed");
-
-        tx.send((ImageSize::Sm, img_sm)).context(ThreadSendSnafu)
-    });
-
-    Ok((handle_hd, handle_md, handle_sm))
+    Ok(main_handle)
 }
 
-pub fn finish_build(rx: Receiver<ImgData>) -> Result<ImageBuffers, Error> {
+pub fn finish_build(rx: Receiver<ImgData>, main_handle: MainHandle) -> Result<ImageBuffers, Error> {
     let mut hd: (ImageSize, Option<Vec<u8>>) = (ImageSize::Hd, None);
     let mut md: (ImageSize, Option<Vec<u8>>) = (ImageSize::Md, None);
     let mut sm: (ImageSize, Option<Vec<u8>>) = (ImageSize::Sm, None);
@@ -102,6 +106,30 @@ pub fn finish_build(rx: Receiver<ImgData>) -> Result<ImageBuffers, Error> {
             }
         }
     }
+
+    let (hd_handle, md_handle, sm_handle) = main_handle
+        .join()
+        .map(|r| match r {
+            Ok((handle_hd, handle_md, handle_sm)) => {
+                let hd = handle_hd
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+                let md = handle_md
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+                let sm = handle_sm
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+
+                Ok((hd, md, sm))
+            }
+            Err(err) => Err(err),
+        })
+        .map_err(|e| Error::ThreadPanic { err: e })??;
+
+    hd_handle?;
+    md_handle?;
+    sm_handle?;
 
     if let ((_, Some(hd)), (_, Some(md)), (_, Some(sm))) = (hd, md, sm) {
         Ok(ImageBuffers { hd, md, sm })
@@ -148,4 +176,7 @@ pub enum Error {
 
     #[snafu(display("Something went wrong while making images"))]
     MissingData,
+
+    #[snafu(display("Thread panicked: {:?}", err))]
+    ThreadPanic { err: Box<dyn Any + Send> },
 }
