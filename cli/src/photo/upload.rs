@@ -1,4 +1,4 @@
-use crate::photo::ImageBuffers;
+use crate::photo::build_images::ImageBuffers;
 use core_victorhqc_com::{
     aws::{
         photo::{Error as UploadError, ImageSize},

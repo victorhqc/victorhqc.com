@@ -1,7 +1,7 @@
 use crate::{
     exiftool,
     photo::{
-        build_images::{build_images, Error as BuildImagesError},
+        build_images::{finish_build, start_build, Error as BuildImagesError},
         upload::{upload, Error as UploadError},
     },
     utils::capture,
@@ -25,6 +25,7 @@ use core_victorhqc_com::{
 };
 use log::{debug, trace};
 use snafu::prelude::*;
+use std::any::Any;
 use std::{path::Path, sync::mpsc};
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
@@ -38,10 +39,10 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
         PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
     debug!("{:?}", photography_details);
 
-    let channel = mpsc::channel::<(ImageSize, Vec<u8>)>();
+    let (tx, rx) = mpsc::channel::<(ImageSize, Vec<u8>)>();
 
     debug!("Building Images to upload");
-    let buffers = build_images(src, channel).context(BuildImagesSnafu)?;
+    let (handle_hd, handle_md, handle_sm) = start_build(src, tx).context(BuildImagesSnafu)?;
 
     let title = capture("📷  Please, type the title for the Photograph: ");
     debug!("Title: {}", title);
@@ -74,14 +75,32 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     debug!("{:?}", recipe);
 
     let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
-
-    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
+    
     photo.save(&mut tx).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
 
     let exif = ExifMeta::new(photography_details, &photo, &recipe);
     exif.save(&mut tx).await.context(SaveExifSnafu)?;
     debug!("{:?}", exif);
+
+    let buffers = finish_build(rx).context(BuildImagesSnafu)?;
+
+    handle_hd
+        .join()
+        .map_err(|e| Error::ThreadPanic { err: e })?
+        .context(BuildImagesSnafu)?;
+
+    handle_md
+        .join()
+        .map_err(|e| Error::ThreadPanic { err: e })?
+        .context(BuildImagesSnafu)?;
+
+    handle_sm
+        .join()
+        .map_err(|e| Error::ThreadPanic { err: e })?
+        .context(BuildImagesSnafu)?;
+
+    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
 
     tx.commit().await.context(TxSnafu)?;
 
@@ -125,4 +144,7 @@ pub enum Error {
 
     #[snafu(display("Failed to save the EXIF data: {}", source))]
     SaveExif { source: ExifMetaDbError },
+
+    #[snafu(display("Thread panicked: {:?}", err))]
+    ThreadPanic { err: Box<dyn Any + Send> },
 }

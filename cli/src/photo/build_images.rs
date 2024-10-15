@@ -6,12 +6,11 @@ use image::{
 };
 use log::debug;
 use snafu::prelude::*;
-use std::any::Any;
 use std::{
     io::Cursor,
     path::Path,
     sync::mpsc::{Receiver, SendError, Sender},
-    thread,
+    thread::{self, JoinHandle},
 };
 
 pub struct ImageBuffers {
@@ -21,16 +20,17 @@ pub struct ImageBuffers {
 }
 
 type ImgData = (ImageSize, Vec<u8>);
+pub type BuildHandle = JoinHandle<Result<(), Error>>;
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
 /// - HD: 40% of the original image with JPEG quality of 80
 /// - MD: 25% of the original image with JPEG quality of 75
 /// - SM: 10% of the original image with JPEG quality of 30
-pub fn build_images(
+pub fn start_build(
     path: &Path,
-    (tx, rx): (Sender<ImgData>, Receiver<ImgData>),
-) -> Result<ImageBuffers, Error> {
+    tx: Sender<ImgData>,
+) -> Result<(BuildHandle, BuildHandle, BuildHandle), Error> {
     if !is_valid_extension(path) {
         return Err(Error::Extension {
             path: path.to_str().unwrap().to_string(),
@@ -81,18 +81,10 @@ pub fn build_images(
         tx.send((ImageSize::Sm, img_sm)).context(ThreadSendSnafu)
     });
 
-    handle_hd
-        .join()
-        .map_err(|e| Error::ThreadPanic { err: e })??;
+    Ok((handle_hd, handle_md, handle_sm))
+}
 
-    handle_md
-        .join()
-        .map_err(|e| Error::ThreadPanic { err: e })??;
-
-    handle_sm
-        .join()
-        .map_err(|e| Error::ThreadPanic { err: e })??;
-
+pub fn finish_build(rx: Receiver<ImgData>) -> Result<ImageBuffers, Error> {
     let mut hd: (ImageSize, Option<Vec<u8>>) = (ImageSize::Hd, None);
     let mut md: (ImageSize, Option<Vec<u8>>) = (ImageSize::Md, None);
     let mut sm: (ImageSize, Option<Vec<u8>>) = (ImageSize::Sm, None);
@@ -153,9 +145,6 @@ pub enum Error {
     ThreadSend {
         source: SendError<(ImageSize, Vec<u8>)>,
     },
-
-    #[snafu(display("Thread panicked: {:?}", err))]
-    ThreadPanic { err: Box<dyn Any + Send> },
 
     #[snafu(display("Something went wrong while making images"))]
     MissingData,
