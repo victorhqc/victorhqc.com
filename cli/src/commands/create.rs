@@ -7,7 +7,7 @@ use crate::{
     utils::capture,
 };
 use core_victorhqc_com::{
-    aws::{photo::ImageSize, S3},
+    aws::S3,
     models::{
         exif_meta::{db::Error as ExifMetaDbError, ExifMeta},
         fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
@@ -25,7 +25,7 @@ use core_victorhqc_com::{
 };
 use log::{debug, trace};
 use snafu::prelude::*;
-use std::{path::Path, sync::mpsc};
+use std::path::Path;
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
@@ -38,10 +38,8 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
         PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
     debug!("{:?}", photography_details);
 
-    let (tx, rx) = mpsc::channel::<(ImageSize, Vec<u8>)>();
-
     debug!("Building Images to upload");
-    let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;
+    let main_handle = start_build(src).context(BuildImagesSnafu)?;
 
     let title = capture("📷  Please, type the title for the Photograph: ");
     debug!("Title: {}", title);
@@ -82,7 +80,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     exif.save(&mut tx).await.context(SaveExifSnafu)?;
     debug!("{:?}", exif);
 
-    let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
+    let buffers = finish_build(main_handle).await.context(BuildImagesSnafu)?;
     debug!("About to upload to S3");
     upload(&photo, s3, buffers).await.context(UploadSnafu)?;
     debug!("Uploaded to S3");
