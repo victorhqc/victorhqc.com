@@ -18,7 +18,7 @@ pub struct ImageBuffers {
 type ImgData = (ImageSize, Vec<u8>);
 
 pub type FutureHandle = JoinHandle<Result<ImgData, Error>>;
-pub type MainHandle = JoinHandle<Result<(ImgData, ImgData, ImgData), Error>>;
+pub type MainHandle = JoinHandle<Result<Vec<ImgData>, Error>>;
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
@@ -76,16 +76,31 @@ pub fn start_build(
         let md = md.context(ImageFutureSnafu)??;
         let sm = sm.context(ImageFutureSnafu)??;
 
-        Ok((hd, md, sm))
+        Ok(vec![hd, md, sm])
     });
 
     Ok(main_handle)
 }
 
 pub async fn finish_build(main_handle: MainHandle) -> Result<ImageBuffers, Error> {
-    let ((_, hd), (_, md), (_, sm)) = main_handle.await.context(ImageFutureSnafu)??;
+    let mut hd: Option<Vec<u8>> = None;
+    let mut md: Option<Vec<u8>> = None;
+    let mut sm: Option<Vec<u8>> = None;
+    let images: Vec<ImgData> = main_handle.await.context(ImageFutureSnafu)??;
 
-    Ok(ImageBuffers { hd, md, sm })
+    for (size, img) in images {
+        match size {
+            ImageSize::Hd => hd = Some(img),
+            ImageSize::Md => md = Some(img),
+            ImageSize::Sm => sm = Some(img),
+        };
+    }
+
+    if let (Some(hd), Some(md), Some(sm)) = (hd, md, sm) {
+        Ok(ImageBuffers { hd, md, sm })
+    } else {
+        Err(Error::MissingData)
+    }
 }
 
 fn resize(img: DynamicImage, percentage: f32) -> DynamicImage {
@@ -117,6 +132,9 @@ pub enum Error {
 
     #[snafu(display("Failed to encode JPEG: {:?}", source))]
     Jpeg { source: ImageError },
+
+    #[snafu(display("Something went wrong while making images"))]
+    MissingData,
 
     #[snafu(display("Failed to execute future for Image Processing: {:?}", source))]
     ImageFuture { source: JoinError },
