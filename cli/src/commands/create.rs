@@ -13,7 +13,7 @@ use core_victorhqc_com::{
         fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
         photo::{db::Error as PhotoDbError, Error as PhotoError, Photo},
     },
-    sqlx::SqlitePool,
+    sqlx::{Sqlite, SqlitePool, Transaction},
 };
 use core_victorhqc_com::{
     exif::FromExifData,
@@ -26,17 +26,11 @@ use core_victorhqc_com::{
 use log::{debug, trace};
 use snafu::prelude::*;
 use std::path::Path;
+use core_victorhqc_com::exif::ExifData;
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
-
-    let maker = Maker::from_exif(data.as_slice()).context(MakerSnafu)?;
-    debug!("{:?}", maker);
-
-    let photography_details =
-        PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
-    debug!("{:?}", photography_details);
 
     debug!("Building Images to upload");
     let main_handle = start_build(src).context(BuildImagesSnafu)?;
@@ -46,6 +40,40 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
 
     let mut tx = pool.begin().await.context(TxSnafu)?;
 
+    let recipe = get_some_fujifilm_recipe(&data, pool, &mut tx).await?;
+    debug!("{:?}", recipe);
+
+    let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
+
+    photo.save(&mut tx).await.context(SavePhotoSnafu)?;
+    debug!("{:?}", photo);
+
+    let photography_details =
+        PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
+    debug!("{:?}", photography_details);
+
+    let exif = ExifMeta::new(photography_details, &photo, &recipe);
+    exif.save(&mut tx).await.context(SaveExifSnafu)?;
+    debug!("{:?}", exif);
+
+    let buffers = finish_build(main_handle).await.context(BuildImagesSnafu)?;
+    debug!("About to upload to S3");
+    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
+    debug!("Uploaded to S3");
+
+    tx.commit().await.context(TxSnafu)?;
+
+    Ok(())
+}
+
+async fn get_some_fujifilm_recipe<'a, 'b>(
+    data: &'a Vec<ExifData>,
+    pool: &'a SqlitePool,
+    tx: &'a mut Transaction<'b, Sqlite>,
+) -> Result<Option<FujifilmRecipe>, Error> {
+    let maker = Maker::from_exif(data.as_slice()).context(MakerSnafu)?;
+    debug!("{:?}", maker);
+    
     let mut recipe: Option<FujifilmRecipe> = None;
     if maker == Maker::Fujifilm {
         let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice())
@@ -63,31 +91,13 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
 
             let r = FujifilmRecipe::new(recipe_name, recipe_details);
 
-            r.save(&mut tx).await.context(FujifilmSaveRecipeSnafu)?;
+            r.save(tx).await.context(FujifilmSaveRecipeSnafu)?;
 
             recipe = Some(r);
         }
     }
 
-    debug!("{:?}", recipe);
-
-    let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
-
-    photo.save(&mut tx).await.context(SavePhotoSnafu)?;
-    debug!("{:?}", photo);
-
-    let exif = ExifMeta::new(photography_details, &photo, &recipe);
-    exif.save(&mut tx).await.context(SaveExifSnafu)?;
-    debug!("{:?}", exif);
-
-    let buffers = finish_build(main_handle).await.context(BuildImagesSnafu)?;
-    debug!("About to upload to S3");
-    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
-    debug!("Uploaded to S3");
-
-    tx.commit().await.context(TxSnafu)?;
-
-    Ok(())
+    Ok(recipe)
 }
 
 #[derive(Debug, Snafu)]
