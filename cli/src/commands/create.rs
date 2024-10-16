@@ -8,6 +8,7 @@ use crate::{
 };
 use core_victorhqc_com::{
     aws::S3,
+    exif::ExifData,
     models::{
         exif_meta::{db::Error as ExifMetaDbError, ExifMeta},
         fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
@@ -26,7 +27,6 @@ use core_victorhqc_com::{
 use log::{debug, trace};
 use snafu::prelude::*;
 use std::path::Path;
-use core_victorhqc_com::exif::ExifData;
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
@@ -73,7 +73,7 @@ async fn get_some_fujifilm_recipe<'a, 'b>(
 ) -> Result<Option<FujifilmRecipe>, Error> {
     let maker = Maker::from_exif(data.as_slice()).context(MakerSnafu)?;
     debug!("{:?}", maker);
-    
+
     let mut recipe: Option<FujifilmRecipe> = None;
     if maker == Maker::Fujifilm {
         let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice())
