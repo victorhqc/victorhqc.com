@@ -31,8 +31,8 @@ use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
 static CAMERA: Emoji<'_, '_> = Emoji("📷  ", "");
-static FILM: Emoji<'_, '_> = Emoji("🎞️  ", "");
-static TAG: Emoji<'_, '_> = Emoji("🏷️  ", "");
+static FILM: Emoji<'_, '_> = Emoji("🎞️   ", "");
+static TAG: Emoji<'_, '_> = Emoji("🏷️   ", "");
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     if Photo::find_by_filename(pool, src)
