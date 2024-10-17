@@ -1,7 +1,7 @@
 use crate::{
     exiftool,
     photo::{
-        build_images::{finish_build, start_build, Error as BuildImagesError, ImgData},
+        build_images::{finish_build, start_build, Error as BuildImagesError, ImageProcess},
         upload::{upload, Error as UploadError},
     },
     utils::capture,
@@ -42,7 +42,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
 
-    let (tx, rx) = mpsc::channel::<ImgData>();
+    let (tx, rx) = mpsc::channel::<ImageProcess>();
 
     debug!("Building Images to upload");
     let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;

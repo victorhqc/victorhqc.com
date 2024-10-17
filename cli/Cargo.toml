@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.20", features = ["derive"] }
+console = "0.15.8"
 core-victorhqc-com = { path = "../core" }
 dotenvy = "0.15.7"
 futures = "0.3.31"
