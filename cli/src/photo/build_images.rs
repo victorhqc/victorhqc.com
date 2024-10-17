@@ -33,9 +33,8 @@ pub type ImgData = (ImageSize, Vec<u8>);
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
 pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle), Error>>;
 
-static PACKAGE: Emoji<'_, '_> = Emoji("📦  ", "");
-static DRAWER: Emoji<'_, '_> = Emoji("🗃️ ", "");
-static TICK: Emoji<'_, '_> = Emoji("✅ ", "");
+static PACKAGE: Emoji<'_, '_> = Emoji("📦 ", "");
+static DRAWER: Emoji<'_, '_> = Emoji("🗃️  ", "");
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
@@ -110,37 +109,48 @@ pub fn finish_build(
     let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
         .unwrap()
         .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
+    let s_done = ProgressStyle::with_template("{prefix:.bold.dim} {wide_msg}")
+        .unwrap()
+        .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
 
     let opened_pb = build_loader(&m, &s, format!("{} Opening Image...", DRAWER), 1);
-    let hd_pb = build_loader(&m, &s, format!("{} Processing HD Image...", PACKAGE), 2);
-    let md_pb = build_loader(&m, &s, format!("{} Processing MD Image...", PACKAGE), 2);
     let sm_pb = build_loader(&m, &s, format!("{} Processing SM Image...", PACKAGE), 2);
+    let md_pb = build_loader(&m, &s, format!("{} Processing MD Image...", PACKAGE), 3);
+    let hd_pb = build_loader(&m, &s, format!("{} Processing HD Image...", PACKAGE), 4);
 
     for process in rx {
         match process {
             ImageProcess::Opened => {
-                opened_pb.finish_with_message(format!("{} Image Opened", TICK));
+                opened_pb.set_style(s_done.clone());
+                opened_pb.set_prefix("[1/4] ✓");
+                opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
             }
             ImageProcess::Processed((size, img)) => {
                 match size {
                     ImageSize::Hd => {
+                        hd_pb.set_style(s_done.clone());
+                        hd_pb.set_prefix("[4/4] ✓");
                         hd_pb.finish_with_message(format!(
                             "{} HD Image Processing Finished",
-                            TICK
+                            PACKAGE
                         ));
                         hd = Some(img)
                     }
                     ImageSize::Md => {
+                        md_pb.set_style(s_done.clone());
+                        md_pb.set_prefix("[3/4] ✓");
                         md_pb.finish_with_message(format!(
                             "{} MD Image Processing Finished",
-                            TICK
+                            PACKAGE
                         ));
                         md = Some(img)
                     }
                     ImageSize::Sm => {
+                        sm_pb.set_style(s_done.clone());
+                        sm_pb.set_prefix("[2/4] ✓");
                         sm_pb.finish_with_message(format!(
                             "{} SM Image Processing Finished",
-                            TICK
+                            PACKAGE
                         ));
                         sm = Some(img)
                     }
