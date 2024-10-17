@@ -1,5 +1,5 @@
 use crate::utils::is_valid_extension;
-use console::Emoji;
+use console::{style, Emoji};
 use core_victorhqc_com::aws::photo::ImageSize;
 use image::{
     codecs::jpeg::JpegEncoder, error::ImageError, imageops::FilterType::Lanczos3, DynamicImage,
@@ -114,47 +114,51 @@ pub fn finish_build(
     let opened_pb = m.add(ProgressBar::new_spinner());
     opened_pb.enable_steady_tick(Duration::from_millis(50));
     opened_pb.set_style(spinner_style.clone());
+    opened_pb.set_prefix(format!("{}", style("[1/4]").bold().dim()));
     opened_pb.set_message(format!("{} Opening Image...", DRAWER));
 
     let hd_pb = m.add(ProgressBar::new_spinner());
     hd_pb.enable_steady_tick(Duration::from_millis(50));
     hd_pb.set_style(spinner_style.clone());
+    hd_pb.set_prefix(format!("{}", style("[2/4]").bold().dim()));
     hd_pb.set_message(format!("{} Processing HD Image...", PACKAGE));
 
     let md_pb = m.add(ProgressBar::new_spinner());
     md_pb.enable_steady_tick(Duration::from_millis(50));
     md_pb.set_style(spinner_style.clone());
+    md_pb.set_prefix(format!("{}", style("[3/4]").bold().dim()));
     md_pb.set_message(format!("{} Processing MD Image...", PACKAGE));
 
     let sm_pb = m.add(ProgressBar::new_spinner());
     sm_pb.enable_steady_tick(Duration::from_millis(50));
     sm_pb.set_style(spinner_style);
+    sm_pb.set_prefix(format!("{}", style("[4/4]").bold().dim()));
     sm_pb.set_message(format!("{} Processing SM Image...", PACKAGE));
 
     for process in rx {
         match process {
             ImageProcess::Opened => {
-                opened_pb.finish_with_message(format!("{} Image Opened...", DRAWER));
+                opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
             }
             ImageProcess::Processed((size, img)) => {
                 match size {
                     ImageSize::Hd => {
                         hd_pb.finish_with_message(format!(
-                            "{} HD Image Processing Finished...",
+                            "{} HD Image Processing Finished",
                             PACKAGE
                         ));
                         hd = Some(img)
                     }
                     ImageSize::Md => {
                         md_pb.finish_with_message(format!(
-                            "{} MD Image Processing Finished...",
+                            "{} MD Image Processing Finished",
                             PACKAGE
                         ));
                         md = Some(img)
                     }
                     ImageSize::Sm => {
                         sm_pb.finish_with_message(format!(
-                            "{} SM Image Processing Finished...",
+                            "{} SM Image Processing Finished",
                             PACKAGE
                         ));
                         sm = Some(img)
