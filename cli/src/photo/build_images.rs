@@ -1,5 +1,5 @@
 use crate::utils::is_valid_extension;
-use console::{style, Emoji};
+use console::Emoji;
 use core_victorhqc_com::aws::photo::ImageSize;
 use image::{
     codecs::jpeg::JpegEncoder, error::ImageError, imageops::FilterType::Lanczos3, DynamicImage,
@@ -35,6 +35,7 @@ pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle),
 
 static PACKAGE: Emoji<'_, '_> = Emoji("📦  ", "");
 static DRAWER: Emoji<'_, '_> = Emoji("🗃️ ", "");
+static TICK: Emoji<'_, '_> = Emoji("✅ ", "");
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
@@ -106,60 +107,40 @@ pub fn finish_build(
     let mut sm: Option<Vec<u8>> = None;
 
     let m = MultiProgress::new();
-
-    let spinner_style = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
+    let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
         .unwrap()
         .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
 
-    let opened_pb = m.add(ProgressBar::new_spinner());
-    opened_pb.enable_steady_tick(Duration::from_millis(50));
-    opened_pb.set_style(spinner_style.clone());
-    opened_pb.set_prefix(format!("{}", style("[1/4]").bold().dim()));
-    opened_pb.set_message(format!("{} Opening Image...", DRAWER));
-
-    let hd_pb = m.add(ProgressBar::new_spinner());
-    hd_pb.enable_steady_tick(Duration::from_millis(50));
-    hd_pb.set_style(spinner_style.clone());
-    hd_pb.set_prefix(format!("{}", style("[2/4]").bold().dim()));
-    hd_pb.set_message(format!("{} Processing HD Image...", PACKAGE));
-
-    let md_pb = m.add(ProgressBar::new_spinner());
-    md_pb.enable_steady_tick(Duration::from_millis(50));
-    md_pb.set_style(spinner_style.clone());
-    md_pb.set_prefix(format!("{}", style("[3/4]").bold().dim()));
-    md_pb.set_message(format!("{} Processing MD Image...", PACKAGE));
-
-    let sm_pb = m.add(ProgressBar::new_spinner());
-    sm_pb.enable_steady_tick(Duration::from_millis(50));
-    sm_pb.set_style(spinner_style);
-    sm_pb.set_prefix(format!("{}", style("[4/4]").bold().dim()));
-    sm_pb.set_message(format!("{} Processing SM Image...", PACKAGE));
+    let opened_pb = build_loader(&m, &s, format!("{} Opening Image...", DRAWER), 1);
+    let hd_pb = build_loader(&m, &s, format!("{} Processing HD Image...", PACKAGE), 2);
+    let md_pb = build_loader(&m, &s, format!("{} Processing MD Image...", PACKAGE), 2);
+    let sm_pb = build_loader(&m, &s, format!("{} Processing SM Image...", PACKAGE), 2);
 
     for process in rx {
         match process {
             ImageProcess::Opened => {
-                opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
+                opened_pb.finish_with_message(format!("{} Image Opened", TICK));
             }
             ImageProcess::Processed((size, img)) => {
                 match size {
                     ImageSize::Hd => {
                         hd_pb.finish_with_message(format!(
                             "{} HD Image Processing Finished",
-                            PACKAGE
+                            TICK
                         ));
                         hd = Some(img)
                     }
                     ImageSize::Md => {
                         md_pb.finish_with_message(format!(
                             "{} MD Image Processing Finished",
-                            PACKAGE
+                            TICK
                         ));
                         md = Some(img)
                     }
                     ImageSize::Sm => {
                         sm_pb.finish_with_message(format!(
                             "{} SM Image Processing Finished",
-                            PACKAGE
+                            TICK
                         ));
                         sm = Some(img)
                     }
@@ -216,6 +197,21 @@ fn compress(img: DynamicImage, quality: u8) -> Result<Vec<u8>, Error> {
     img.write_with_encoder(encoder).context(JpegSnafu)?;
 
     Ok(buffer)
+}
+
+fn build_loader(
+    m: &MultiProgress,
+    spinner_style: &ProgressStyle,
+    message: String,
+    no: u8,
+) -> ProgressBar {
+    let pb = m.add(ProgressBar::new_spinner());
+    pb.enable_steady_tick(Duration::from_millis(50));
+    pb.set_style(spinner_style.clone());
+    pb.set_prefix(format!("[{}/4]", no));
+    pb.set_message(message);
+
+    pb
 }
 
 #[derive(Debug, Snafu)]
