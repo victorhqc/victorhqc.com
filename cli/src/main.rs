@@ -5,7 +5,7 @@ mod utils;
 
 use clap::Parser;
 use core_victorhqc_com::{aws::S3, db::get_pool};
-use log::debug;
+use log::{debug, error};
 use std::path::Path;
 
 #[tokio::main]
@@ -29,7 +29,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     commands::create(&pool, src, &s3)
         .await
-        .expect("Failed to create Image");
+        .map_err(|e| {
+            error!("Failed to create Image: {}", e);
+
+            e
+        })
+        .unwrap();
 
     Ok(())
 }
