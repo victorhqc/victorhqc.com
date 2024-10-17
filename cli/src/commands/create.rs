@@ -1,7 +1,7 @@
 use crate::{
     exiftool,
     photo::{
-        build_images::{finish_build, start_build, Error as BuildImagesError},
+        build_images::{finish_build, start_build, ImgData, Error as BuildImagesError},
         upload::{upload, Error as UploadError},
     },
     utils::capture,
@@ -26,14 +26,16 @@ use core_victorhqc_com::{
 };
 use log::{debug, trace};
 use snafu::prelude::*;
-use std::path::Path;
+use std::{path::Path, sync::mpsc};
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
 
+    let (tx, rx) = mpsc::channel::<ImgData>();
+
     debug!("Building Images to upload");
-    let main_handle = start_build(src).context(BuildImagesSnafu)?;
+    let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;
 
     let title = capture("📷  Please, type the title for the Photograph: ");
     debug!("Title: {}", title);
@@ -56,7 +58,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     exif.save(&mut tx).await.context(SaveExifSnafu)?;
     debug!("{:?}", exif);
 
-    let buffers = finish_build(main_handle).await.context(BuildImagesSnafu)?;
+    let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
     debug!("About to upload to S3");
     upload(&photo, s3, buffers).await.context(UploadSnafu)?;
     debug!("Uploaded to S3");

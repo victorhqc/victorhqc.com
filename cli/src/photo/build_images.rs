@@ -6,8 +6,13 @@ use image::{
 };
 use log::debug;
 use snafu::prelude::*;
-use std::{io::Cursor, path::Path};
-use tokio::task::{JoinError, JoinHandle};
+use std::{
+    any::Any,
+    io::Cursor,
+    path::Path,
+    sync::mpsc::{Receiver, SendError, Sender},
+    thread::{self, JoinHandle},
+};
 
 pub struct ImageBuffers {
     pub hd: Vec<u8>,
@@ -15,10 +20,10 @@ pub struct ImageBuffers {
     pub sm: Vec<u8>,
 }
 
-type ImgData = (ImageSize, Vec<u8>);
+pub type ImgData = (ImageSize, Vec<u8>);
 
-pub type FutureHandle = JoinHandle<Result<ImgData, Error>>;
-pub type MainHandle = JoinHandle<Result<Vec<ImgData>, Error>>;
+pub type BuildHandle = JoinHandle<Result<(), Error>>;
+pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle), Error>>;
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
@@ -27,7 +32,7 @@ pub type MainHandle = JoinHandle<Result<Vec<ImgData>, Error>>;
 /// - SM: 10% of the original image with JPEG quality of 30
 pub fn start_build(
     path: &Path,
-    // tx: Sender<(ImgData, ImgData, ImgData)>,
+    tx: Sender<ImgData>
 ) -> Result<MainHandle, Error> {
     if !is_valid_extension(path) {
         return Err(Error::Extension {
@@ -36,65 +41,82 @@ pub fn start_build(
     }
 
     let p = path.to_str().unwrap().to_string();
-    let main_handle: MainHandle = tokio::spawn(async move {
+    let main_handle: MainHandle = thread::spawn(move || {
         debug!("Opening Image");
         let img = image::open(Path::new(&p)).context(OpenSnafu)?;
 
         let img_hd = img.clone();
-        let future_hd: FutureHandle = tokio::spawn(async move {
+        let tx_hd = tx.clone();
+        let handle_hd: BuildHandle = thread::spawn(move || {
             debug!("Building HD Image");
             let img_hd = resize(img_hd, 0.4);
             let img_hd = compress(img_hd, 80)?;
             debug!("HD Image Processing completed");
 
-            Ok((ImageSize::Hd, img_hd))
+            tx_hd.send((ImageSize::Hd, img_hd)).context(ThreadSendSnafu)
         });
 
         let img_md = img.clone();
-        let future_md: FutureHandle = tokio::spawn(async move {
+        let tx_md = tx.clone();
+        let handle_md: BuildHandle = thread::spawn(move || {
             debug!("Building MD Image");
             let img_md = resize(img_md, 0.25);
             let img_md = compress(img_md, 75)?;
             debug!("MD Image Processing completed");
 
-            Ok((ImageSize::Md, img_md))
+            tx_md.send((ImageSize::Md, img_md)).context(ThreadSendSnafu)
         });
 
         let img_sm = img.clone();
-        let future_sm: FutureHandle = tokio::spawn(async move {
+        let handle_sm: BuildHandle = thread::spawn(move || {
             debug!("Building SM Image");
             let img_sm = resize(img_sm, 0.1);
             let img_sm = compress(img_sm, 30)?;
             debug!("SM Image Processing completed");
 
-            Ok((ImageSize::Sm, img_sm))
+            tx.send((ImageSize::Sm, img_sm)).context(ThreadSendSnafu)
         });
 
-        let (hd, md, sm) = futures::join!(future_hd, future_md, future_sm);
-
-        let hd = hd.context(ImageFutureSnafu)??;
-        let md = md.context(ImageFutureSnafu)??;
-        let sm = sm.context(ImageFutureSnafu)??;
-
-        Ok(vec![hd, md, sm])
+        Ok((handle_hd, handle_md, handle_sm))
     });
 
     Ok(main_handle)
 }
 
-pub async fn finish_build(main_handle: MainHandle) -> Result<ImageBuffers, Error> {
+pub fn finish_build(rx: Receiver<ImgData>, main_handle: MainHandle) -> Result<ImageBuffers, Error> {
     let mut hd: Option<Vec<u8>> = None;
     let mut md: Option<Vec<u8>> = None;
     let mut sm: Option<Vec<u8>> = None;
-    let images: Vec<ImgData> = main_handle.await.context(ImageFutureSnafu)??;
 
-    for (size, img) in images {
+    for (size, img) in rx {
         match size {
             ImageSize::Hd => hd = Some(img),
             ImageSize::Md => md = Some(img),
             ImageSize::Sm => sm = Some(img),
         };
     }
+
+    let (hd_handle, md_handle, sm_handle) = main_handle
+        .join()
+        .map(|r| match r {
+            Ok((handle_hd, handle_md, handle_sm)) => {
+                let hd = handle_hd
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+                let md = handle_md
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+                let sm = handle_sm
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+                Ok((hd, md, sm))
+            }
+            Err(err) => Err(err),
+        })
+        .map_err(|e| Error::ThreadPanic { err: e })??;
+    hd_handle?;
+    md_handle?;
+    sm_handle?;
 
     if let (Some(hd), Some(md), Some(sm)) = (hd, md, sm) {
         Ok(ImageBuffers { hd, md, sm })
@@ -133,9 +155,14 @@ pub enum Error {
     #[snafu(display("Failed to encode JPEG: {:?}", source))]
     Jpeg { source: ImageError },
 
+    #[snafu(display("Failed to send data through TX: {:?}", source))]
+    ThreadSend {
+        source: SendError<(ImageSize, Vec<u8>)>,
+    },
+
     #[snafu(display("Something went wrong while making images"))]
     MissingData,
 
-    #[snafu(display("Failed to execute future for Image Processing: {:?}", source))]
-    ImageFuture { source: JoinError },
+    #[snafu(display("Thread panicked: {:?}", err))]
+    ThreadPanic { err: Box<dyn Any + Send> },
 }
