@@ -1,7 +1,7 @@
 use crate::{
     exiftool,
     photo::{
-        build_images::{finish_build, start_build, ImgData, Error as BuildImagesError},
+        build_images::{finish_build, start_build, Error as BuildImagesError, ImgData},
         upload::{upload, Error as UploadError},
     },
     utils::capture,
@@ -29,6 +29,16 @@ use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
+    if Photo::find_by_filename(pool, src)
+        .await
+        .context(PathPhotoSnafu)?
+        .is_some()
+    {
+        return Err(Error::PhotoExists {
+            path: src.to_str().unwrap().to_string(),
+        });
+    }
+
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
 
@@ -127,6 +137,12 @@ pub enum Error {
 
     #[snafu(display("Failed to save the recipe: {}", source))]
     FujifilmSaveRecipe { source: FujifilmDbError },
+
+    #[snafu(display("Failed to check for photo by path: {}", source))]
+    PathPhoto { source: PhotoDbError },
+
+    #[snafu(display("Photo with path {} already exists", path))]
+    PhotoExists { path: String },
 
     #[snafu(display("Failed to create a photo object: {}", source))]
     NewPhoto { source: PhotoError },
