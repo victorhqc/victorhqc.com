@@ -3,6 +3,7 @@ use crate::models::Timestamp;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqliteConnection, SqlitePool};
+use std::path::Path;
 use std::str::FromStr;
 use time::OffsetDateTime;
 use uuid::Error as UuidError;
@@ -35,6 +36,10 @@ impl Photo {
         find_by_id(pool, id).await
     }
 
+    pub async fn find_by_filename(pool: &SqlitePool, path: &Path) -> Result<Option<Photo>, Error> {
+        find_by_filename(pool, path).await
+    }
+
     pub async fn find_by_tag_ids(
         pool: &SqlitePool,
         ids: &Vec<String>,
@@ -61,8 +66,8 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
         title,
         filename,
         filetype,
-        created_at as "created_at: Timestamp",
-        updated_at as "updated_at: Timestamp",
+        created_at,
+        updated_at,
         deleted
     FROM
         photos
@@ -79,6 +84,39 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
     .context(SqlxSnafu)?;
 
     photo.try_into()
+}
+
+async fn find_by_filename(pool: &SqlitePool, path: &Path) -> Result<Option<Photo>, Error> {
+    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
+    let photo = sqlx::query_as::<_, DBPhoto>(
+        r#"
+    SELECT
+        id,
+        title,
+        filename,
+        filetype,
+        created_at,
+        updated_at,
+        deleted
+    FROM
+        photos
+    WHERE
+        deleted = false
+        AND filename = ?
+    ORDER BY
+        created_at DESC
+    "#,
+    )
+    .bind(path.file_name().unwrap().to_str().unwrap())
+    .fetch_optional(pool)
+    .await
+    .context(SqlxSnafu)?;
+
+    if let Some(photo) = photo.map(|p| p.try_into()) {
+        Ok(Some(photo?))
+    } else {
+        Ok(None)
+    }
 }
 
 async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {

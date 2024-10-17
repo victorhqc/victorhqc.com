@@ -23,7 +23,7 @@ pub struct Photo {
 }
 
 impl Photo {
-    pub fn new(title: &str, path: &Path) -> Result<Photo, Error> {
+    pub fn new(title: String, path: &Path) -> Result<Photo, Error> {
         let id = Uuid::new_v4().to_string();
 
         println!("PATH {:?}", path);
