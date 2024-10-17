@@ -30,9 +30,9 @@ use log::{debug, trace};
 use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
-static CAMERA: Emoji<'_, '_> = Emoji("📷  ", "");
-static FILM: Emoji<'_, '_> = Emoji("🎞️   ", "");
-static TAG: Emoji<'_, '_> = Emoji("🏷️   ", "");
+static CAMERA: Emoji<'_, '_> = Emoji("📷", "");
+static FILM: Emoji<'_, '_> = Emoji("🎞️", "");
+static TAG: Emoji<'_, '_> = Emoji("🏷️", "");
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     if Photo::find_by_filename(pool, src)
@@ -54,12 +54,12 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;
 
     let title = capture(&format!(
-        "{}Please, type the title for the Photograph: ",
+        "{} Please, type the title for the Photograph: ",
         CAMERA
     ));
     trace!("Title: {}", title);
     let tags = capture(&format!(
-        "{}Please, type the tags for this photograph: ",
+        "{} Please, type the tags for this photograph: ",
         TAG
     ));
     let tags: Vec<String> = tags.split(',').map(|t| t.trim().to_string()).unique().collect();
@@ -113,7 +113,7 @@ async fn get_some_fujifilm_recipe<'a, 'b>(
 
         if recipe.is_none() {
             let recipe_name = capture(&format!(
-                "{}Please, specify the name of the recipe used: ",
+                "{} Please, specify the name of the recipe used: ",
                 FILM
             ));
             debug!("Recipe Name: {}", recipe_name);
