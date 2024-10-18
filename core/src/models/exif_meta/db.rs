@@ -5,7 +5,7 @@ use super::{
 use crate::models::Timestamp;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
-use sqlx::{FromRow, SqliteConnection, SqlitePool};
+use sqlx::{FromRow, SqliteConnection};
 use std::str::FromStr;
 use time::{error::ComponentRange, OffsetDateTime};
 
@@ -28,24 +28,24 @@ struct DBExifMeta {
 }
 
 impl ExifMeta {
-    pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
-        find_by_id(pool, id).await
+    pub async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<ExifMeta, Error> {
+        find_by_id(conn, id).await
     }
 
     pub async fn find_by_photo_ids(
-        pool: &SqlitePool,
+        conn: &mut SqliteConnection,
         ids: &Vec<String>,
     ) -> Result<Vec<ExifMeta>, Error> {
-        find_by_photo_ids(pool, ids).await
+        find_by_photo_ids(conn, ids).await
     }
 
-    pub async fn save(&self, pool: &mut SqliteConnection) -> Result<String, Error> {
+    pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
         let exif: DBExifMeta = self.into();
-        insert(pool, exif).await
+        insert(conn, exif).await
     }
 }
 
-async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
+async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<ExifMeta, Error> {
     // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
     let exif = sqlx::query_as::<_, DBExifMeta>(
         r#"
@@ -71,14 +71,17 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<ExifMeta, Error> {
     "#,
     )
     .bind(id)
-    .fetch_one(pool)
+    .fetch_one(conn)
     .await
     .context(SqlxSnafu)?;
 
     exif.try_into()
 }
 
-async fn find_by_photo_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<ExifMeta>, Error> {
+async fn find_by_photo_ids(
+    conn: &mut SqliteConnection,
+    ids: &Vec<String>,
+) -> Result<Vec<ExifMeta>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(
@@ -112,7 +115,7 @@ async fn find_by_photo_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<E
         query = query.bind(id);
     }
 
-    let metas = query.fetch_all(pool).await.context(SqlxSnafu)?;
+    let metas = query.fetch_all(conn).await.context(SqlxSnafu)?;
     let metas: Vec<ExifMeta> = metas.into_iter().map(|m| m.try_into().unwrap()).collect();
 
     Ok(metas)

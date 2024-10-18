@@ -1,6 +1,9 @@
 use crate::{graphql::loaders::AppLoader, graphql::models::ExifMeta as GqlExifMeta};
 use async_graphql::{dataloader::Loader, Result};
-use core_victorhqc_com::models::exif_meta::{db::Error as DbError, ExifMeta};
+use core_victorhqc_com::{
+    models::exif_meta::{db::Error as DbError, ExifMeta},
+    sqlx::Error as SqlxError,
+};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},
@@ -18,9 +21,10 @@ impl Loader<ExifMetaByPhotoId> for AppLoader {
         ids: &[ExifMetaByPhotoId],
     ) -> Result<HashMap<ExifMetaByPhotoId, Self::Value>, Self::Error> {
         let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
+        let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
 
         debug!("Loading exif meta with ids: {:?}", ids);
-        let values = ExifMeta::find_by_photo_ids(&self.pool, &ids)
+        let values = ExifMeta::find_by_photo_ids(&mut conn, &ids)
             .await
             .context(QuerySnafu)?;
 
@@ -52,6 +56,9 @@ impl Hash for ExifMetaByPhotoId {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("{:?}", source))]
+    #[snafu(display("Failed to query for exif meta in loader: {}", source))]
     QueryError { source: DbError },
+
+    #[snafu(display("Failed to acquire connection in exif loader: {}", source))]
+    Connection { source: SqlxError },
 }

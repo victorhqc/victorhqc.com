@@ -2,6 +2,7 @@ use crate::{graphql::loaders::AppLoader, graphql::models::Tag as GqlTag};
 use async_graphql::{dataloader::Loader, Result};
 use core_victorhqc_com::{
     models::tag::{db::Error as DbError, Tag},
+    sqlx::Error as SqlxError,
     utils::hashmap::InsertOrPush,
 };
 use snafu::prelude::*;
@@ -19,7 +20,9 @@ impl Loader<TagById> for AppLoader {
     async fn load(&self, ids: &[TagById]) -> Result<HashMap<TagById, Self::Value>, Self::Error> {
         let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
-        let values = Tag::find_by_ids(&self.pool, &ids)
+        let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
+
+        let values = Tag::find_by_ids(&mut conn, &ids)
             .await
             .context(QuerySnafu)?;
 
@@ -59,7 +62,9 @@ impl Loader<TagByPhotoId> for AppLoader {
     ) -> Result<HashMap<TagByPhotoId, Self::Value>, Self::Error> {
         let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
-        let values = Tag::find_by_photo_ids(&self.pool, &ids)
+        let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
+
+        let values = Tag::find_by_photo_ids(&mut conn, &ids)
             .await
             .context(QuerySnafu)?;
 
@@ -93,6 +98,9 @@ impl Hash for TagByPhotoId {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("{:?}", source))]
+    #[snafu(display("Failed to query for tags in loader: {}", source))]
     QueryError { source: DbError },
+
+    #[snafu(display("Failed to acquire connection in tag loader: {}", source))]
+    Connection { source: SqlxError },
 }

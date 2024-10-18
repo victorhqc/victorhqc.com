@@ -16,11 +16,11 @@ pub struct Tag {
 impl Tag {
     pub fn new(name: String) -> Self {
         let id = Uuid::new_v4().to_string();
-        
+
         let now = OffsetDateTime::now_utc().unix_timestamp();
         let created_at = OffsetDateTime::from_unix_timestamp(now).unwrap();
         let updated_at = OffsetDateTime::from_unix_timestamp(now).unwrap();
-        
+
         Tag {
             id,
             name,
@@ -30,4 +30,3 @@ impl Tag {
         }
     }
 }
-

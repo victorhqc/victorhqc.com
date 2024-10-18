@@ -1,6 +1,9 @@
 use crate::{graphql::loaders::AppLoader, graphql::models::FujifilmRecipe as GqlFujifilmRecipe};
 use async_graphql::{dataloader::Loader, Result};
-use core_victorhqc_com::models::fujifilm::{db::Error as DbError, FujifilmRecipe};
+use core_victorhqc_com::{
+    models::fujifilm::{db::Error as DbError, FujifilmRecipe},
+    sqlx::Error as SqlxError,
+};
 use snafu::prelude::*;
 use std::{
     cmp::{Eq, PartialEq},
@@ -21,7 +24,9 @@ impl Loader<FujifilmRecipeByExifMetaId> for AppLoader {
 
         debug!("IDs {:?}", ids);
 
-        let values = FujifilmRecipe::find_by_exif_meta_ids(&self.pool, &ids)
+        let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
+
+        let values = FujifilmRecipe::find_by_exif_meta_ids(&mut conn, &ids)
             .await
             .context(QuerySnafu)?;
 
@@ -53,6 +58,9 @@ impl Hash for FujifilmRecipeByExifMetaId {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("{:?}", source))]
+    #[snafu(display("Failed to query for recipes in loader: {}", source))]
     QueryError { source: DbError },
+
+    #[snafu(display("Failed to acquire connection in fujifilm recipe loader: {}", source))]
+    Connection { source: SqlxError },
 }

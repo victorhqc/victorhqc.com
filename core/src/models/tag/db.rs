@@ -1,7 +1,7 @@
 use super::Tag;
 use crate::models::Timestamp;
 use snafu::prelude::*;
-use sqlx::{Error as SqlxError, FromRow, SqliteConnection, SqlitePool};
+use sqlx::{Error as SqlxError, FromRow, SqliteConnection};
 use time::OffsetDateTime;
 
 #[derive(FromRow)]
@@ -54,15 +54,18 @@ impl Tag {
         }
     }
 
-    pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {
-        find_by_ids(pool, ids).await
+    pub async fn find_by_ids(
+        conn: &mut SqliteConnection,
+        ids: &Vec<String>,
+    ) -> Result<Vec<Tag>, Error> {
+        find_by_ids(conn, ids).await
     }
 
     pub async fn find_by_photo_ids(
-        pool: &SqlitePool,
+        conn: &mut SqliteConnection,
         ids: &Vec<String>,
     ) -> Result<Vec<(String, Tag)>, Error> {
-        find_by_photo_ids(pool, ids).await
+        find_by_photo_ids(conn, ids).await
     }
 
     pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
@@ -104,7 +107,7 @@ async fn find_by_names(conn: &mut SqliteConnection, names: &[&str]) -> Result<Ve
     Ok(tags)
 }
 
-async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {
+async fn find_by_ids(conn: &mut SqliteConnection, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(
@@ -130,7 +133,7 @@ async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, E
         query = query.bind(id);
     }
 
-    let tags = query.fetch_all(pool).await.context(SqlxSnafu)?;
+    let tags = query.fetch_all(conn).await.context(SqlxSnafu)?;
 
     let tags: Vec<Tag> = tags.into_iter().map(|t| t.try_into().unwrap()).collect();
 
@@ -138,7 +141,7 @@ async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, E
 }
 
 async fn find_by_photo_ids(
-    pool: &SqlitePool,
+    conn: &mut SqliteConnection,
     ids: &Vec<String>,
 ) -> Result<Vec<(String, Tag)>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
@@ -169,7 +172,7 @@ async fn find_by_photo_ids(
         query = query.bind(id);
     }
 
-    let tags = query.fetch_all(pool).await.context(SqlxSnafu)?;
+    let tags = query.fetch_all(conn).await.context(SqlxSnafu)?;
 
     let tags: Vec<(String, Tag)> = tags
         .into_iter()

@@ -8,7 +8,7 @@ use crate::models::fujifilm::{
     WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
-use sqlx::{error::Error as SqlxError, FromRow, SqliteConnection, SqlitePool};
+use sqlx::{error::Error as SqlxError, FromRow, SqliteConnection};
 use std::str::FromStr;
 use strum_macros::Display;
 
@@ -65,24 +65,24 @@ pub struct DBExifMetaFujifilmRecipe {
 
 impl FujifilmRecipe {
     pub async fn find_by_film_simulation(
-        pool: &SqlitePool,
+        conn: &mut SqliteConnection,
         name: &str,
     ) -> Result<Vec<FujifilmRecipe>, Error> {
-        find_by_film_simulation(pool, name).await
+        find_by_film_simulation(conn, name).await
     }
 
     pub async fn find_by_exif_meta_ids(
-        pool: &SqlitePool,
+        conn: &mut SqliteConnection,
         ids: &Vec<String>,
     ) -> Result<Vec<(String, FujifilmRecipe)>, Error> {
-        find_by_exif_meta_ids(pool, ids).await
+        find_by_exif_meta_ids(conn, ids).await
     }
 
     pub async fn find_by_details(
-        pool: &SqlitePool,
+        conn: &mut SqliteConnection,
         details: &FujifilmRecipeDetails,
     ) -> Result<Option<FujifilmRecipe>, Error> {
-        find_by_recipe_details(pool, details).await
+        find_by_recipe_details(conn, details).await
     }
 
     pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
@@ -93,7 +93,7 @@ impl FujifilmRecipe {
 }
 
 async fn find_by_film_simulation(
-    pool: &SqlitePool,
+    conn: &mut SqliteConnection,
     name: &str,
 ) -> Result<Vec<FujifilmRecipe>, Error> {
     // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
@@ -128,7 +128,7 @@ async fn find_by_film_simulation(
     "#,
     )
     .bind(name)
-    .fetch_all(pool)
+    .fetch_all(conn)
     .await
     .context(SqlxSnafu)?;
 
@@ -138,7 +138,7 @@ async fn find_by_film_simulation(
 }
 
 async fn find_by_exif_meta_ids(
-    pool: &SqlitePool,
+    conn: &mut SqliteConnection,
     ids: &Vec<String>,
 ) -> Result<Vec<(String, FujifilmRecipe)>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
@@ -183,7 +183,7 @@ async fn find_by_exif_meta_ids(
         query = query.bind(id);
     }
 
-    let recipes = query.fetch_all(pool).await.context(SqlxSnafu)?;
+    let recipes = query.fetch_all(conn).await.context(SqlxSnafu)?;
 
     let recipes: Vec<(String, FujifilmRecipe)> = recipes
         .into_iter()
@@ -222,7 +222,7 @@ async fn find_by_exif_meta_ids(
 }
 
 async fn find_by_recipe_details(
-    pool: &SqlitePool,
+    conn: &mut SqliteConnection,
     details: &FujifilmRecipeDetails,
 ) -> Result<Option<FujifilmRecipe>, Error> {
     // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
@@ -309,7 +309,7 @@ async fn find_by_recipe_details(
         .bind(color_chrome_fx_blue.map(|c| c.to_string()))
         .bind(monochromatic_color.map(|c| c.to_string()));
 
-    let recipe = query.fetch_optional(pool).await.context(SqlxSnafu)?;
+    let recipe = query.fetch_optional(conn).await.context(SqlxSnafu)?;
 
     let recipe = if let Some(r) = recipe.map(|r| r.try_into()) {
         Some(r?)
