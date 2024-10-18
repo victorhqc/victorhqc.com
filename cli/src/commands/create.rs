@@ -81,9 +81,13 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     debug!("{:?}", recipe);
 
     let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
-
     photo.save(&mut tx).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
+
+    photo
+        .save_tags(&mut tx, &tags)
+        .await
+        .context(AttachTagsSnafu)?;
 
     let photography_details =
         PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
@@ -179,6 +183,9 @@ pub enum Error {
 
     #[snafu(display("Failed to save the photo: {}", source))]
     SavePhoto { source: PhotoDbError },
+
+    #[snafu(display("Failed to attach tags to the photo: {}", source))]
+    AttachTags { source: PhotoDbError },
 
     #[snafu(display("Failed to save the EXIF data: {}", source))]
     SaveExif { source: ExifMetaDbError },

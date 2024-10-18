@@ -1,12 +1,15 @@
 use super::{FileType, Photo};
-use crate::models::Timestamp;
+use crate::models::{
+    tag::{db::Error as TagDbError, Tag},
+    Timestamp,
+};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqliteConnection, SqlitePool};
 use std::path::Path;
 use std::str::FromStr;
 use time::OffsetDateTime;
-use uuid::Error as UuidError;
+use uuid::{Error as UuidError, Uuid};
 
 #[derive(FromRow)]
 struct DBPhoto {
@@ -51,9 +54,25 @@ impl Photo {
         find_all(pool).await
     }
 
-    pub async fn save(&self, pool: &mut SqliteConnection) -> Result<String, Error> {
+    pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
         let photo: DBPhoto = self.into();
-        insert(pool, photo).await
+        insert(conn, photo).await
+    }
+
+    pub async fn save_tags(
+        &self,
+        conn: &mut SqliteConnection,
+        new_tags: &[String],
+    ) -> Result<(), Error> {
+        for tag in new_tags {
+            let tag = Tag::find_by_name_or_create(conn, tag)
+                .await
+                .context(TagSnafu)?;
+
+            attach_tag(conn, self, &tag).await?;
+        }
+
+        Ok(())
     }
 }
 
@@ -229,6 +248,25 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
     Ok(id)
 }
 
+async fn attach_tag(conn: &mut SqliteConnection, photo: &Photo, tag: &Tag) -> Result<(), Error> {
+    let id = Uuid::new_v4().to_string();
+
+    sqlx::query(
+        r#"
+    INSERT INTO photo_tags (id, photo_id, tag_id)
+    VALUES (?, ?, ?)
+    "#,
+    )
+    .bind(id)
+    .bind(&photo.id)
+    .bind(&tag.id)
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(())
+}
+
 impl TryFrom<DBPhoto> for Photo {
     type Error = Error;
 
@@ -277,17 +315,20 @@ impl From<&Photo> for DBPhoto {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("Failed to execute query: {:?}", source))]
+    #[snafu(display("Failed to execute query: {}", source))]
     Sqlx { source: SqlxError },
 
-    #[snafu(display("Failed to parse FileType {:?}", source))]
+    #[snafu(display("Failed to parse FileType {}", source))]
     FileType {
         source: crate::models::photo::str::filetype::Error,
     },
 
-    #[snafu(display("Failed to parse timestamp: {:?}", source))]
+    #[snafu(display("Failed to parse timestamp: {}", source))]
     Timestamp { source: time::error::ComponentRange },
 
-    #[snafu(display("Invalid Uuid: {:?}", source))]
+    #[snafu(display("Invalid Uuid: {}", source))]
     Uuid { source: UuidError },
+
+    #[snafu(display("Failed to operate on tag: {}", source))]
+    Tag { source: TagDbError },
 }

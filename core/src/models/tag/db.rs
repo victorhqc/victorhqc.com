@@ -1,7 +1,7 @@
 use super::Tag;
 use crate::models::Timestamp;
 use snafu::prelude::*;
-use sqlx::{Error as SqlxError, FromRow, SqlitePool};
+use sqlx::{Error as SqlxError, FromRow, SqliteConnection, SqlitePool};
 use time::OffsetDateTime;
 
 #[derive(FromRow)]
@@ -24,8 +24,34 @@ struct DBPhotoTag {
 }
 
 impl Tag {
-    pub async fn find_by_name(pool: &SqlitePool, name: &str) -> Result<Tag, Error> {
-        find_by_name(pool, name).await
+    pub async fn find_by_name(conn: &mut SqliteConnection, name: &str) -> Result<Tag, Error> {
+        let tags = find_by_names(conn, &[name]).await?;
+
+        let tag = tags.first().context(TagsNotFoundSnafu {
+            name: name.to_string(),
+        })?;
+
+        Ok(tag.clone())
+    }
+
+    pub async fn find_by_name_or_create(
+        conn: &mut SqliteConnection,
+        name: &str,
+    ) -> Result<Tag, Error> {
+        let tag = Tag::find_by_name(conn, name).await;
+
+        match tag {
+            Ok(tag) => Ok(tag),
+            Err(e) => match e {
+                Error::TagsNotFound { .. } => {
+                    let tag = Tag::new(name.to_string());
+                    tag.save(conn).await?;
+
+                    Ok(tag)
+                }
+                _ => Err(e),
+            },
+        }
     }
 
     pub async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {
@@ -38,30 +64,44 @@ impl Tag {
     ) -> Result<Vec<(String, Tag)>, Error> {
         find_by_photo_ids(pool, ids).await
     }
+
+    pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
+        let tag: DBTag = self.into();
+        insert(conn, &tag).await
+    }
 }
 
-async fn find_by_name(pool: &SqlitePool, id: &str) -> Result<Tag, Error> {
-    let tag = sqlx::query_as::<_, DBTag>(
+async fn find_by_names(conn: &mut SqliteConnection, names: &[&str]) -> Result<Vec<Tag>, Error> {
+    let params = format!("?{}", ", ?".repeat(names.len() - 1));
+
+    let query = format!(
         r#"
     SELECT
         id,
         name,
-        created_at as "created_at: Timestamp",
-        updated_at as "updated_at: Timestamp",
+        created_at,
+        updated_at,
         deleted
     FROM
         tags
     WHERE
         deleted = false
-        AND name = ?
+        AND name IN ({ })
     "#,
-    )
-    .bind(id)
-    .fetch_one(pool)
-    .await
-    .context(SqlxSnafu)?;
+        params
+    );
 
-    tag.try_into()
+    let mut query = sqlx::query_as::<_, DBTag>(&query);
+
+    for name in names {
+        query = query.bind(name);
+    }
+
+    let tags = query.fetch_all(conn).await.context(SqlxSnafu)?;
+
+    let tags: Vec<Tag> = tags.into_iter().map(|t| t.try_into().unwrap()).collect();
+
+    Ok(tags)
 }
 
 async fn find_by_ids(pool: &SqlitePool, ids: &Vec<String>) -> Result<Vec<Tag>, Error> {
@@ -151,6 +191,27 @@ async fn find_by_photo_ids(
     Ok(tags)
 }
 
+async fn insert(conn: &mut SqliteConnection, tag: &DBTag) -> Result<String, Error> {
+    let id = tag.id.clone();
+
+    sqlx::query(
+        r#"
+    INSERT INTO tags(id, name, created_at, updated_at, deleted)
+    VALUES (?, ?, ?, ?, ?)
+    "#,
+    )
+    .bind(&tag.id)
+    .bind(&tag.name)
+    .bind(&tag.created_at)
+    .bind(&tag.updated_at)
+    .bind(tag.deleted)
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(id)
+}
+
 impl TryFrom<DBTag> for Tag {
     type Error = Error;
     fn try_from(value: DBTag) -> Result<Self, Self::Error> {
@@ -176,6 +237,18 @@ impl TryFrom<DBTag> for Tag {
     }
 }
 
+impl From<&Tag> for DBTag {
+    fn from(value: &Tag) -> Self {
+        DBTag {
+            id: value.id.clone(),
+            name: value.name.clone(),
+            created_at: value.created_at.into(),
+            updated_at: value.updated_at.into(),
+            deleted: value.deleted,
+        }
+    }
+}
+
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Failed to execute query: {:?}", source))]
@@ -183,4 +256,7 @@ pub enum Error {
 
     #[snafu(display("Failed to parse timestamp: {:?}", source))]
     Timestamp { source: time::error::ComponentRange },
+
+    #[snafu(display("Could not find tags for: {}", name))]
+    TagsNotFound { name: String },
 }
