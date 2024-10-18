@@ -30,9 +30,15 @@ use log::{debug, trace};
 use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
+#[cfg(target_os = "windows")]
 static CAMERA: Emoji<'_, '_> = Emoji("📷", "");
+static CAMERA: Emoji<'_, '_> = Emoji("📷 ", "");
+#[cfg(target_os = "windows")]
 static FILM: Emoji<'_, '_> = Emoji("🎞️", "");
+static FILM: Emoji<'_, '_> = Emoji("🎞️  ", "");
+#[cfg(target_os = "windows")]
 static TAG: Emoji<'_, '_> = Emoji("🏷️", "");
+static TAG: Emoji<'_, '_> = Emoji("🏷️  ", "");
 
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
     if Photo::find_by_filename(pool, src)

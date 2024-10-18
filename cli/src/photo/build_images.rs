@@ -33,8 +33,12 @@ pub type ImgData = (ImageSize, Vec<u8>);
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
 pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle), Error>>;
 
+#[cfg(target_os = "windows")]
 static PACKAGE: Emoji<'_, '_> = Emoji("📦", "");
+static PACKAGE: Emoji<'_, '_> = Emoji("📦 ", "");
+#[cfg(target_os = "windows")]
 static DRAWER: Emoji<'_, '_> = Emoji("🗃️", "");
+static DRAWER: Emoji<'_, '_> = Emoji("🗃️  ", "");
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
