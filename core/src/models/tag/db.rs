@@ -41,8 +41,7 @@ impl Tag {
 }
 
 async fn find_by_name(pool: &SqlitePool, id: &str) -> Result<Tag, Error> {
-    let tag = sqlx::query_as!(
-        DBTag,
+    let tag = sqlx::query_as::<_, DBTag>(
         r#"
     SELECT
         id,
@@ -56,8 +55,8 @@ async fn find_by_name(pool: &SqlitePool, id: &str) -> Result<Tag, Error> {
         deleted = false
         AND name = ?
     "#,
-        id
     )
+    .bind(id)
     .fetch_one(pool)
     .await
     .context(SqlxSnafu)?;
