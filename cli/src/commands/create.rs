@@ -6,6 +6,7 @@ use crate::{
     },
     utils::capture,
 };
+use console::Emoji;
 use core_victorhqc_com::{
     aws::S3,
     exif::ExifData,
@@ -24,12 +25,25 @@ use core_victorhqc_com::{
     },
     sqlx::error::Error as SqlxError,
 };
+use itertools::Itertools;
 use log::{debug, trace};
 use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
+#[cfg(target_os = "windows")]
+static CAMERA: Emoji<'_, '_> = Emoji("📷", "");
+static CAMERA: Emoji<'_, '_> = Emoji("📷 ", "");
+#[cfg(target_os = "windows")]
+static FILM: Emoji<'_, '_> = Emoji("🎞️", "");
+static FILM: Emoji<'_, '_> = Emoji("🎞️  ", "");
+#[cfg(target_os = "windows")]
+static TAG: Emoji<'_, '_> = Emoji("🏷️", "");
+static TAG: Emoji<'_, '_> = Emoji("🏷️  ", "");
+
 pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error> {
-    if Photo::find_by_filename(pool, src)
+    let mut conn = pool.begin().await.context(TxSnafu)?;
+
+    if Photo::find_by_filename(&mut conn, src)
         .await
         .context(PathPhotoSnafu)?
         .is_some()
@@ -47,25 +61,40 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     debug!("Building Images to upload");
     let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;
 
-    let title = capture("📷  Please, type the title for the Photograph: ");
-    debug!("Title: {}", title);
+    let title = capture(&format!(
+        "{} Please, type the title for the Photograph: ",
+        CAMERA
+    ));
+    trace!("Title: {}", title);
+    let tags = capture(&format!(
+        "{} Please, type the tags for this photograph: ",
+        TAG
+    ));
+    let tags: Vec<String> = tags
+        .split(',')
+        .map(|t| t.trim().to_lowercase())
+        .unique()
+        .collect();
+    debug!("Tags: {:?}", tags);
 
-    let mut tx = pool.begin().await.context(TxSnafu)?;
-
-    let recipe = get_some_fujifilm_recipe(&data, pool, &mut tx).await?;
+    let recipe = get_some_fujifilm_recipe(&data, &mut conn).await?;
     debug!("{:?}", recipe);
 
     let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
-
-    photo.save(&mut tx).await.context(SavePhotoSnafu)?;
+    photo.save(&mut conn).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
+
+    photo
+        .save_tags(&mut conn, &tags)
+        .await
+        .context(AttachTagsSnafu)?;
 
     let photography_details =
         PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
     debug!("{:?}", photography_details);
 
     let exif = ExifMeta::new(photography_details, &photo, &recipe);
-    exif.save(&mut tx).await.context(SaveExifSnafu)?;
+    exif.save(&mut conn).await.context(SaveExifSnafu)?;
     debug!("{:?}", exif);
 
     let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
@@ -73,15 +102,14 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     upload(&photo, s3, buffers).await.context(UploadSnafu)?;
     debug!("Uploaded to S3");
 
-    tx.commit().await.context(TxSnafu)?;
+    conn.commit().await.context(TxSnafu)?;
 
     Ok(())
 }
 
 async fn get_some_fujifilm_recipe<'a, 'b>(
     data: &'a Vec<ExifData>,
-    pool: &'a SqlitePool,
-    tx: &'a mut Transaction<'b, Sqlite>,
+    conn: &'a mut Transaction<'b, Sqlite>,
 ) -> Result<Option<FujifilmRecipe>, Error> {
     let maker = Maker::from_exif(data.as_slice()).context(MakerSnafu)?;
     debug!("{:?}", maker);
@@ -92,18 +120,20 @@ async fn get_some_fujifilm_recipe<'a, 'b>(
             .context(FujifilmRecipeDetailsSnafu)?;
         debug!("{:?}", recipe_details);
 
-        recipe = FujifilmRecipe::find_by_details(pool, &recipe_details)
+        recipe = FujifilmRecipe::find_by_details(conn, &recipe_details)
             .await
             .context(FujifilmFindRecipeSnafu)?;
 
         if recipe.is_none() {
-            println!();
-            let recipe_name = capture("🎞️  Please, specify the name of the recipe used: ");
+            let recipe_name = capture(&format!(
+                "{} Please, specify the name of the recipe used: ",
+                FILM
+            ));
             debug!("Recipe Name: {}", recipe_name);
 
             let r = FujifilmRecipe::new(recipe_name, recipe_details);
 
-            r.save(tx).await.context(FujifilmSaveRecipeSnafu)?;
+            r.save(conn).await.context(FujifilmSaveRecipeSnafu)?;
 
             recipe = Some(r);
         }
@@ -152,6 +182,9 @@ pub enum Error {
 
     #[snafu(display("Failed to save the photo: {}", source))]
     SavePhoto { source: PhotoDbError },
+
+    #[snafu(display("Failed to attach tags to the photo: {}", source))]
+    AttachTags { source: PhotoDbError },
 
     #[snafu(display("Failed to save the EXIF data: {}", source))]
     SaveExif { source: ExifMetaDbError },

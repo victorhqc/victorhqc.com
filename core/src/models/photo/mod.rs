@@ -1,6 +1,7 @@
 pub mod db;
 mod str;
 
+use log::debug;
 use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
 use std::path::Path;
@@ -26,7 +27,7 @@ impl Photo {
     pub fn new(title: String, path: &Path) -> Result<Photo, Error> {
         let id = Uuid::new_v4().to_string();
 
-        println!("PATH {:?}", path);
+        debug!("PATH {:?}", path);
 
         let ext = path.extension().context(ExtensionSnafu)?;
         let filetype = FileType::from_str(ext.to_str().unwrap()).context(FiletypeSnafu)?;
@@ -41,7 +42,6 @@ impl Photo {
             title: title.to_string(),
             filetype,
             filename: filename.to_string(),
-            // src: "TODO".to_string(),
             created_at,
             updated_at,
             deleted: false,

@@ -2,6 +2,7 @@ use crate::{graphql::loaders::AppLoader, graphql::models::Photo as GqlPhoto};
 use async_graphql::{dataloader::Loader, Result};
 use core_victorhqc_com::{
     models::photo::{db::Error as DbError, Photo},
+    sqlx::Error as SqlxError,
     utils::hashmap::InsertOrPush,
 };
 use snafu::prelude::*;
@@ -22,7 +23,9 @@ impl Loader<PhotoByTagId> for AppLoader {
     ) -> Result<HashMap<PhotoByTagId, Self::Value>, Self::Error> {
         let ids: Vec<String> = ids.iter().map(|i| i.0.clone()).collect();
 
-        let values = Photo::find_by_tag_ids(&self.pool, &ids)
+        let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
+
+        let values = Photo::find_by_tag_ids(&mut conn, &ids)
             .await
             .context(QuerySnafu)?;
 
@@ -56,6 +59,9 @@ impl Hash for PhotoByTagId {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("{:?}", source))]
+    #[snafu(display("Failed to query for photos in loader: {}", source))]
     QueryError { source: DbError },
+
+    #[snafu(display("Failed to acquire connection in photo loader: {}", source))]
+    Connection { source: SqlxError },
 }

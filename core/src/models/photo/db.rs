@@ -1,12 +1,15 @@
 use super::{FileType, Photo};
-use crate::models::Timestamp;
+use crate::models::{
+    tag::{db::Error as TagDbError, Tag},
+    Timestamp,
+};
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
-use sqlx::{FromRow, SqliteConnection, SqlitePool};
+use sqlx::{FromRow, SqliteConnection};
 use std::path::Path;
 use std::str::FromStr;
 use time::OffsetDateTime;
-use uuid::Error as UuidError;
+use uuid::{Error as UuidError, Uuid};
 
 #[derive(FromRow)]
 struct DBPhoto {
@@ -32,32 +35,51 @@ struct DBTagPhoto {
 }
 
 impl Photo {
-    pub async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
-        find_by_id(pool, id).await
+    pub async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Error> {
+        find_by_id(conn, id).await
     }
 
-    pub async fn find_by_filename(pool: &SqlitePool, path: &Path) -> Result<Option<Photo>, Error> {
-        find_by_filename(pool, path).await
+    pub async fn find_by_filename(
+        conn: &mut SqliteConnection,
+        path: &Path,
+    ) -> Result<Option<Photo>, Error> {
+        find_by_filename(conn, path).await
     }
 
     pub async fn find_by_tag_ids(
-        pool: &SqlitePool,
+        conn: &mut SqliteConnection,
         ids: &Vec<String>,
     ) -> Result<Vec<(String, Photo)>, Error> {
-        find_by_tag_ids(pool, ids).await
+        find_by_tag_ids(conn, ids).await
     }
 
-    pub async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
-        find_all(pool).await
+    pub async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
+        find_all(conn).await
     }
 
-    pub async fn save(&self, pool: &mut SqliteConnection) -> Result<String, Error> {
+    pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
         let photo: DBPhoto = self.into();
-        insert(pool, photo).await
+        insert(conn, photo).await
+    }
+
+    pub async fn save_tags(
+        &self,
+        conn: &mut SqliteConnection,
+        new_tags: &[String],
+    ) -> Result<(), Error> {
+        for tag in new_tags {
+            let tag = Tag::find_by_name_or_create(conn, tag)
+                .await
+                .context(TagSnafu)?;
+
+            attach_tag(conn, self, &tag).await?;
+        }
+
+        Ok(())
     }
 }
 
-async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
+async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Error> {
     // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
     let photo = sqlx::query_as::<_, DBPhoto>(
         r#"
@@ -79,14 +101,17 @@ async fn find_by_id(pool: &SqlitePool, id: &str) -> Result<Photo, Error> {
     "#,
     )
     .bind(id)
-    .fetch_one(pool)
+    .fetch_one(conn)
     .await
     .context(SqlxSnafu)?;
 
     photo.try_into()
 }
 
-async fn find_by_filename(pool: &SqlitePool, path: &Path) -> Result<Option<Photo>, Error> {
+async fn find_by_filename(
+    conn: &mut SqliteConnection,
+    path: &Path,
+) -> Result<Option<Photo>, Error> {
     // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
     let photo = sqlx::query_as::<_, DBPhoto>(
         r#"
@@ -108,7 +133,7 @@ async fn find_by_filename(pool: &SqlitePool, path: &Path) -> Result<Option<Photo
     "#,
     )
     .bind(path.file_name().unwrap().to_str().unwrap())
-    .fetch_optional(pool)
+    .fetch_optional(conn)
     .await
     .context(SqlxSnafu)?;
 
@@ -119,7 +144,7 @@ async fn find_by_filename(pool: &SqlitePool, path: &Path) -> Result<Option<Photo
     }
 }
 
-async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
+async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
     // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
     let photos = sqlx::query_as::<_, DBPhoto>(
         r#"
@@ -139,7 +164,7 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
         created_at DESC
     "#,
     )
-    .fetch_all(pool)
+    .fetch_all(conn)
     .await
     .context(SqlxSnafu)?;
 
@@ -149,7 +174,7 @@ async fn find_all(pool: &SqlitePool) -> Result<Vec<Photo>, Error> {
 }
 
 async fn find_by_tag_ids(
-    pool: &SqlitePool,
+    conn: &mut SqliteConnection,
     ids: &Vec<String>,
 ) -> Result<Vec<(String, Photo)>, Error> {
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
@@ -182,7 +207,7 @@ async fn find_by_tag_ids(
         query = query.bind(id);
     }
 
-    let photos = query.fetch_all(pool).await.context(SqlxSnafu)?;
+    let photos = query.fetch_all(conn).await.context(SqlxSnafu)?;
 
     let photos: Vec<(String, Photo)> = photos
         .into_iter()
@@ -227,6 +252,25 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
     .context(SqlxSnafu)?;
 
     Ok(id)
+}
+
+async fn attach_tag(conn: &mut SqliteConnection, photo: &Photo, tag: &Tag) -> Result<(), Error> {
+    let id = Uuid::new_v4().to_string();
+
+    sqlx::query(
+        r#"
+    INSERT INTO photo_tags (id, photo_id, tag_id)
+    VALUES (?, ?, ?)
+    "#,
+    )
+    .bind(id)
+    .bind(&photo.id)
+    .bind(&tag.id)
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(())
 }
 
 impl TryFrom<DBPhoto> for Photo {
@@ -277,17 +321,20 @@ impl From<&Photo> for DBPhoto {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("Failed to execute query: {:?}", source))]
+    #[snafu(display("Failed to execute query: {}", source))]
     Sqlx { source: SqlxError },
 
-    #[snafu(display("Failed to parse FileType {:?}", source))]
+    #[snafu(display("Failed to parse FileType {}", source))]
     FileType {
         source: crate::models::photo::str::filetype::Error,
     },
 
-    #[snafu(display("Failed to parse timestamp: {:?}", source))]
+    #[snafu(display("Failed to parse timestamp: {}", source))]
     Timestamp { source: time::error::ComponentRange },
 
-    #[snafu(display("Invalid Uuid: {:?}", source))]
+    #[snafu(display("Invalid Uuid: {}", source))]
     Uuid { source: UuidError },
+
+    #[snafu(display("Failed to operate on tag: {}", source))]
+    Tag { source: TagDbError },
 }
