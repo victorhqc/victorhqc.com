@@ -70,7 +70,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     ));
     let tags: Vec<String> = tags
         .split(',')
-        .map(|t| t.trim().to_string())
+        .map(|t| t.trim().to_lowercase())
         .unique()
         .collect();
     debug!("Tags: {:?}", tags);
