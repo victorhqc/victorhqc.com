@@ -68,7 +68,11 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
         "{} Please, type the tags for this photograph: ",
         TAG
     ));
-    let tags: Vec<String> = tags.split(',').map(|t| t.trim().to_string()).unique().collect();
+    let tags: Vec<String> = tags
+        .split(',')
+        .map(|t| t.trim().to_string())
+        .unique()
+        .collect();
     debug!("Tags: {:?}", tags);
 
     let mut tx = pool.begin().await.context(TxSnafu)?;

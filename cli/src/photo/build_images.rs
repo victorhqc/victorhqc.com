@@ -113,8 +113,7 @@ pub fn finish_build(
     let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
         .unwrap()
         .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
-    let s_done = ProgressStyle::with_template("{prefix:.bold.dim} {wide_msg}")
-        .unwrap();
+    let s_done = ProgressStyle::with_template("{prefix:.bold.dim} {wide_msg}").unwrap();
 
     let opened_pb = build_loader(&m, &s, format!("{} Opening Image...", DRAWER), 1);
     let sm_pb = build_loader(&m, &s, format!("{} Processing SM Image...", PACKAGE), 2);
