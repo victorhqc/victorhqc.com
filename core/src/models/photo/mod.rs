@@ -41,7 +41,6 @@ impl Photo {
             title: title.to_string(),
             filetype,
             filename: filename.to_string(),
-            // src: "TODO".to_string(),
             created_at,
             updated_at,
             deleted: false,
