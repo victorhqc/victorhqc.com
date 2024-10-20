@@ -38,7 +38,7 @@ async fn main() -> Result<(), Error> {
     let database_url: String = figment.extract_inner("database_url").expect("databaseUrl");
     let bucket_name =
         std::env::var("AWS_BUCKET_NAME").expect("AWS_BUCKET_NAME env variable is missing");
-    
+
     let s3 = S3::new(&bucket_name).await;
 
     info!("DATABASE_URL: {}", database_url);
