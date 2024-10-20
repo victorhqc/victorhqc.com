@@ -9,12 +9,15 @@ use aws_sdk_s3::{
     primitives::ByteStream,
 };
 use snafu::prelude::*;
-use strum_macros::Display;
+use strum_macros::{Display, EnumString};
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, EnumString)]
 pub enum ImageSize {
+    #[strum(serialize = "Hd", serialize = "hd")]
     Hd,
+    #[strum(serialize = "Md", serialize = "md")]
     Md,
+    #[strum(serialize = "Sm", serialize = "sm")]
     Sm,
 }
 
