@@ -1,6 +1,6 @@
 # victorhqc.com
 
-## How it works
+# How it works
 
 This website hosts my basic information as well as my photography portfolio.
 For this 1st iteration the website is pretty simple. It consists of a FE using
@@ -20,6 +20,8 @@ keep the cost low.
 In a future iteration I plan to have a simple backoffice to handle the S3 upload
 and photos management, but that's a maybe and definitely in the future.
 
+# Development
+
 ## Requirements
 
 - Rust >= 1.78.0
@@ -27,7 +29,7 @@ and photos management, but that's a maybe and definitely in the future.
 
   ```sh
   cargo install sqlx-cli
-  cargo install cargo-watch
+  cargo install cargo-watch -i schema.gql -x "run -p api-victorhqc-com"
   ```
 
 Prepare the environment variables by creating an `.env` file
