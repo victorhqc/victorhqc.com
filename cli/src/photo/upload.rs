@@ -1,9 +1,6 @@
 use crate::photo::build_images::ImageBuffers;
 use core_victorhqc_com::{
-    aws::{
-        photo::{Error as UploadError, ImageSize},
-        S3,
-    },
+    aws::{image_size::ImageSize, photo::Error as UploadError, S3},
     models::photo::Photo,
 };
 use snafu::prelude::*;
