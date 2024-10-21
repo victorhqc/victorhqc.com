@@ -20,7 +20,7 @@ use snafu::prelude::*;
 use std::io::Cursor;
 use std::str::FromStr;
 
-#[get("/image/<id>/<size>")]
+#[get("/images/<id>/<size>")]
 pub async fn get_image(
     id: String,
     size: String,
