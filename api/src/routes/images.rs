@@ -1,12 +1,13 @@
 use crate::AppState;
 use core_victorhqc_com::{
     aws::{
-        image_size::{ImageSize, Error as ParseError},
+        image_size::{Error as ParseError, ImageSize},
         photo::{ByteStreamError, Error as AWSError},
     },
     models::photo::{db::Error as PhotoDbError, Photo},
     sqlx::Error as SqlxError,
 };
+use log::error;
 use rocket::{
     http::{hyper::body::Bytes, ContentType, Status},
     response::{stream::ByteStream, Responder},
@@ -36,7 +37,7 @@ pub async fn get_image(
         .await
         .context(PhotoSnafu)?;
 
-    let object = s3
+    let response = s3
         .download_from_aws_s3((&photo, img_size))
         .await
         .context(GetAWSObjectSnafu)?;
@@ -46,10 +47,19 @@ pub async fn get_image(
         (
             ContentType::JPEG,
             ByteStream! {
-                let mut stream = object.body;
+                let mut body = response.body;
 
-                while let Some(bytes) = stream.try_next().await.unwrap() {
-                    yield bytes
+                while let Some(bytes) = body.next().await {
+                    match bytes {
+                        Ok(chunk) => {
+                            yield chunk
+                        },
+                        Err(err) => {
+                            let error = Error::Stream { source: err };
+                            error!("Failed to read chunk: {}", error);
+                            break
+                        }
+                    }
                 }
             },
         ),
@@ -99,17 +109,34 @@ impl Serialize for Error {
     where
         S: Serializer,
     {
-        let kind: String = match self {
-            Error::Size { size, .. } => format!("Invalid Size: {}", size),
-            Error::GetAWSObject { .. } => "Invalid Photo".to_string(),
-            Error::Connection { .. } => "Connection Error".to_string(),
-            Error::Photo { .. } => "Photo Error".to_string(),
-            Error::Stream { .. } => "Stream Error".to_string(),
-        };
-
         let mut state = serializer.serialize_struct("Error", 2)?;
-        state.serialize_field("kind", &kind)?;
-        state.serialize_field("message", &self.to_string())?;
+
+        match self {
+            Error::Size { size, .. } => {
+                state.serialize_field("kind", &format!("Invalid Size: {}", size))?;
+                state.serialize_field("message", &self.to_string())?;
+            }
+            Error::GetAWSObject { source } => {
+                state.serialize_field("kind", "Invalid Photo")?;
+                state.serialize_field("message", "")?;
+
+                error!("Failed to get AWS Object: {}", source);
+            }
+            Error::Connection { .. } => {
+                state.serialize_field("kind", "Connection Error")?;
+                state.serialize_field("message", &self.to_string())?;
+            }
+            Error::Photo { .. } => {
+                state.serialize_field("kind", "Photo Error")?;
+                state.serialize_field("message", &self.to_string())?;
+            }
+            Error::Stream { source } => {
+                state.serialize_field("kind", "Stream Error")?;
+                state.serialize_field("message", "")?;
+
+                error!("Failed to stream image: {}", source);
+            }
+        };
 
         state.end()
     }
