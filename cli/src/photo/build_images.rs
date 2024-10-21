@@ -1,6 +1,6 @@
 use crate::utils::is_valid_extension;
 use console::Emoji;
-use core_victorhqc_com::aws::photo::ImageSize;
+use core_victorhqc_com::aws::image_size::ImageSize;
 use image::{
     codecs::jpeg::JpegEncoder, error::ImageError, imageops::FilterType::Lanczos3, DynamicImage,
     GenericImageView,
@@ -35,9 +35,11 @@ pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle),
 
 #[cfg(target_os = "windows")]
 static PACKAGE: Emoji<'_, '_> = Emoji("📦", "");
+#[cfg(not(target_os = "windows"))]
 static PACKAGE: Emoji<'_, '_> = Emoji("📦 ", "");
 #[cfg(target_os = "windows")]
 static DRAWER: Emoji<'_, '_> = Emoji("🗃️", "");
+#[cfg(not(target_os = "windows"))]
 static DRAWER: Emoji<'_, '_> = Emoji("🗃️  ", "");
 
 /// Creates buffers based on a path with a valid JPG image.
