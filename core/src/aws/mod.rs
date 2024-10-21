@@ -1,3 +1,4 @@
+pub mod image_size;
 pub mod photo;
 
 use aws_sdk_s3::Client;

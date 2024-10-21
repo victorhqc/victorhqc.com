@@ -1,3 +1,4 @@
+use super::image_size::ImageSize;
 use super::S3;
 use crate::models::photo::Photo;
 use aws_sdk_s3::{
@@ -9,14 +10,8 @@ use aws_sdk_s3::{
     primitives::ByteStream,
 };
 use snafu::prelude::*;
-use strum_macros::Display;
 
-#[derive(Debug, Display)]
-pub enum ImageSize {
-    Hd,
-    Md,
-    Sm,
-}
+pub use aws_sdk_s3::primitives::ByteStreamError;
 
 impl S3 {
     pub async fn upload_to_aws_s3(
