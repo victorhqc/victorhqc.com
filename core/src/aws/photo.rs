@@ -7,11 +7,10 @@ use aws_sdk_s3::{
         get_object::{GetObjectError, GetObjectOutput},
         put_object::{PutObjectError, PutObjectOutput},
     },
-    primitives::ByteStream,
 };
 use snafu::prelude::*;
 
-pub use aws_sdk_s3::primitives::ByteStreamError;
+pub use aws_sdk_s3::primitives::{ByteStream, ByteStreamError};
 
 impl S3 {
     pub async fn upload_to_aws_s3(

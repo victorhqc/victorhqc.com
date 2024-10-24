@@ -9,8 +9,8 @@ use core_victorhqc_com::{
 };
 use log::error;
 use rocket::{
-    http::{hyper::body::Bytes, ContentType, Status},
-    response::{stream::ByteStream, Responder},
+    http::{ContentType, Status},
+    response::Responder,
     serde::json::serde_json,
     Response, State,
 };
@@ -22,48 +22,36 @@ use std::str::FromStr;
 
 #[get("/images/<id>/<size>")]
 pub async fn get_image(
-    id: String,
-    size: String,
+    id: &str,
+    size: &str,
     state: &State<AppState>,
-) -> Result<(Status, (ContentType, ByteStream![Bytes])), Error> {
+) -> Result<(Status, (ContentType, Vec<u8>)), Error> {
     let s3 = &state.s3;
     let pool = &state.db_pool;
+    let cache = &state.img_cache;
     let mut conn = pool.acquire().await.context(ConnectionSnafu)?;
 
-    let img_size: ImageSize =
-        ImageSize::from_str(&size).context(SizeSnafu { size: size.clone() })?;
+    let img_size: ImageSize = ImageSize::from_str(size).context(SizeSnafu {
+        size: size.to_string(),
+    })?;
 
-    let photo = Photo::find_by_id(&mut conn, &id)
-        .await
-        .context(PhotoSnafu)?;
+    println!("id: {}", id);
+    let photo = Photo::find_by_id(&mut conn, id).await.context(PhotoSnafu)?;
+
+    if let Some(bytes) = cache.get(&photo.id, &img_size) {
+        return Ok((Status::Ok, (ContentType::JPEG, bytes)));
+    }
 
     let response = s3
-        .download_from_aws_s3((&photo, img_size))
+        .download_from_aws_s3((&photo, img_size.clone()))
         .await
         .context(GetAWSObjectSnafu)?;
 
-    Ok((
-        Status::Ok,
-        (
-            ContentType::JPEG,
-            ByteStream! {
-                let mut body = response.body;
+    let data = response.body.collect().await.context(StreamSnafu)?;
+    let bytes = data.into_bytes().to_vec();
+    cache.save(&photo.id, &img_size, bytes.clone());
 
-                while let Some(bytes) = body.next().await {
-                    match bytes {
-                        Ok(chunk) => {
-                            yield chunk
-                        },
-                        Err(err) => {
-                            let error = Error::Stream { source: err };
-                            error!("Failed to read chunk: {}", error);
-                            break
-                        }
-                    }
-                }
-            },
-        ),
-    ))
+    Ok((Status::Ok, (ContentType::JPEG, bytes)))
 }
 
 #[derive(Debug, Snafu)]
