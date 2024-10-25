@@ -1,6 +1,6 @@
 # victorhqc.com
 
-# How it works
+## How it works
 
 <img src="screenshots/architecture.png" height="300" />
 
@@ -22,7 +22,7 @@ keep the cost low.
 In a future iteration I plan to have a simple backoffice to handle the S3 upload
 and photos management, but that's a maybe and definitely in the future.
 
-# Deployment
+## Deployment
 
 <img src="./screenshots/deployment.png" height="500" />
 
@@ -39,7 +39,7 @@ this will in turn, be used by the API.
 
 # Development
 
-## Requirements
+### Requirements
 
 - Rust >= 1.78.0
 - sqlx-cli:
