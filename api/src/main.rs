@@ -41,6 +41,16 @@ async fn main() -> Result<(), Error> {
     let database_url: String = figment.extract_inner("database_url").expect("databaseUrl");
     let bucket_name =
         std::env::var("AWS_BUCKET_NAME").expect("AWS_BUCKET_NAME env variable is missing");
+    let cached_tags: String = figment
+        .extract_inner("cached_photo_tags")
+        .unwrap_or("".to_string());
+
+    let cached_tags: Vec<String> = cached_tags
+        .split(',')
+        .map(|t| t.trim().to_string())
+        .collect();
+
+    debug!("Cached Tags: {:?}", cached_tags);
 
     let s3 = S3::new(&bucket_name).await;
 
@@ -56,15 +66,15 @@ async fn main() -> Result<(), Error> {
     let loader = AppLoader::default(db_pool.clone());
     let img_cache = ImageCache::default();
 
-    let state = AppState {
+    let mut state = AppState {
         db_pool,
         s3,
         img_cache,
     };
 
-    let state = bootstrap::prepare_images(state, vec!["test-tag".to_string()])
-        .await
-        .unwrap();
+    if cached_tags.len() > 0 {
+        state = bootstrap::prepare_images(state, cached_tags).await.unwrap();
+    }
 
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
         .data(context)

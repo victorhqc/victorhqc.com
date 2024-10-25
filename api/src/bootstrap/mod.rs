@@ -1,12 +1,14 @@
 use crate::AppState;
 use core_victorhqc_com::aws::image_size::ImageSize;
 use core_victorhqc_com::models::{photo::Photo, tag::Tag};
+use log::{debug, info};
 use rocket::tokio;
 use std::collections::HashSet;
 
 pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHandle<AppState> {
     let sizes = [ImageSize::Hd, ImageSize::Md, ImageSize::Sm];
 
+    info!("Preparing images...");
     tokio::spawn(async move {
         let mut conn = state.db_pool.acquire().await.unwrap();
         let tags: Vec<&str> = tags.iter().map(|t| t.as_str()).collect();
@@ -18,7 +20,7 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
             Photo::find_by_tag_ids(&mut conn, &tag_ids).await.unwrap();
         let photos: Vec<Photo> = photos.into_iter().map(|(_, p)| p).collect();
 
-        debug!("Bootstrapping {} images", photos.len());
+        info!("Bootstrapping {} images", photos.len());
 
         // Removes repeated photos.
         let photos_set: HashSet<Photo> = HashSet::from_iter(photos);

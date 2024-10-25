@@ -2,6 +2,7 @@
 RUST_DEBUG = "1"
 RUST_LOG = "api_victorhqc_com=debug,cli_victorhqc_com=debug,sqlx::query=debug,rocket=info"
 DATABASE_URL = "sqlite:<ROOT_PATH>development.db"
+ROCKET_CACHED_PHOTO_TAGS = "comma,separated,tags"
 
 AWS_ACCESS_KEY_ID = "<AWS_ACCESS_KEY_ID>"
 AWS_SECRET_ACCESS_KEY = "<AWS_SECRET_ACCESS_KEY>"
