@@ -5,7 +5,7 @@ use rocket::tokio;
 use std::collections::HashSet;
 
 pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHandle<AppState> {
-    let sizes = vec![ImageSize::Hd, ImageSize::Md, ImageSize::Sm];
+    let sizes = [ImageSize::Hd, ImageSize::Md, ImageSize::Sm];
 
     tokio::spawn(async move {
         let mut conn = state.db_pool.acquire().await.unwrap();
