@@ -43,7 +43,7 @@ pub async fn get_image(
     }
 
     let response = s3
-        .download_from_aws_s3((&photo, img_size.clone()))
+        .download_from_aws_s3((&photo, &img_size))
         .await
         .context(GetAWSObjectSnafu)?;
 

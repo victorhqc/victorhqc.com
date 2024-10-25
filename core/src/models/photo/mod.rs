@@ -4,6 +4,7 @@ mod str;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
+use std::hash::{Hash, Hasher};
 use std::path::Path;
 use std::str::FromStr;
 use str::filetype::Error as FiletypeError;
@@ -46,6 +47,20 @@ impl Photo {
             updated_at,
             deleted: false,
         })
+    }
+}
+
+impl PartialEq for Photo {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Photo {}
+
+impl Hash for Photo {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
