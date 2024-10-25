@@ -72,7 +72,7 @@ async fn main() -> Result<(), Error> {
         img_cache,
     };
 
-    if cached_tags.len() > 0 {
+    if !cached_tags.is_empty() {
         state = bootstrap::prepare_images(state, cached_tags).await.unwrap();
     }
 
