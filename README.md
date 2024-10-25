@@ -1,6 +1,8 @@
 # victorhqc.com
 
-# How it works
+## How it works
+
+<img src="screenshots/architecture.png" height="300" />
 
 This website hosts my basic information as well as my photography portfolio.
 For this 1st iteration the website is pretty simple. It consists of a FE using
@@ -20,9 +22,24 @@ keep the cost low.
 In a future iteration I plan to have a simple backoffice to handle the S3 upload
 and photos management, but that's a maybe and definitely in the future.
 
+## Deployment
+
+<img src="./screenshots/deployment.png" height="500" />
+
+The deployment is initiated by a GitHub release. The CI will take care of the
+rest, which is:
+
+1. Build binaries
+2. Send binaries and DB to the sever
+3. Restarts API in server
+4. Trigger Vercel deployment
+
+An important note is that the release **requires** the local DB to be attached,
+this will in turn, be used by the API.
+
 # Development
 
-## Requirements
+### Requirements
 
 - Rust >= 1.78.0
 - sqlx-cli:
