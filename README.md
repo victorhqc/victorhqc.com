@@ -6,21 +6,21 @@
 
 This website hosts my basic information as well as my photography portfolio.
 For this 1st iteration the website is pretty simple. It consists of a FE using
-Next.js and a BE using Rocket.rs, as for the photos, those are being manually
-uploaded to an S3 Bucket and recording its location in a SQLite DB.
+Next.js and a BE using Rocket.rs
 
-Could this be done differently? Most likely, but I don't really want to
-over-complicate it for now. Even if the deployment needs to upload the binary
-and SQLite DB to the server.
+Originally I intended to ship the DB in each deployment to avoid having to deal
+with users, sessions and uploads. But it would had require some over
+complication somewhere else, or to expose the RAW DB in each deployment as it
+would have been attached to each release. It also made it awkward, as each
+release is tightly coupled to a specific DB and mistakes can happen.
 
-An additional consideration is to avoid S3 fees from Amazon. It's virtually
-free to upload to a bucket, but every time data is transferred from the bucket
-to any client it costs money. One way to minimize this cost, is to fetch the
-images on boot and save them in memory. The bootstrap will be slow, but it will
-keep the cost low.
-
-In a future iteration I plan to have a simple backoffice to handle the S3 upload
-and photos management, but that's a maybe and definitely in the future.
+Instead, the DB will be created on the server as any other application would,
+and the CLI will deal with the upload to AWS directly. That way the REST API
+does not handle any of the upload complications. This still requires to have
+some user management, to protect the write routes of the API, but that can be
+done in a simplistic way by having some simple key approach, if the public key
+sent over the network matches the private key in the server, then the request
+is allowed.
 
 ## Deployment
 
@@ -33,9 +33,6 @@ rest, which is:
 2. Send binaries and DB to the sever
 3. Restarts API in server
 4. Trigger Vercel deployment
-
-An important note is that the release **requires** the local DB to be attached,
-this will in turn, be used by the API.
 
 # Development
 
