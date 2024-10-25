@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
+use crate::cache::image_cache::ImageCache;
 use crate::graphql::{
     context::Context,
     graph::RootSchema,
@@ -19,6 +20,8 @@ use log::info;
 use rocket::tokio::spawn;
 use snafu::prelude::*;
 
+mod bootstrap;
+mod cache;
 mod graphql;
 mod routes;
 
@@ -51,6 +54,17 @@ async fn main() -> Result<(), Error> {
 
     let context = Context::default(db_pool.clone());
     let loader = AppLoader::default(db_pool.clone());
+    let img_cache = ImageCache::default();
+
+    let state = AppState {
+        db_pool,
+        s3,
+        img_cache,
+    };
+
+    let state = bootstrap::prepare_images(state, vec!["test-tag".to_string()])
+        .await
+        .unwrap();
 
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
         .data(context)
@@ -65,7 +79,7 @@ async fn main() -> Result<(), Error> {
 
     rocket
         .manage(schema)
-        .manage(AppState { db_pool, s3 })
+        .manage(state)
         .mount(
             "/",
             routes![index, graphql_query, graphql_request, graphql_playground],
@@ -83,6 +97,7 @@ async fn main() -> Result<(), Error> {
 
 struct AppState {
     db_pool: SqlitePool,
+    img_cache: ImageCache,
     s3: S3,
 }
 

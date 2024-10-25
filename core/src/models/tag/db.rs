@@ -34,6 +34,15 @@ impl Tag {
         Ok(tag.clone())
     }
 
+    pub async fn find_by_names(
+        conn: &mut SqliteConnection,
+        names: &[&str],
+    ) -> Result<Vec<Tag>, Error> {
+        let tags = find_by_names(conn, names).await?;
+
+        Ok(tags)
+    }
+
     pub async fn find_by_name_or_create(
         conn: &mut SqliteConnection,
         name: &str,

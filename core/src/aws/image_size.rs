@@ -2,7 +2,7 @@ use snafu::Snafu;
 use std::str::FromStr;
 use strum_macros::Display;
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone, PartialEq)]
 pub enum ImageSize {
     Hd,
     Md,

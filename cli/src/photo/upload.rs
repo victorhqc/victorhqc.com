@@ -7,9 +7,9 @@ use snafu::prelude::*;
 
 pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(), Error> {
     let (result_hd, result_md, result_sm) = futures::join!(
-        s3.upload_to_aws_s3((photo, ImageSize::Hd), buffers.hd),
-        s3.upload_to_aws_s3((photo, ImageSize::Md), buffers.md),
-        s3.upload_to_aws_s3((photo, ImageSize::Sm), buffers.sm),
+        s3.upload_to_aws_s3((photo, &ImageSize::Hd), buffers.hd),
+        s3.upload_to_aws_s3((photo, &ImageSize::Md), buffers.md),
+        s3.upload_to_aws_s3((photo, &ImageSize::Sm), buffers.sm),
     );
 
     result_hd.context(UploadSnafu {
