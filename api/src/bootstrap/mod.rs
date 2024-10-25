@@ -1,10 +1,6 @@
 use crate::AppState;
 use core_victorhqc_com::aws::image_size::ImageSize;
-use core_victorhqc_com::{
-    aws::S3,
-    models::{photo::Photo, tag::Tag},
-    sqlx::SqlitePool,
-};
+use core_victorhqc_com::models::{photo::Photo, tag::Tag};
 use rocket::tokio;
 use std::collections::HashSet;
 
