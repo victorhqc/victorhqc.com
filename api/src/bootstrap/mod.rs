@@ -15,6 +15,10 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
 
         let tags = Tag::find_by_names(&mut conn, &tags).await.unwrap();
         let tag_ids = tags.into_iter().map(|t| t.id).collect::<Vec<_>>();
+        
+        if tag_ids.is_empty() {
+            return state;
+        }
 
         let photos: Vec<(String, Photo)> =
             Photo::find_by_tag_ids(&mut conn, &tag_ids).await.unwrap();
