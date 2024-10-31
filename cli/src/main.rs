@@ -3,7 +3,7 @@ mod exiftool;
 mod photo;
 mod utils;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use core_victorhqc_com::{aws::S3, db::get_pool};
 use log::{debug, error};
 use std::path::Path;
@@ -20,28 +20,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::env::var("AWS_BUCKET_NAME").expect("AWS_BUCKET_NAME env variable is missing");
 
     let pool = get_pool(&db_url).await.unwrap();
-
-    let args = Args::parse();
-    debug!("Arguments: {:?}", args);
-
-    let src = Path::new(&args.source);
     let s3 = S3::new(&bucket_name).await;
 
-    commands::create(&pool, src, &s3)
-        .await
-        .map_err(|e| {
-            error!("Failed to create Image: {}", e);
+    let args = Cli::parse();
 
-            e
-        })
-        .unwrap();
+    debug!("CLI: {:?}", args);
+
+    match args.command {
+        Commands::Create { source } => {
+            let src = Path::new(&source);
+
+            commands::create(&pool, src, &s3)
+                .await
+                .map_err(|e| {
+                    error!("Failed to create Image: {}", e);
+
+                    e
+                })
+                .unwrap();
+        }
+    }
 
     Ok(())
 }
 
 #[derive(Debug, Parser)]
-struct Args {
-    /// Image Source
-    #[clap(short, long)]
-    source: String,
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    #[command(arg_required_else_help = true)]
+    Create {
+        #[arg(short, long)]
+        source: String,
+    },
 }
