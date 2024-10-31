@@ -1,9 +1,4 @@
-use crate::graphql::queries::RootQuery;
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use crate::graphql::{mutations::RootMutation, queries::RootQuery};
+use async_graphql::{EmptySubscription, Schema};
 
-pub type RootSchema = Schema<RootQuery, EmptyMutation, EmptySubscription>;
-
-// #[Object]
-// impl QueryRoot {
-//     async fn photo
-// }
+pub type RootSchema = Schema<RootQuery, RootMutation, EmptySubscription>;
