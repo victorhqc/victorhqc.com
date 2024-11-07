@@ -6,12 +6,11 @@ use crate::graphql::{
     context::Context,
     graph::RootSchema,
     loaders::AppLoader,
-    mutations::RootMutation,
     queries::RootQuery,
     routes::{graphql_playground, graphql_query, graphql_request},
     sdl_gen,
 };
-use async_graphql::{dataloader::DataLoader, EmptySubscription, Schema};
+use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use core_victorhqc_com::{
     aws::S3,
     db::{get_pool, migrate, Error as DBError},
@@ -58,7 +57,10 @@ async fn main() -> Result<(), Error> {
     info!("DATABASE_URL: {}", database_url);
     let db_pool = get_pool(&database_url).await.context(PoolSnafu)?;
 
-    migrate(&db_pool).await.context(MigrationSnafu)?;
+    #[cfg(debug_assertions)]
+    {
+        migrate(&db_pool).await.context(MigrationSnafu)?;
+    }
 
     let context = Context::default(db_pool.clone());
     let loader = AppLoader::default(db_pool.clone());
@@ -74,15 +76,11 @@ async fn main() -> Result<(), Error> {
         state = bootstrap::prepare_images(state, cached_tags).await.unwrap();
     }
 
-    let schema: RootSchema = Schema::build(
-        RootQuery::default(),
-        RootMutation::default(),
-        EmptySubscription,
-    )
-    .data(context)
-    .data(DataLoader::new(loader, spawn))
-    // .limit_depth(4)
-    .finish();
+    let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
+        .data(context)
+        .data(DataLoader::new(loader, spawn))
+        // .limit_depth(4)
+        .finish();
 
     #[cfg(debug_assertions)]
     {
