@@ -2,7 +2,7 @@
 
 ## How it works
 
-<img src="screenshots/architecture.png" height="300" />
+<img src="screenshots/architecture.png" height="400" />
 
 This website hosts my basic information as well as my photography portfolio.
 For this 1st iteration the website is pretty simple. It consists of a FE using
