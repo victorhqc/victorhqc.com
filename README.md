@@ -8,31 +8,20 @@ This website hosts my basic information as well as my photography portfolio.
 For this 1st iteration the website is pretty simple. It consists of a FE using
 Next.js and a BE using Rocket.rs
 
-Originally I intended to ship the DB in each deployment to avoid having to deal
-with users, sessions and uploads. But it would had require some over
-complication somewhere else, or to expose the RAW DB in each deployment as it
-would have been attached to each release. It also made it awkward, as each
-release is tightly coupled to a specific DB and mistakes can happen.
-
-Instead, the DB will be created on the server as any other application would,
-and the CLI will deal with the upload to AWS directly. That way the REST API
-does not handle any of the upload complications. This still requires to have
-some user management, to protect the write routes of the API, but that can be
-done in a simplistic way by having some simple key approach, if the public key
-sent over the network matches the private key in the server, then the request
-is allowed.
-
 ## Deployment
 
 <img src="./screenshots/deployment.png" height="500" />
 
-The deployment is initiated by a GitHub release. The CI will take care of the
-rest, which is:
+The deployment is initiated by a GitHub release. It will create the binary of
+the API, then the deployment script must be executed, as it takes care of:
 
-1. Build binaries
-2. Send binaries and DB to the sever
-3. Restarts API in server
-4. Trigger Vercel deployment
+1. Send binaries and DB to the sever
+2. Restarts API in server
+3. Trigger Vercel deployment
+
+```sh
+./scripts/unix/deploy.sh --version=<VERSION> --db=<DB_PATH>
+```
 
 # Development
 
