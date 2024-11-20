@@ -7,13 +7,16 @@ use crate::graphql::{
     graph::RootSchema,
     loaders::AppLoader,
     queries::RootQuery,
-    routes::{graphql_playground, graphql_query, graphql_request},
-    sdl_gen,
+    routes::{graphql_query, graphql_request},
 };
+#[cfg(debug_assertions)]
+use crate::graphql::{routes::graphql_playground, sdl_gen};
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
+#[cfg(debug_assertions)]
+use core_victorhqc_com::db::migrate;
 use core_victorhqc_com::{
     aws::S3,
-    db::{get_pool, migrate, Error as DBError},
+    db::{get_pool, Error as DBError},
     sqlx::sqlite::SqlitePool,
 };
 use log::info;
@@ -87,20 +90,22 @@ async fn main() -> Result<(), Error> {
         sdl_gen(&schema).unwrap();
     }
 
-    rocket
+    #[cfg(not(debug_assertions))]
+    let gql_routes = routes![index, graphql_query, graphql_request];
+
+    #[cfg(debug_assertions)]
+    let gql_routes = routes![index, graphql_query, graphql_request, graphql_playground];
+
+    let app = rocket
         .manage(schema)
         .manage(state)
-        .mount(
-            "/",
-            routes![index, graphql_query, graphql_request, graphql_playground],
-        )
+        .mount("/", gql_routes)
         .mount(
             "/v1",
             routes![routes::photos::get_all_photos, routes::images::get_image],
-        )
-        .launch()
-        .await
-        .context(RocketSnafu)?;
+        );
+
+    app.launch().await.context(RocketSnafu)?;
 
     Ok(())
 }
