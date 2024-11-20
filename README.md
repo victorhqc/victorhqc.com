@@ -122,3 +122,26 @@ Run migrations again
 ```sh
 sqlx migrate run
 ```
+
+# Compilation
+
+The service will run in a Linux machine, so targeting that platform is imperative.
+
+## From Mac OSX
+
+**Requirements**
+
+1. Musl Target
+  ```sh
+  rustup target add x86_64-unknown-linux-musl
+  ```
+2. Musl Linker
+  ```sh
+  brew install FiloSottile/musl-cross/musl-cross
+  ```
+
+**Compilation**
+
+```sh
+cargo build --release --target x86_64-unknown-linux-musl
+```
