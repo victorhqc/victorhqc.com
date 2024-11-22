@@ -2,6 +2,9 @@
 /target
 /deps
 
+stress-tests/benchmark.yml
+scripts/unix/api.sh
+
 .env
 
 .DS_Store

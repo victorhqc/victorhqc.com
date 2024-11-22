@@ -145,3 +145,38 @@ The service will run in a Linux machine, so targeting that platform is imperativ
 ```sh
 cargo build --release --target x86_64-unknown-linux-musl
 ```
+
+# Stress Testing API
+
+To make sure the API runs smoothly, running stress tests is encouraged.
+
+## Requirements
+
+- [Drill](https://github.com/fcsonline/drill)
+
+```sh
+cargo install drill
+```
+
+Copy the script and benchmark file
+
+```sh
+cp scripts/unix/api.example.sh scripts/unix/api.sh
+cp stress-tests/benchmark.example.yml stress-tests/benchmark.yml
+```
+
+And replace the values in the script and benchmark file
+
+## How to run
+
+Make sure the API is running
+
+```sh
+./scripts/unix/api.sh
+```
+
+Then run the stress tests
+
+```sh
+drill --benchmark stress-tests/benchmark.yml --stats
+```
