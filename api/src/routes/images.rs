@@ -7,7 +7,7 @@ use core_victorhqc_com::{
     models::photo::{db::Error as PhotoDbError, Photo},
     sqlx::Error as SqlxError,
 };
-use log::error;
+use log::{debug, error};
 use rocket::{
     http::{ContentType, Status},
     response::Responder,
@@ -35,7 +35,7 @@ pub async fn get_image(
         size: size.to_string(),
     })?;
 
-    println!("id: {}", id);
+    debug!("id: {}", id);
     let photo = Photo::find_by_id(&mut conn, id).await.context(PhotoSnafu)?;
 
     if let Some(bytes) = cache.get(&photo.id, &img_size) {
