@@ -10,7 +10,7 @@ use core_victorhqc_com::{
 use log::{debug, error};
 use rocket::{
     http::{ContentType, Status},
-    response::Responder,
+    response::{stream::ByteStream, Responder},
     serde::json::serde_json,
     Response, State,
 };
@@ -25,7 +25,7 @@ pub async fn get_image(
     id: &str,
     size: &str,
     state: &State<AppState>,
-) -> Result<(Status, (ContentType, Vec<u8>)), Error> {
+) -> Result<(Status, (ContentType, ByteStream![Vec<u8>])), Error> {
     let s3 = &state.s3;
     let pool = &state.db_pool;
     let cache = &state.img_cache;
@@ -36,22 +36,40 @@ pub async fn get_image(
     })?;
 
     debug!("id: {}", id);
+
     let photo = Photo::find_by_id(&mut conn, id).await.context(PhotoSnafu)?;
 
-    if let Some(bytes) = cache.get(&photo.id, &img_size) {
-        return Ok((Status::Ok, (ContentType::JPEG, bytes)));
-    }
+    // TODO: Ideally, this whole if-else block would be done by streaming bytes, rather than placing
+    // the whole image in memory. At this time, every request clones the image in the cache and
+    // sends it to the customer.
+    let bytes = if let Some(bytes) = cache.get(&photo.id, &img_size) {
+        debug!("Fetching from cache");
 
-    let response = s3
-        .download_from_aws_s3((&photo, &img_size))
-        .await
-        .context(GetAWSObjectSnafu)?;
+        bytes
+    } else {
+        debug!("Fetching from S3");
 
-    let data = response.body.collect().await.context(StreamSnafu)?;
-    let bytes = data.into_bytes().to_vec();
-    cache.save(&photo.id, &img_size, bytes.clone());
+        let response = s3
+            .download_from_aws_s3((&photo, &img_size))
+            .await
+            .context(GetAWSObjectSnafu)?;
 
-    Ok((Status::Ok, (ContentType::JPEG, bytes)))
+        let data = response.body.collect().await.context(StreamSnafu)?;
+        let bytes = data.into_bytes().to_vec();
+        cache.save(&photo.id, &img_size, bytes.clone());
+
+        bytes
+    };
+
+    Ok((
+        Status::Ok,
+        (
+            ContentType::JPEG,
+            ByteStream! {
+                yield bytes
+            },
+        ),
+    ))
 }
 
 #[derive(Debug, Snafu)]

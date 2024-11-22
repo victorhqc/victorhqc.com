@@ -23,11 +23,7 @@ impl ImageCache {
 
         match index {
             None => None,
-            Some(i) => {
-                let image = images.get(i).map(|(_, _, v)| v.clone());
-
-                image
-            }
+            Some(i) => images.get(i).map(|(_, _, v)| v.clone()),
         }
     }
 

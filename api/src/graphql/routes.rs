@@ -3,7 +3,7 @@ use super::graph::RootSchema;
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
 #[cfg(debug_assertions)]
-use rocker::response::content;
+use rocket::response::content;
 use rocket::State;
 
 #[cfg(debug_assertions)]
