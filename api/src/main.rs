@@ -67,13 +67,9 @@ async fn main() -> Result<(), Error> {
 
     let context = Context::default(db_pool.clone());
     let loader = AppLoader::default(db_pool.clone());
-    let img_cache = ImageCache::default();
+    let img_cache = ImageCache::default(s3);
 
-    let mut state = AppState {
-        db_pool,
-        s3,
-        img_cache,
-    };
+    let mut state = AppState { db_pool, img_cache };
 
     if !cached_tags.is_empty() {
         state = bootstrap::prepare_images(state, cached_tags).await.unwrap();
@@ -113,7 +109,6 @@ async fn main() -> Result<(), Error> {
 struct AppState {
     db_pool: SqlitePool,
     img_cache: ImageCache,
-    s3: S3,
 }
 
 #[derive(Debug, Snafu)]
