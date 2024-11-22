@@ -4,7 +4,7 @@ use core_victorhqc_com::aws::{
     ByteStream, S3,
 };
 use core_victorhqc_com::models::photo::Photo;
-use futures::lock::{Mutex, MutexGuard};
+use rocket::futures::lock::{Mutex, MutexGuard};
 use snafu::prelude::*;
 use std::iter::Iterator;
 use std::sync::Arc;
