@@ -36,7 +36,7 @@ impl ImageCache {
 
                 let response = self
                     .s3
-                    .download_from_aws_s3((&photo, &size))
+                    .download_from_aws_s3((&photo, size))
                     .await
                     .context(GetAWSObjectSnafu)?;
 
