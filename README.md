@@ -32,7 +32,7 @@ the API, then the deployment script must be executed, as it takes care of:
 
   ```sh
   cargo install sqlx-cli
-  cargo install cargo-watch -i schema.gql -x "run -p api-victorhqc-com"
+  cargo install cargo-watch --locked
   ```
 
 Prepare the environment variables by creating an `.env` file
@@ -71,6 +71,12 @@ For Windows
 
 ```bat
 scripts\windows\db.bat
+```
+
+Run the api with auto reload
+
+```sh
+cargo watch -i schema.gql -x "run -p api-victorhqc-com"
 ```
 
 ## CLI Backoffice
