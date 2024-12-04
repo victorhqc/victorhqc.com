@@ -1,0 +1,17 @@
+[package]
+name = "web-victorhqc-com"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+axum = { version = "0.7.9", features = ["macros", "tokio"] }
+axum-template = { version = "2.4.0", features = ["tera"] }
+dotenvy.workspace = true
+log.workspace = true
+pretty_env_logger.workspace = true
+# regex.workspace = true
+serde = { workspace = true, features = ["derive"] }
+snafu = { workspace = true, features = ["default", "backtrace"] }
+tera = "1.20.0"
+tokio = { workspace = true, features = ["full"] }

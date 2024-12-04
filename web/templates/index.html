@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>victorhqc.com</title>
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        body {
+          @apply p-2;
+        }
+
+        .card {
+          @apply py-2 px-4 bg-gray-100 rounded;
+        }
+
+        .card h1 {
+          @apply text-xl;
+        }
+
+        .card h2 {
+          @apply text-lg;
+        }
+
+        .card p {
+          @apply mt-2;
+        }
+
+        #main {
+          height: 100vh;
+          align-content: center;
+        }
+
+        #me {
+          @apply w-1/2 m-auto;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div class="card" id="me">
+        <h1>Victor Quiroz Castro</h1>
+        <h2>Software Engineer</h2>
+        <p>
+          I'm a Software Engineer specialized in Web Technologies like JavaScript, Rust, Servers, DBs, AWS, etc.
+        </p>
+        <p>
+           I like reading sci-fi and taking pictures.
+        </p>
+      </div>
+    </div
+  </body>
+</html>

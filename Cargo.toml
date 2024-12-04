@@ -2,7 +2,7 @@
 
 resolver = "2"
 
-members = ["api", "core", "cli"]
+members = ["api", "core", "cli", "web"]
 
 [workspace.dependencies]
 

@@ -13,6 +13,6 @@ scripts/unix/api.sh
 *.db-shm
 *.db-wal
 
-/.cargo/config.toml
+.cargo/config.toml
 
 *.txt
