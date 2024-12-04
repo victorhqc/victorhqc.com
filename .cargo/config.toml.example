@@ -9,3 +9,5 @@ AWS_SECRET_ACCESS_KEY = "<AWS_SECRET_ACCESS_KEY>"
 AWS_REGION = "eu-central-1"
 AWS_BUCKET_NAME = "victorhqc.com-development"
 
+[target.x86_64-unknown-linux-musl]
+linker = "x86_64-linux-musl-gcc"

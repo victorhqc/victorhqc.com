@@ -1,0 +1,15 @@
+---
+concurrency: 4
+base: "http://localhost:9999"
+iterations: 2000
+rampup: 3
+
+plan:
+    - name: Fetch some images
+      request:
+          url: /v1/images/{{ item }}/hd
+      with_items:
+          - <ID>
+          - <ID_2>
+          - <ID_3>
+          - <ID_4>

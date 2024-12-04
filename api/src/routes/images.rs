@@ -1,16 +1,17 @@
+use crate::cache::image_cache::Error as CacheError;
 use crate::AppState;
 use core_victorhqc_com::{
     aws::{
         image_size::{Error as ParseError, ImageSize},
-        photo::{ByteStreamError, Error as AWSError},
+        photo::ByteStreamError,
     },
     models::photo::{db::Error as PhotoDbError, Photo},
     sqlx::Error as SqlxError,
 };
-use log::error;
+use log::{debug, error};
 use rocket::{
-    http::{ContentType, Status},
-    response::Responder,
+    http::{hyper::body::Bytes, ContentType, Status},
+    response::{stream::ByteStream, Responder},
     serde::json::serde_json,
     Response, State,
 };
@@ -25,8 +26,7 @@ pub async fn get_image(
     id: &str,
     size: &str,
     state: &State<AppState>,
-) -> Result<(Status, (ContentType, Vec<u8>)), Error> {
-    let s3 = &state.s3;
+) -> Result<(Status, (ContentType, ByteStream![Bytes])), Error> {
     let pool = &state.db_pool;
     let cache = &state.img_cache;
     let mut conn = pool.acquire().await.context(ConnectionSnafu)?;
@@ -35,32 +35,57 @@ pub async fn get_image(
         size: size.to_string(),
     })?;
 
-    println!("id: {}", id);
+    debug!("id: {}", id);
+
     let photo = Photo::find_by_id(&mut conn, id).await.context(PhotoSnafu)?;
 
-    if let Some(bytes) = cache.get(&photo.id, &img_size) {
-        return Ok((Status::Ok, (ContentType::JPEG, bytes)));
-    }
+    // TODO: Ideally, the `.get()` method would not clone what's in memory, and simply stream the
+    // image from memory to the response of the request.
+    // let mut stream = if let Some(bytes) = cache.get(&photo.id, &img_size) {
+    //     debug!("Fetching from cache");
 
-    let response = s3
-        .download_from_aws_s3((&photo, &img_size))
-        .await
-        .context(GetAWSObjectSnafu)?;
+    //     AWSByteStream::from(bytes)
+    // } else {
+    //     debug!("Fetching from S3");
 
-    let data = response.body.collect().await.context(StreamSnafu)?;
-    let bytes = data.into_bytes().to_vec();
-    cache.save(&photo.id, &img_size, bytes.clone());
+    //     let response = cache
+    //         .s3
+    //         .download_from_aws_s3((&photo, &img_size))
+    //         .await
+    //         .context(GetAWSObjectSnafu)?;
 
-    Ok((Status::Ok, (ContentType::JPEG, bytes)))
+    //     response.body
+    // };
+    //
+
+    let mut stream = cache.stream(photo, &img_size).await.context(CacheSnafu)?;
+
+    Ok((
+        Status::Ok,
+        (
+            ContentType::JPEG,
+            ByteStream! {
+                while let Some(bytes) = stream.next().await {
+                    match bytes {
+                        Ok(chunk) => {
+                            yield chunk
+                        },
+                        Err(err) => {
+                            let error = Error::Stream { source: err };
+                            error!("Failed to read chunk: {}", error);
+                            break
+                        }
+                    }
+                }
+            },
+        ),
+    ))
 }
 
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Invalid size '{}': {}", size, source))]
     Size { size: String, source: ParseError },
-
-    #[snafu(display("Failed to get AWS Object: {}", source))]
-    GetAWSObject { source: AWSError },
 
     #[snafu(display("Failed to get connection: {}", source))]
     Connection { source: SqlxError },
@@ -70,16 +95,22 @@ pub enum Error {
 
     #[snafu(display("Failed to download photo: {}", source))]
     Stream { source: ByteStreamError },
+
+    #[snafu(display("Failed to get image from cache: {}", source))]
+    Cache { source: CacheError },
 }
 
 impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, _: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
         let status: Status = match &self {
             Error::Size { .. } => Status::InternalServerError,
-            Error::GetAWSObject { .. } => Status::NotFound,
             Error::Connection { .. } => Status::InternalServerError,
             Error::Photo { .. } => Status::InternalServerError,
             Error::Stream { .. } => Status::InternalServerError,
+            Error::Cache { source } => match source {
+                CacheError::GetAWSObject { .. } => Status::NotFound,
+                CacheError::Stream { .. } => Status::InternalServerError,
+            },
         };
 
         let serialized = serde_json::to_string(&self).unwrap();
@@ -104,12 +135,6 @@ impl Serialize for Error {
                 state.serialize_field("kind", &format!("Invalid Size: {}", size))?;
                 state.serialize_field("message", &self.to_string())?;
             }
-            Error::GetAWSObject { source } => {
-                state.serialize_field("kind", "Invalid Photo")?;
-                state.serialize_field("message", "")?;
-
-                error!("Failed to get AWS Object: {}", source);
-            }
             Error::Connection { .. } => {
                 state.serialize_field("kind", "Connection Error")?;
                 state.serialize_field("message", &self.to_string())?;
@@ -123,6 +148,12 @@ impl Serialize for Error {
                 state.serialize_field("message", "")?;
 
                 error!("Failed to stream image: {}", source);
+            }
+            Error::Cache { source } => {
+                state.serialize_field("kind", "Invalid Photo")?;
+                state.serialize_field("message", "")?;
+
+                error!("Failed to get AWS Object: {}", source);
             }
         };
 
