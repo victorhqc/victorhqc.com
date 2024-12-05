@@ -97,8 +97,12 @@ async fn main() -> Result<(), Error> {
         .manage(state)
         .mount("/", gql_routes)
         .mount(
-            "/v1",
-            routes![routes::photos::get_all_photos, routes::images::get_image],
+            "/v1/",
+            routes![
+                routes::photos::get_all_photos,
+                routes::photos::get_random_photo,
+                routes::images::get_image
+            ],
         );
 
     app.launch().await.context(RocketSnafu)?;

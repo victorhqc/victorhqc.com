@@ -1,6 +1,7 @@
 use actix_files as fs;
-use actix_web::{get, middleware, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware, web, App, HttpResponse, HttpServer, Responder};
 use lazy_static::lazy_static;
+use serde::Deserialize;
 use tera::{Context, Tera};
 
 lazy_static! {
@@ -18,9 +19,24 @@ lazy_static! {
     };
 }
 
+#[derive(Deserialize)]
+struct Photo {
+    id: String,
+}
+
 #[get("/")]
-async fn hello() -> impl Responder {
-    let context = Context::new();
+async fn hello(data: web::Data<AppState>) -> impl Responder {
+    let photo: Photo = reqwest::get(format!("{}/v1/photos/portfolio/random", data.api_host))
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let mut context = Context::new();
+    context.insert("id", &photo.id);
+    context.insert("api_host", &data.api_host);
+
     let content = TEMPLATES.render("index.html", &context).unwrap();
 
     HttpResponse::Ok().body(content)
@@ -28,9 +44,16 @@ async fn hello() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    dotenvy::dotenv().unwrap();
+
+    let api_host = std::env::var("API_HOST").expect("API_HOST env variable is missing");
+
+    HttpServer::new(move || {
         App::new()
             .wrap(middleware::Compress::default())
+            .app_data(web::Data::new(AppState {
+                api_host: api_host.clone(),
+            }))
             .service(fs::Files::new("/static", "./static"))
             .service(hello)
     })
@@ -38,4 +61,9 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 7879))?
     .run()
     .await
+}
+
+#[derive(Debug)]
+struct AppState {
+    api_host: String,
 }
