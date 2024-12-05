@@ -2,12 +2,11 @@
 
 
 TAILWIND_URL="https://cdn.tailwindcss.com"
-HTMX_URL="https://unpkg.com/htmx.org@2.0.3"
-
+HTMX_URL="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"
 
 OUTPUT_FOLDER="web/static"
-TAILWIND_FILE="$OUTPUT_FOLDER/tailwindcss.js"
-HTMX_FILE="$OUTPUT_FOLDER/htmx.js"
+TAILWIND_FILE="$OUTPUT_FOLDER/tailwindcss.js.gz"
+HTMX_FILE="$OUTPUT_FOLDER/htmx.js.gz"
 
 echo "Ensuring folder $OUTPUT_FOLDER exists..."
 mkdir -p "$OUTPUT_FOLDER"

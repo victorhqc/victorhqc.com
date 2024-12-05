@@ -1,41 +1,41 @@
-use std::net::Ipv4Addr;
+use actix_files as fs;
+use actix_web::{get, middleware, App, HttpResponse, HttpServer, Responder};
+use lazy_static::lazy_static;
+use tera::{Context, Tera};
 
-use crate::engine::{AppEngine, CustomKey};
-use axum::{extract::FromRef, response::IntoResponse, routing::get, serve, Router};
-use axum_template::{engine::Engine, RenderHtml};
-use serde::Serialize;
-use tera::Tera;
-use tokio::net::TcpListener;
-
-mod engine;
-
-#[derive(Debug, Serialize)]
-struct Data {}
-
-async fn index(
-    // Obtain the engine
-    engine: AppEngine,
-    // Extract the custom key
-    CustomKey(template): CustomKey,
-    // Path(name): Path<String>,
-) -> impl IntoResponse {
-    RenderHtml(template, engine, Data {})
+lazy_static! {
+    pub static ref TEMPLATES: Tera = {
+        let mut tera = match Tera::new("templates/**/*") {
+            Ok(t) => t,
+            Err(e) => {
+                println!("Parsing error(s): {}", e);
+                ::std::process::exit(1);
+            }
+        };
+        tera.autoescape_on(vec![".html"]);
+        // tera.register_filter("do_nothing", do_nothing_filter);
+        tera
+    };
 }
 
-#[derive(Clone, FromRef)]
-struct AppState {
-    engine: AppEngine,
+#[get("/")]
+async fn hello() -> impl Responder {
+    let context = Context::new();
+    let content = TEMPLATES.render("index.html", &context).unwrap();
+
+    HttpResponse::Ok().body(content)
 }
 
-#[tokio::main]
-async fn main() {
-    let tera = Tera::new("templates/**/*.html").expect("Template folder not found");
-    let app = Router::new().route("/", get(index)).with_state(AppState {
-        engine: Engine::from(tera),
-    });
-
-    let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 7879))
-        .await
-        .unwrap();
-    serve(listener, app.into_make_service()).await.unwrap();
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .wrap(middleware::Compress::default())
+            .service(fs::Files::new("/static", "./static"))
+            .service(hello)
+    })
+    .workers(4)
+    .bind(("127.0.0.1", 7879))?
+    .run()
+    .await
 }
