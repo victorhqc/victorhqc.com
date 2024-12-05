@@ -17,4 +17,4 @@ scripts/unix/api.sh
 
 *.txt
 
-web/static/*
+web/static/
