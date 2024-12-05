@@ -16,3 +16,5 @@ scripts/unix/api.sh
 .cargo/config.toml
 
 *.txt
+
+web/static/*
