@@ -1,0 +1,16 @@
+[package]
+name = "web-victorhqc-com"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+actix-files = "0.6.6"
+actix-web = "4.9.0"
+dotenvy.workspace = true
+lazy_static = "1.5.0"
+log.workspace = true
+pretty_env_logger.workspace = true
+serde = { workspace = true, features = ["derive"] }
+snafu = { workspace = true, features = ["default", "backtrace"] }
+tera = "1.20.0"

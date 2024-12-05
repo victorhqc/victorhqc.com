@@ -113,6 +113,45 @@ Run the project
 
 ```sh
 cargo run -p api-victorhqc-com
+
+# With hot reload
+cargo watch -i schema.gql -x "run -p api-victorhqc-com"
+```
+
+## Web Frontend Development
+
+First, install the dependencies the website needs using the `web-dependencies.sh` script, just make sure `wget` is installed,
+for Mac OSX do it with
+
+```sh
+brew install wget
+```
+
+And then run the script. It will download a copy of `tailwindcss` and `htmx`. We could use a CDN, but time has proven that
+CDNs go down sometimes, and we want to avoid problems caused by 3rd parties as much as possible.
+
+```sh
+./scripts/unix/web-dependencies.sh
+```
+
+Until Cargo is able to detect multiple configurations in a workspace, the only way to run the web frontend is to navigate
+to the `web` folder and doing it from there
+
+```sh
+cd web
+```
+
+```sh
+cp .env.example .env
+```
+
+Make sure the API is running and then run the following
+
+```sh
+cargo run
+
+# With hot reload
+cargo watch -x run
 ```
 
 ## Database

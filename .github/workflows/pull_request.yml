@@ -16,47 +16,49 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [ ubuntu-latest ]
-                rust: [ stable ]
+                os: [ubuntu-latest]
+                rust: [stable]
         steps:
-            -   uses: actions/checkout@v3
+            - uses: actions/checkout@v3
 
-            -   name: Install latest stable
-                uses: actions-rs/toolchain@v1
-                with:
-                    toolchain: stable
-                    override: true
-                    components: rustfmt, clippy
+            - name: Install latest stable
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+                  components: rustfmt, clippy
 
-            -   uses: Swatinem/rust-cache@v2
-                with:
-                    workspaces: |
-                        api
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: |
+                      api
+                      web
+                      core
 
-            -   name: Generate Cargo.lock
-                uses: actions-rs/cargo@v1
-                with:
-                    command: generate-lockfile
+            - name: Generate Cargo.lock
+              uses: actions-rs/cargo@v1
+              with:
+                  command: generate-lockfile
 
-            -   name: Install SQLX
-                run: |
-                    cargo install sqlx-cli --no-default-features --features sqlite
+            - name: Install SQLX
+              run: |
+                  cargo install sqlx-cli --no-default-features --features sqlite
 
-            -   name: Init DB
-                run: |
-                    sqlx database create
-                    sqlx db setup --source=core/migrations
-                    cargo sqlx prepare --workspace
-                    cargo sqlx prepare --check --workspace
+            - name: Init DB
+              run: |
+                  sqlx database create
+                  sqlx db setup --source=core/migrations
+                  cargo sqlx prepare --workspace
+                  cargo sqlx prepare --check --workspace
 
-            -   name: Run cargo test
-                run: cargo test
+            - name: Run cargo test
+              run: cargo test
 
-            -   name: Run cargo check
-                run: cargo check
+            - name: Run cargo check
+              run: cargo check
 
-            -   name: Run cargo fmt
-                run: cargo fmt --all --check
+            - name: Run cargo fmt
+              run: cargo fmt --all --check
 
-            -   name: Run cargo clippy
-                run: cargo clippy -- -D warnings
+            - name: Run cargo clippy
+              run: cargo clippy -- -D warnings
