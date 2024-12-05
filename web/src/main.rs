@@ -12,7 +12,7 @@ lazy_static! {
                 ::std::process::exit(1);
             }
         };
-        tera.autoescape_on(vec![".html"]);
+        tera.autoescape_on(vec![".html", ".css"]);
         // tera.register_filter("do_nothing", do_nothing_filter);
         tera
     };
