@@ -100,7 +100,7 @@ async fn main() -> Result<(), Error> {
             "/v1/",
             routes![
                 routes::photos::get_all_photos,
-                routes::photos::get_random_photo,
+                routes::photos::get_all_photos_by_tag,
                 routes::images::get_image
             ],
         );

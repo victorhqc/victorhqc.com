@@ -14,12 +14,15 @@ pub async fn get_all_photos(state: &State<AppState>) -> (Status, Json<Vec<Photo>
     (Status::Ok, Json(photos))
 }
 
-#[get("/photos/<tag>", format = "json")]
-pub async fn get_random_photo(tag: &str, state: &State<AppState>) -> (Status, Json<Vec<Photo>>) {
+#[get("/photos/<name>", format = "json")]
+pub async fn get_all_photos_by_tag(
+    name: &str,
+    state: &State<AppState>,
+) -> (Status, Json<Vec<Photo>>) {
     let pool = &state.db_pool;
     let mut conn = pool.try_acquire().unwrap();
 
-    let tag = Tag::find_by_name(&mut conn, tag).await.unwrap();
+    let tag = Tag::find_by_name(&mut conn, name).await.unwrap();
     let photos = Photo::find_by_tag_ids(&mut conn, &vec![tag.id])
         .await
         .unwrap()
