@@ -2,54 +2,33 @@ body {
   @apply p-2;
 }
 
-.card {
-  @apply py-2 px-4 bg-gray-100 rounded;
+a {
+  @apply underline;
 }
 
-.card h1 {
+.main-section {
+  @apply col-span-2 p-2;
+}
+
+.main-section h1 {
   @apply text-2xl font-semibold;
 }
 
-.card h2 {
+.main-section h2 {
   @apply text-xl;
 }
 
-.card p {
-  @apply mt-2;
+.main-section p {
+  @apply mt-3;
 }
 
 #main {
+  @apply col-span-6;
+
   height: calc(100vh - 1rem);
-  width: calc(100vw - 1rem);
+  width: calc(100%);
 
   align-content: center;
   background-size: cover;
   background-attachment: fixed;
-}
-
-#me {
-  @apply w-1/2 m-auto p-4;
-  @apply border-solid border-black;
-
-  box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0.2);
-  max-width: 650px;
-
-  position: relative;
-  z-index: 1;
-  background: inherit;
-  overflow: hidden;
-}
-
-#me:before {
-  content: "";
-  position: absolute;
-  background: inherit;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  box-shadow: inset 0 0 2000px rgba(255, 255, 255, 0.5);
-  filter: blur(20px);
-  margin: -20px;
 }
