@@ -1,13 +1,18 @@
+use crate::state::AppState;
 use actix_files as fs;
-use actix_web::{get, middleware, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{middleware, web, App, HttpServer};
 use lazy_static::lazy_static;
-use rand::seq::SliceRandom;
-use serde::Deserialize;
-use tera::{Context, Tera};
+use snafu::prelude::*;
+use tera::Tera;
+
+mod requests;
+mod routes;
+mod state;
 
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
-        let mut tera = match Tera::new("templates/**/*") {
+        let root = std::env::var("WEB_TEMPLATES_ROOT").unwrap_or("".to_string());
+        let mut tera = match Tera::new(&format!("{}templates/**/*", root)) {
             Ok(t) => t,
             Err(e) => {
                 println!("Parsing error(s): {}", e);
@@ -15,47 +20,25 @@ lazy_static! {
             }
         };
         tera.autoescape_on(vec![".html", ".css"]);
-        // tera.register_filter("do_nothing", do_nothing_filter);
+
         tera
     };
 }
 
-#[derive(Deserialize)]
-struct Photo {
-    id: String,
-}
-
-#[get("/")]
-async fn hello(data: web::Data<AppState>) -> impl Responder {
-    let random_photo_id = data
-        .random_photo_ids
-        .choose(&mut rand::thread_rng())
-        .unwrap();
-
-    let mut context = Context::new();
-    context.insert("id", random_photo_id);
-    context.insert("api_host", &data.api_host);
-
-    let content = TEMPLATES.render("index.html", &context).unwrap();
-
-    HttpResponse::Ok().body(content)
-}
-
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<(), Error> {
     dotenvy::dotenv().unwrap();
+    let api_host = std::env::var("WEB_API_HOST").expect("WEB_API_HOST env variable is missing");
 
-    let api_host = std::env::var("API_HOST").expect("API_HOST env variable is missing");
+    if TEMPLATES.templates.is_empty() {
+        return Err(Error::MissingTemplates);
+    }
 
-    let photo_ids: Vec<String> = reqwest::get(format!("{}/v1/photos/portfolio", api_host))
+    let photos = requests::photos::get_photos_from_tag("portfolio")
         .await
-        .unwrap()
-        .json::<Vec<Photo>>()
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|photo| photo.id)
-        .collect();
+        .context(PortfolioSnafu)?;
+
+    let photo_ids: Vec<String> = photos.into_iter().map(|p| p.id).collect();
 
     HttpServer::new(move || {
         App::new()
@@ -65,16 +48,27 @@ async fn main() -> std::io::Result<()> {
                 random_photo_ids: photo_ids.clone(),
             }))
             .service(fs::Files::new("/static", "./static"))
-            .service(hello)
+            .service(routes::index::index)
     })
     .workers(4)
-    .bind(("127.0.0.1", 7879))?
+    .bind(("127.0.0.1", 7879))
+    .context(BindSnafu)?
     .run()
     .await
+    .context(StartSnafu)
 }
 
-#[derive(Debug)]
-struct AppState {
-    api_host: String,
-    random_photo_ids: Vec<String>,
+#[derive(Debug, Snafu)]
+enum Error {
+    #[snafu(display("Failed to bind the server: {:?}", source))]
+    Bind { source: std::io::Error },
+
+    #[snafu(display("Failed to start server: {:?}", source))]
+    Start { source: std::io::Error },
+
+    #[snafu(display("Failed to load Porftolio photos: {:?}", source))]
+    Portfolio { source: requests::photos::Error },
+
+    #[snafu(display("Failed to load Templates, maybe the path is incorrect"))]
+    MissingTemplates,
 }
