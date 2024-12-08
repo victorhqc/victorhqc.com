@@ -31,8 +31,10 @@ the API, then the deployment script must be executed, as it takes care of:
 - sqlx-cli:
 
   ```sh
+  # The DB CLI
   cargo install sqlx-cli
-  cargo install cargo-watch --locked
+  # For recompilation on code update while developing
+  cargo install --locked bacon
   ```
 
 Prepare the environment variables by creating an `.env` file
@@ -76,7 +78,7 @@ scripts\windows\db.bat
 Run the api with auto reload
 
 ```sh
-cargo watch -i schema.gql -x "run -p api-victorhqc-com"
+bacon api
 ```
 
 ## CLI Backoffice
@@ -115,7 +117,7 @@ Run the project
 cargo run -p api-victorhqc-com
 
 # With hot reload
-cargo watch -i schema.gql -x "run -p api-victorhqc-com"
+bacon api
 ```
 
 ## Web Frontend Development
@@ -151,7 +153,7 @@ Make sure the API is running and then run the following
 cargo run
 
 # With hot reload
-cargo watch -x run
+bacon web
 ```
 
 ## Database
