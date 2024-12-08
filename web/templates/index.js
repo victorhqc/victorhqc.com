@@ -4,7 +4,7 @@ const size = photos.length;
 for (const [i, photo] of photos.entries()) {
   if (i === size - 1) continue;
 
-  const minDeg = i * 5 + 1;
+  const minDeg = i * 4 + 1;
   const maxDeg = i * 5 + 5;
   const degrees = randomIntFromInterval(minDeg, maxDeg);
 
