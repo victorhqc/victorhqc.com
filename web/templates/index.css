@@ -22,13 +22,19 @@ a {
   @apply mt-3;
 }
 
-#main {
-  @apply col-span-6;
-
+#photos-stack {
   height: calc(100vh - 1rem);
   width: calc(100%);
 
   align-content: center;
   background-size: cover;
   background-attachment: fixed;
+}
+
+.photo {
+  @apply absolute top-20;
+  @apply border border-solid border-white border-8;
+  @apply shadow-md;
+
+  width: 60vw;
 }
