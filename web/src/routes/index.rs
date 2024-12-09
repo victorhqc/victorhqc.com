@@ -14,7 +14,7 @@ pub async fn index(data: web::Data<AppState>) -> impl Responder {
         .for_each(|(i, p)| {
             println!("Inserted photo {} into context: {}", i, p.id);
 
-            context.insert(&format!("photo_{}", i), p);
+            context.insert(format!("photo_{}", i), p);
         });
 
     context.insert("api_host", &data.api_host);
