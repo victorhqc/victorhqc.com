@@ -19,7 +19,7 @@ lazy_static! {
                 ::std::process::exit(1);
             }
         };
-        tera.autoescape_on(vec![".html", ".css"]);
+        tera.autoescape_on(vec![".html", ".css", ".js"]);
 
         tera
     };
@@ -38,14 +38,12 @@ async fn main() -> Result<(), Error> {
         .await
         .context(PortfolioSnafu)?;
 
-    let photo_ids: Vec<String> = photos.into_iter().map(|p| p.id).collect();
-
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Compress::default())
             .app_data(web::Data::new(AppState {
                 api_host: api_host.clone(),
-                random_photo_ids: photo_ids.clone(),
+                portfolio_photos: photos.clone(),
             }))
             .service(fs::Files::new("/static", "./static"))
             .service(routes::index::index)

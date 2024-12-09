@@ -1,11 +1,11 @@
 use reqwest::Error as ReqwestError;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Photo {
     pub id: String,
-    // pub title: String,
+    pub title: String,
 }
 
 pub async fn get_photos_from_tag(name: &str) -> Result<Vec<Photo>, Error> {

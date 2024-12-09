@@ -28,9 +28,16 @@
         <a href="#">here</a>.
       </p>
     </section>
-    <div
-      id="main"
-      style="background-image: url('{{ api_host }}/v1/images/{{ id }}/Md')"
-    ></div>
+    <div id="photos-stack">
+      <img
+        class="photo active"
+        src="{{ api_host }}/v1/images/{{ photo_0.id }}/Md"
+      />
+      <img class="photo" src="{{ api_host }}/v1/images/{{ photo_1.id }}/Md" />
+      <img class="photo" src="{{ api_host }}/v1/images/{{ photo_2.id }}/Md" />
+    </div>
   </body>
+  <script>
+    {% include "index.js" %}
+  </script>
 </html>

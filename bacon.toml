@@ -75,6 +75,7 @@ allow_warnings = true
 background = false
 on_change_strategy = "kill_then_restart"
 ignore = ["core/**/**", "api/**/**", "cli/**/**"]
+watch = ["templates"]
 
 [jobs.api]
 command = ["cargo", "run", "-p", "api-victorhqc-com"]
