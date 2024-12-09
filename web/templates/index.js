@@ -8,8 +8,6 @@ for (const [i, photo] of photos.entries()) {
   const maxDeg = i * 5 + 5;
   const degrees = randomIntFromInterval(minDeg, maxDeg);
 
-  const isEven = i % 2 === 0;
-
   const minX = randomPositiveNegative(30);
   const maxX = randomPositiveNegative(50);
   const x = randomIntFromInterval(minX, maxX);
@@ -21,15 +19,33 @@ for (const [i, photo] of photos.entries()) {
   displaceAndRotateElement(photo, x, y, degrees);
 }
 
+/**
+ *
+ * @param {HTMLElement} el
+ * @param {number} x
+ * @param {number} y
+ * @param {number} degrees
+ */
 function displaceAndRotateElement(el, x, y, degrees) {
   console.log(`Displacing ${x},${y} and rotating ${degrees}deg`);
   el.style.transform = `translate(${x}px, ${y}px) rotate(${degrees}deg)`;
 }
 
+/**
+ *
+ * @param {number} min
+ * @param {number} max
+ * @returns
+ */
 function randomIntFromInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+/**
+ *
+ * @param {number} number
+ * @returns
+ */
 function randomPositiveNegative(number) {
   const sign = Math.random() < 0.5 ? -1 : 1;
 
