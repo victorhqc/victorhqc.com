@@ -6,39 +6,40 @@ a {
   @apply underline;
 }
 
-.main-section {
-  @apply col-span-2 px-2 py-10;
+#main-section {
+  @apply col-span-3 px-4;
+
+  align-content: center;
 }
 
-.main-section h1 {
-  @apply text-2xl font-semibold;
+#main-section h1 {
+  @apply text-2xl font-semibold font-serif;
 }
 
-.main-section h2 {
-  @apply text-xl;
+#main-section h2 {
+  @apply text-xl font-serif italic;
 }
 
-.main-section p {
+#main-section p {
   @apply mt-3;
 }
 
-#photos-stack {
-  @apply col-span-6 block relative;
+#photos-section {
+  @apply col-span-5 w-full text-center;
 
   height: calc(100vh - 1rem);
-  width: calc(100%);
-
   align-content: center;
-  background-size: cover;
-  background-attachment: fixed;
+}
+
+#photos-stack {
+  @apply block relative m-auto w-10/12;
+  height: 50vh;
 }
 
 .photo {
-  @apply absolute top-20;
+  @apply absolute top-0 top-0 w-full;
   @apply border border-solid border-white border-8;
   @apply shadow-md;
 
-  left: calc(50% - 30vw);
-
-  width: 60vw;
+  /* left: calc(50% - 30vw); */
 }

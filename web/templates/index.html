@@ -11,7 +11,7 @@
     </style>
   </head>
   <body class="grid grid-cols-8">
-    <section class="main-section">
+    <section id="main-section">
       <h1>Victor Quiroz Castro</h1>
       <h2>Software Engineer</h2>
       <p>
@@ -28,14 +28,16 @@
         <a href="#">here</a>.
       </p>
     </section>
-    <div id="photos-stack">
-      <img
-        class="photo active"
-        src="{{ api_host }}/v1/images/{{ photo_0.id }}/Md"
-      />
-      <img class="photo" src="{{ api_host }}/v1/images/{{ photo_1.id }}/Md" />
-      <img class="photo" src="{{ api_host }}/v1/images/{{ photo_2.id }}/Md" />
-    </div>
+    <section id="photos-section">
+      <div id="photos-stack">
+        <img
+          class="photo active"
+          src="{{ api_host }}/v1/images/{{ photo_0.id }}/Md"
+        />
+        <img class="photo" src="{{ api_host }}/v1/images/{{ photo_1.id }}/Md" />
+        <img class="photo" src="{{ api_host }}/v1/images/{{ photo_2.id }}/Md" />
+      </div>
+    </section>
   </body>
   <script>
     {% include "index.js" %}
