@@ -14,34 +14,43 @@
     {% endif %}
     <script src="/static/htmx.js.gz"></script>
   </head>
-  <body class="grid grid-cols-8">
-    <section id="main-section">
-      <h1>Victor Quiroz Castro</h1>
-      <h2>Software Engineer</h2>
-      <p>
-        I'm a Software Engineer specialized in Web Technologies like JavaScript,
-        Rust, Servers, DBs, AWS, etc.
-      </p>
-      <p>
-        I like fantasy literature specially science fiction. The Bobiverse, Red
-        Rising, 3-Body Problem and The way of kings are some of my favorite
-        sagas, but there are too many to mention here.
-      </p>
-      <p>
-        I really enjoy taking photos whenever I go. You can see some of my work
-        <a href="#">here</a>.
-      </p>
-    </section>
-    <section id="photos-section">
-      <div id="photos-stack">
-        <img
-          class="photo active"
-          src="{{ api_host }}/v1/images/{{ photo_0.id }}/Md"
-        />
-        <img class="photo" src="{{ api_host }}/v1/images/{{ photo_1.id }}/Md" />
-        <img class="photo" src="{{ api_host }}/v1/images/{{ photo_2.id }}/Md" />
-      </div>
-    </section>
+  <body>
+    <div class="grid grid-cols-8">
+      <section id="main-section">
+        <h1>Victor Quiroz Castro</h1>
+        <h2>Software Engineer</h2>
+        <p>
+          I'm a Software Engineer specialized in Web Technologies like
+          JavaScript, Rust, Servers, DBs, AWS, etc.
+        </p>
+        <p>
+          I like fantasy literature specially science fiction. The Bobiverse,
+          Red Rising, 3-Body Problem and The way of kings are some of my
+          favorite sagas, but there are too many to mention here.
+        </p>
+        <p>
+          I really enjoy taking photos whenever I go. You can see some of my
+          work
+          <a href="#">here</a>.
+        </p>
+      </section>
+      <section id="photos-section">
+        <div id="photos-stack">
+          <img
+            class="photo active"
+            src="{{ api_host }}/v1/images/{{ photo_0.id }}/Md"
+          />
+          <img
+            class="photo"
+            src="{{ api_host }}/v1/images/{{ photo_1.id }}/Md"
+          />
+          <img
+            class="photo"
+            src="{{ api_host }}/v1/images/{{ photo_2.id }}/Md"
+          />
+        </div>
+      </section>
+    </div>
   </body>
   <script>
     {% include "index.js" %}
