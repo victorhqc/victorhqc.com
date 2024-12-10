@@ -4,11 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>victorhqc.com</title>
-    <script src="/static/htmx.js.gz"></script>
+    {% if is_production %}
+    <link rel="stylesheet" href="/static/index.css" />
+    {% else %}
     <script src="/static/tailwindcss.js.gz"></script>
     <style type="text/tailwindcss">
       {% include "index.css" %}
     </style>
+    {% endif %}
+    <script src="/static/htmx.js.gz"></script>
   </head>
   <body class="grid grid-cols-8">
     <section id="main-section">
