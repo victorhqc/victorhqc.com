@@ -41,9 +41,23 @@ a {
   @apply border border-solid border-white border-8;
   @apply shadow-md;
 
-  /* left: calc(50% - 30vw); */
+  /* perspective: 100px; */
+  transition-property: transform;
+  transition-duration: 500ms;
 }
 
-/* .photo.active {
-  @apply z-10;
-} */
+.photo-mv-back-up {
+  /* animation-name: mv-back-up;
+  animation-duration: 500ms;
+  animation-timing-function: ease-in-out; */
+}
+
+/* Down wheel moves cards up */
+@keyframes mv-back-up {
+  from {
+    /* transform: translate3d(0, 0, 0); */
+  }
+  to {
+    /* transform: translate3d(10px, -10px, -10px); */
+  }
+}
