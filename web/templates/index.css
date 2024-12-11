@@ -44,6 +44,6 @@ a {
   /* left: calc(50% - 30vw); */
 }
 
-.photo.active {
+/* .photo.active {
   @apply z-10;
-}
+} */

@@ -1,12 +1,11 @@
 (function () {
-  const photos = document.querySelectorAll(".photo");
   const stack = document.querySelector("#photos-stack");
+  const photos = document.querySelectorAll(".photo");
 
   scramblePhotos(photos);
 
   if (stack) {
-    console.log("Enabling swipe to", stack);
-    swipe(stack, photos);
+    swipe(stack, ".photo");
   }
 
   /**
@@ -14,9 +13,9 @@
    * @param {NodeListof<Element>} elements
    */
   function scramblePhotos(elements) {
-    const size = elements.length;
+    const length = elements.length;
     for (const [i, photo] of elements.entries()) {
-      if (i === size - 1) continue;
+      if (i === length - 1) continue;
 
       const minDeg = i * 4 + 1;
       const maxDeg = i * 5 + 5;
@@ -42,7 +41,6 @@
    * @param {number} degrees
    */
   function displaceAndRotateElement(el, x, y, degrees) {
-    console.log(`Displacing ${x},${y} and rotating ${degrees}deg`);
     el.style.transform = `translate(${x}px, ${y}px) rotate(${degrees}deg)`;
   }
 
@@ -70,14 +68,13 @@
   /**
    *
    * @param {Element} wrapper
-   * @param {NodeListOf<Element>} photos
+   * @param {string} photosSelector
    */
-  function swipe(wrapper, photos) {
-    addWheelEvent(wrapper, photos);
+  function swipe(wrapper, photosSelector) {
+    addWheelEvent(wrapper, photosSelector);
 
     wrapper.addEventListener("touchstart", (event) => {
       console.log("TOUCH START", event);
-      // startX = event.touches[0].clientX;
     });
 
     wrapper.addEventListener("touchmove", (event) => {
@@ -88,53 +85,28 @@
   /**
    *
    * @param {Element} wrapper
-   * @param {NodeListOf<Element>} photos
+   * @param {string} photosSelector
    */
-  function addWheelEvent(wrapper, photos) {
-    const photosLength = photos.length;
-    console.log("PHOTOS LENGTH", photosLength);
-
-    const activeIndex = getIndexFromActive(photos);
-    console.log("ACTIVE INDEX", activeIndex);
-
+  function addWheelEvent(wrapper, photosSelector) {
     let isThrottled = false;
     wrapper.addEventListener("wheel", (event) => {
       if (isThrottled) return;
-      console.log("WHEEL EVENT", event);
-
-      const activeIndex = getIndexFromActive(photos);
-      console.log("ACTIVE INDEX", activeIndex);
-      if (activeIndex < 0) return;
+      const photos = document.querySelectorAll(photosSelector);
 
       const direction = event.deltaY > 0 ? "UP" : "DOWN";
-      console.log("DIRECTION ", direction);
-
-      let nextIndexActive = -1;
 
       switch (direction) {
         case "UP":
-          nextIndexActive =
-            activeIndex === 0 ? photosLength - 1 : activeIndex - 1;
+          sortPhotos(photos, (maxLength, index) =>
+            index === 0 ? maxLength : index - 1,
+          );
           break;
         case "DOWN":
-          nextIndexActive =
-            activeIndex === photosLength - 1 ? 0 : activeIndex + 1;
+          sortPhotos(photos, (maxLength, index) =>
+            index === maxLength ? 0 : index + 1,
+          );
           break;
       }
-
-      console.log("NEW INDEX", nextIndexActive);
-
-      for (const [index, photo] of photos.entries()) {
-        if (index === activeIndex) {
-          photo.classList.remove("active");
-        }
-
-        if (index === nextIndexActive) {
-          photo.classList.add("active");
-        }
-      }
-
-      console.log("--");
 
       isThrottled = true;
       setTimeout(() => (isThrottled = false), 800);
@@ -142,18 +114,38 @@
   }
 
   /**
-   *
-   * @param {NodeListOf<Element>} photos
+   * @callback sortPhotosCallback
+   * @param {maxLength} number
+   * @param {number} index
+   * @returns {number}
    */
-  function getIndexFromActive(photos) {
-    let activeIndex = -1;
-    for (const [index, photo] of photos.entries()) {
-      if (photo.classList.contains("active")) {
-        activeIndex = index;
-        break;
-      }
-    }
 
-    return activeIndex;
+  /**
+   *
+   * @param {NodeListOf<Element>} elms
+   * @param {sortPhotosCallback} cb
+   */
+  function sortPhotos(elms, cb) {
+    if (elms.length === 0) return;
+
+    const firstElement = elms[0];
+
+    const parent = firstElement.parentNode;
+    if (!parent) return;
+
+    const maxLength = elms.length - 1;
+    const elements = Array.from(elms)
+      .map((element, index) => {
+        const newIndex = cb(maxLength, index);
+
+        return { element, newIndex };
+      })
+      .sort((a, b) => a.newIndex - b.newIndex)
+      .map(({ element }) => element);
+
+    elements.forEach((element) => {
+      element.remove();
+      parent.appendChild(element);
+    });
   }
 })();
