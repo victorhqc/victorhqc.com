@@ -41,7 +41,7 @@ a {
 .photo {
   @apply absolute top-0 top-0 w-full;
   @apply border border-solid border-white border-8;
-  @apply shadow-md;
+  @apply shadow-md bg-white;
 
   transition-property: transform;
   transition-duration: 400ms;

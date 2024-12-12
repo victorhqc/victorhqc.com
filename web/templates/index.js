@@ -1,4 +1,4 @@
-(function () {
+(async function () {
   /**
    * @typedef {Array.<{photo: Element, x: number, y: number, z: number, degrees: number}>} ScrambledElement
    * @typedef {"UP" | "DOWN"} Direction
@@ -7,19 +7,57 @@
   const stack = document.querySelector("#photos-stack");
   const photos = document.querySelectorAll(".photo");
 
-  const scrambledPhotos = calculateScramblePositions(photos);
+  await waitForAllToLoad(photos);
+  init();
 
-  for (const { photo, x, y, z, degrees } of scrambledPhotos) {
-    displaceAndRotateElement(photo, 0, 0, 0, 0);
-    setTimeout(() => {
-      displaceAndRotateElement(photo, x, y, z, degrees);
-    }, 50);
+  /**
+   *
+   * @param {NodeListOf<Element>} photos
+   * @returns
+   */
+  function waitForAllToLoad(photos) {
+    /** @type {Array<Element>} */
+    let loaded = [];
+    return new Promise(async (resolve, reject) => {
+      for (const photo of photos) {
+        photo.onload = (event) => {
+          loaded.push(event.target);
+        };
+      }
+
+      let index = 0;
+      let totalWaitingTime = 0;
+      while (true) {
+        if (loaded.length === photos.length) {
+          resolve();
+          break;
+        }
+
+        if (index === 500) {
+          reject(new Error("Could not load all photos"));
+        }
+
+        waitTime = Math.log(index + 1) * 50;
+        totalWaitingTime += waitTime;
+        await waitFor(waitTime);
+        index++;
+      }
+    });
   }
 
-  let originalTransforms;
+  function init() {
+    const scrambledPhotos = calculateScramblePositions(photos);
 
-  if (stack) {
-    swipe(scrambledPhotos, stack, ".photo");
+    for (const { photo, x, y, z, degrees } of scrambledPhotos) {
+      displaceAndRotateElement(photo, 0, 0, 0, 0);
+      setTimeout(() => {
+        displaceAndRotateElement(photo, x, y, z, degrees);
+      }, 50);
+    }
+
+    if (stack) {
+      swipe(scrambledPhotos, stack, ".photo");
+    }
   }
 
   /**
@@ -232,5 +270,18 @@
     });
 
     return elements;
+  }
+
+  /**
+   *
+   * @param {number} ms
+   * @returns {Promise<void>}
+   */
+  function waitFor(ms = 50) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    });
   }
 })();
