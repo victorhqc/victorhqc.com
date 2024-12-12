@@ -1,40 +1,56 @@
 (function () {
+  /**
+   * @typedef {Array.<{photo: Element, x: number, y: number, z: number, degrees: number}>} ScrambledElement
+   * @typedef {"UP" | "DOWN"} Direction
+   */
+
   const stack = document.querySelector("#photos-stack");
   const photos = document.querySelectorAll(".photo");
 
-  const REGEX_TRANSFORM =
-    /(translate3d\(([-+]?[0-9]+px,?\s?){3}\))\s?(rotate\([-+]?[0-9]+deg\))/gi;
-  const REGEX_TRANSLATE3D =
-    /translate3d\(((-?[0-9]+)px,?\s?)(((\+|-)?[0-9]+)px,?\s?)(((\+|-)?[0-9]+)px,?\s?)\)/gi;
+  const scrambledPhotos = calculateScramblePositions(photos);
 
-  scrambleElements(photos);
+  for (const { photo, x, y, z, degrees } of scrambledPhotos) {
+    displaceAndRotateElement(photo, 0, 0, 0, 0);
+    setTimeout(() => {
+      displaceAndRotateElement(photo, x, y, z, degrees);
+    }, 50);
+  }
+
+  let originalTransforms;
 
   if (stack) {
-    swipe(stack, ".photo");
+    swipe(scrambledPhotos, stack, ".photo");
   }
 
   /**
    *
    * @param {NodeListOf<Element>} elements
    */
-  function scrambleElements(elements) {
+  function calculateScramblePositions(elements) {
     const last = elements.length - 1;
-    for (const [i, photo] of elements.entries()) {
-      if (i === last) continue;
 
-      displaceAndRotateElement(photo, 0, 0, 0, 0);
-      setTimeout(() => {
-        scrambleElement(i, photo);
-      }, 50);
+    const scrambled = [];
+    for (const [i, photo] of elements.entries()) {
+      if (i === last) {
+        scrambled.push({ photo, x: 0, y: 0, z: 0, degrees: 0 });
+
+        continue;
+      }
+
+      const { x, y, z, degrees } = calculateScramblePosition(i, last);
+      scrambled.push({ photo, x, y, z, degrees });
     }
+
+    return scrambled;
   }
 
   /**
    *
    * @param {number} index
-   * @param {Element} element
+   * @param {number} last
+   * @returns {Array<ScrambledElement>}
    */
-  function scrambleElement(index, element) {
+  function calculateScramblePosition(index, last) {
     const minDeg = index * 4 + 1;
     const maxDeg = index * 5 + 5;
     const degrees = randomIntFromInterval(minDeg, maxDeg);
@@ -47,9 +63,19 @@
     const maxY = randomPositiveNegative(50);
     const y = randomIntFromInterval(minY, maxY);
 
-    const z = -15 * (index + 1);
+    const z = calculateZAxis(index, last);
 
-    displaceAndRotateElement(element, x, y, z, degrees);
+    return { x, y, z, degrees };
+  }
+
+  /**
+   *
+   * @param {number} index
+   * @param {number} last
+   * @returns
+   */
+  function calculateZAxis(index, last) {
+    return index === last ? 0 : -8 * (last - index);
   }
 
   /**
@@ -61,7 +87,7 @@
    * @param {number} degrees
    */
   function displaceAndRotateElement(el, x, y, z, degrees) {
-    el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${degrees}deg)`;
+    el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${degrees}deg)`;
   }
 
   /**
@@ -87,11 +113,12 @@
 
   /**
    *
+   * @param {Array.<ScrambledElement>} scrambledPhotos
    * @param {Element} wrapper
    * @param {string} photosSelector
    */
-  function swipe(wrapper, photosSelector) {
-    addWheelEvent(wrapper, photosSelector);
+  function swipe(scrambledPhotos, wrapper, photosSelector) {
+    addWheelEvent(wrapper, photosSelector, scrambledPhotos);
 
     wrapper.addEventListener("touchstart", (event) => {
       console.log("TOUCH START", event);
@@ -106,8 +133,9 @@
    *
    * @param {Element} wrapper
    * @param {string} photosSelector
+   * @param {Array.<ScrambledElement>} scrambledPhotos
    */
-  function addWheelEvent(wrapper, photosSelector) {
+  function addWheelEvent(wrapper, photosSelector, scrambledPhotos) {
     let isThrottled = false;
     wrapper.addEventListener("wheel", (event) => {
       if (isThrottled) return;
@@ -130,7 +158,7 @@
       }
 
       setTimeout(() => {
-        animateOnMovement(sortedPhotos, direction);
+        animateOnMovement(sortedPhotos, direction, scrambledPhotos);
       }, 50);
 
       isThrottled = true;
@@ -139,43 +167,32 @@
   }
 
   /**
-   * @typedef {"UP" | "DOWN"} Direction
-   */
-
-  /**
    *
    * @param {NodeListOf<Element>} elements
    * @param {Direction} direction
+   * @param {Array.<ScrambledElement>} scrambledPhotos
    */
-  function animateOnMovement(elements, direction) {
+  function animateOnMovement(elements, direction, scrambledPhotos) {
+    console.log("DIRECTION", direction);
     const last = elements.length - 1;
     elements.forEach((element, index) => {
-      const originalTransform = element.style.transform;
+      const original = scrambledPhotos.find(({ photo }) => photo === element);
 
-      const newZ = index === last ? 0 : -15 * (last - index);
-      console.log("AMOUNT TO PUSH BACK", element, newZ);
+      if (!original) {
+        throw new Error("Could not find originals");
+      }
 
-      if (!originalTransform) {
-        element.style.transform = `translate3d(0, 0, ${newZ}px) rotate(0deg)`;
+      const newZ = calculateZAxis(index, last);
 
+      const { x, y, degrees } = original;
+
+      // This means the photo is on top of the stack, so we want to restore the original "Y" value and reset the "Z" to 0
+      if (index === last) {
+        element.style.transform = `translate3d(${x}px, ${y}px, 0px) rotate(${degrees}deg)`;
         return;
       }
 
-      const matches = [...originalTransform.matchAll(REGEX_TRANSFORM)];
-      const translate = matches[0][1];
-      const rotate = matches[0][3];
-      console.log("STYLE TRANSFORM", translate, rotate);
-
-      const translateMatches = [...translate.matchAll(REGEX_TRANSLATE3D)];
-      const x = translateMatches[0][2];
-      const y = translateMatches[0][4];
-      const z = translateMatches[0][7];
-
-      console.log("TRANSLATE MATCHES", x, y, z);
-
-      element.style.transform = `translate3d(${x}px, ${y}px, ${newZ}px) ${rotate}`;
-
-      // scrambleElement(index, element);
+      element.style.transform = `translate3d(${x}px, ${y}px, ${newZ}px) rotate(${degrees}deg)`;
     });
   }
 
