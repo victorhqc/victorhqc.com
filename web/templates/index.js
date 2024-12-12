@@ -1,6 +1,7 @@
 (function () {
   const stack = document.querySelector("#photos-stack");
   const photos = document.querySelectorAll(".photo");
+
   const REGEX_TRANSFORM =
     /(translate3d\(([-+]?[0-9]+px,?\s?){3}\))\s?(rotate\([-+]?[0-9]+deg\))/gi;
   const REGEX_TRANSLATE3D =
@@ -133,7 +134,7 @@
       }, 50);
 
       isThrottled = true;
-      setTimeout(() => (isThrottled = false), 500);
+      setTimeout(() => (isThrottled = false), 800);
     });
   }
 
@@ -150,9 +151,8 @@
     const last = elements.length - 1;
     elements.forEach((element, index) => {
       const originalTransform = element.style.transform;
-      // element.style.transform = "";
-      //
-      const newZ = index === last ? 0 : -100 * (last - index);
+
+      const newZ = index === last ? 0 : -15 * (last - index);
       console.log("AMOUNT TO PUSH BACK", element, newZ);
 
       if (!originalTransform) {
