@@ -4,7 +4,6 @@
    * @typedef {"UP" | "DOWN"} Direction
    */
 
-  const stack = document.querySelector("#photos-stack");
   const photos = document.querySelectorAll(".photo");
 
   await waitForAllToLoad(photos);
@@ -55,6 +54,7 @@
       }, 50);
     }
 
+    const stack = document.querySelector("#photos-stack");
     if (stack) {
       swipe(scrambledPhotos, stack, ".photo");
     }
@@ -71,11 +71,18 @@
     for (const [i, photo] of elements.entries()) {
       if (i === last) {
         scrambled.push({ photo, x: 0, y: 0, z: 0, degrees: 0 });
+        // photo.style.opacity = 0.5;
 
         continue;
       }
 
-      const { x, y, z, degrees } = calculateScramblePosition(i, last);
+      // photo.style.opacity = 0;
+
+      const x = 0;
+      const y = calculateYAxis(i, last, "DOWN");
+      const z = calculateZAxis(i, last);
+      const degrees = 0;
+      // const { x, y, z, degrees } = calculateScramblePosition(i, last);
       scrambled.push({ photo, x, y, z, degrees });
     }
 
@@ -108,16 +115,6 @@
 
   /**
    *
-   * @param {number} index
-   * @param {number} last
-   * @returns
-   */
-  function calculateZAxis(index, last) {
-    return index === last ? 0 : -8 * (last - index);
-  }
-
-  /**
-   *
    * @param {Element} el
    * @param {number} x
    * @param {number} y
@@ -125,7 +122,7 @@
    * @param {number} degrees
    */
   function displaceAndRotateElement(el, x, y, z, degrees) {
-    el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${degrees}deg)`;
+    el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${degrees}deg) scale(1)`;
   }
 
   /**
@@ -176,6 +173,8 @@
   function addWheelEvent(wrapper, photosSelector, scrambledPhotos) {
     let isThrottled = false;
     wrapper.addEventListener("wheel", (event) => {
+      event.preventDefault();
+
       if (isThrottled) return;
       const photos = document.querySelectorAll(photosSelector);
 
@@ -185,12 +184,12 @@
       switch (direction) {
         case "UP":
           sortedPhotos = sortPhotos(photos, (maxLength, index) =>
-            index === 0 ? maxLength : index - 1,
+            index === maxLength ? 0 : index + 1,
           );
           break;
         case "DOWN":
           sortedPhotos = sortPhotos(photos, (maxLength, index) =>
-            index === maxLength ? 0 : index + 1,
+            index === 0 ? maxLength : index - 1,
           );
           break;
       }
@@ -220,17 +219,44 @@
         throw new Error("Could not find originals");
       }
 
-      const newZ = calculateZAxis(index, last);
+      const newZ = calculateZAxis(index, last, direction);
+      const newY = calculateYAxis(index, last, direction);
 
       const { x, y, degrees } = original;
 
       // This means the photo is on top of the stack, so we want to restore the original "Y" value and reset the "Z" to 0
       if (index === last) {
-        element.style.transform = `translate3d(${x}px, ${y}px, 0px) rotate(${degrees}deg)`;
-        return;
+        // setTimeout(() => {
+        //   // element.style.transform = `translate3d(${x}px, -5px, 0px) rotate(${degrees}deg)`;
+        // }, 50);
+        //
+
+        // element.style.transform = `translate3d(${x}px, 0px, 0px) rotate(${degrees}deg)`;
+        // element.style.zIndex = 0;
+
+        /* Keyframe like */
+        // element.style.transformOrigin = "50% 0";
+        // element.style.transform = `translate3d(${x}px, -30px, 0px) rotate(${degrees}deg) scale(0.90)`;
+        // setTimeout(() => {
+        // }, 20);
+
+        setTimeout(() => {
+          element.style.zIndex = 0;
+          // element.style.transitionDuration = "300ms";
+        }, 1);
+
+        setTimeout(() => {
+          element.style.transform = `translate3d(${x}px, 0px, 0px) rotate(${degrees}deg) scale(1)`;
+          element.style.transformOrigin = "";
+          element.style.zIndex = 0;
+          // element.style.transitionDuration = "50ms";
+        }, 50);
+      } else {
+        element.style.transitionDuration = "300ms";
+        element.style.transform = `translate3d(${x}px, ${newY}px, ${newZ}px) rotate(${degrees}deg) scale(1)`;
       }
 
-      element.style.transform = `translate3d(${x}px, ${y}px, ${newZ}px) rotate(${degrees}deg)`;
+      setTimeout(() => (element.style.transitionDuration = "0ms"), 300);
     });
   }
 
@@ -254,10 +280,10 @@
     const parent = firstElement.parentNode;
     if (!parent) return Array.from(elms);
 
-    const maxLength = elms.length - 1;
+    const last = elms.length - 1;
     const elements = Array.from(elms)
       .map((element, index) => {
-        const newIndex = cb(maxLength, index);
+        const newIndex = cb(last, index);
 
         return { element, newIndex };
       })
@@ -266,10 +292,51 @@
 
     elements.forEach((element, index) => {
       element.remove();
+
+      // const preY = calculateYAxis(index, last, "UP");
+
+      if (index === last) {
+        element.style.transformOrigin = "50% 0";
+        element.style.transform = `translate3d(0px, -20px, -20px) rotate(0deg) scale(1)`;
+        element.style.zIndex = -2;
+        // element.style.transform = `translate3d(0px, 0px, 0px) rotate(0deg) scale(0.90)`;
+        element.style.transitionDuration = "150ms";
+      } else {
+        // element.style.transform = `translate3d(0px, ${preY / 2}px, 0px) rotate(0deg)`;
+      }
+
+      // element.style.transitionDuration = "1000ms";
       parent.appendChild(element);
     });
 
     return elements;
+  }
+
+  /**
+   *
+   * @param {number} index
+   * @param {number} last
+   */
+  function calculateZAxis(index, last) {
+    const isMain = index === last;
+
+    return isMain ? 0 : -10 * (last - index);
+  }
+
+  /**
+   *
+   * @param {number} index
+   * @param {number} last
+   * @param {Direction} direction
+   */
+  function calculateYAxis(index, last, direction) {
+    const isMain = index === last;
+
+    if (direction === "DOWN") {
+      return isMain ? 0 : 20 * (last - index);
+    }
+
+    return isMain ? 0 : -20 * (last - index);
   }
 
   /**

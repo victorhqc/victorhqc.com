@@ -38,11 +38,20 @@ a {
   perspective: 500px;
 }
 
+/* #photos-stack img:not(:last-child) {
+  opacity: 0;
+} */
+
 .photo {
   @apply absolute top-0 top-0 w-full;
   @apply border border-solid border-white border-8;
   @apply shadow-md bg-white;
 
-  transition-property: transform;
-  transition-duration: 400ms;
+  transform-origin: center bottom;
+  transition-property: all;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-out;
+  /* transition-timing-function: cubic-bezier(0.07, 0.95, 0, 1); */
+  transform-style: preserve-3d;
+  /* transition-duration: 400ms; */
 }
