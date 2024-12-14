@@ -8,6 +8,10 @@ use tera::Context;
 pub async fn index(data: web::Data<AppState>) -> impl Responder {
     let mut context = Context::new();
 
+    let is_production = false;
+    #[cfg(not(debug_assertions))]
+    let is_production = true;
+
     data.portfolio_photos
         .choose_multiple(&mut rand::thread_rng(), 3)
         .enumerate()
@@ -18,6 +22,7 @@ pub async fn index(data: web::Data<AppState>) -> impl Responder {
         });
 
     context.insert("api_host", &data.api_host);
+    context.insert("is_production", &is_production);
 
     let content = TEMPLATES.render("index.html", &context).unwrap();
 

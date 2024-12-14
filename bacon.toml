@@ -5,7 +5,7 @@
 # You may check the current default at
 #   https://github.com/Canop/bacon/blob/main/defaults/default-bacon.toml
 
-default_job = "check"
+default_job = "api"
 env.CARGO_TERM_COLOR = "always"
 
 [jobs.check]
@@ -68,6 +68,14 @@ command = ["cargo", "doc", "--no-deps", "--open"]
 need_stdout = false
 on_success = "back"                               # so that we don't open the browser at each change
 
+[jobs.api]
+command = ["cargo", "run", "-p", "api-victorhqc-com"]
+need_stdout = true
+allow_warnings = true
+background = false
+on_change_strategy = "kill_then_restart"
+ignore = ["schema.gql", "web/**/**", "cli/**/**"]
+
 [jobs.web]
 command = ["cargo", "run", "-p", "web-victorhqc-com"]
 need_stdout = true
@@ -77,13 +85,11 @@ on_change_strategy = "kill_then_restart"
 ignore = ["core/**/**", "api/**/**", "cli/**/**"]
 watch = ["templates"]
 
-[jobs.api]
-command = ["cargo", "run", "-p", "api-victorhqc-com"]
-need_stdout = true
-allow_warnings = true
-background = false
-on_change_strategy = "kill_then_restart"
-ignore = ["schema.gql", "web/**/**", "cli/**/**"]
+# [jobs.styles]
+# command = ["./scripts/unix/compile.styles.sh"]
+# watch = ["web/templates/"]
+# ignore = ["*.js", "*.html"]
+# default_watch = false
 
 # You may define here keybindings that would be specific to
 # a project, for example a shortcut to launch a specific job.

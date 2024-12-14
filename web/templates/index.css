@@ -34,12 +34,20 @@ a {
 #photos-stack {
   @apply block relative m-auto w-10/12;
   height: 50vh;
+
+  perspective: 1200px;
 }
 
 .photo {
   @apply absolute top-0 top-0 w-full;
   @apply border border-solid border-white border-8;
-  @apply shadow-md;
+  @apply shadow-md bg-white;
 
-  /* left: calc(50% - 30vw); */
+  /* transform-origin: center bottom; */
+  transition-property: all;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-out;
+  /* transition-timing-function: cubic-bezier(0.07, 0.95, 0, 1); */
+  transform-style: preserve-3d;
+  /* transition-duration: 400ms; */
 }
