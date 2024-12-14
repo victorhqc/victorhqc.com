@@ -35,7 +35,7 @@ a {
   @apply block relative m-auto w-10/12;
   height: 50vh;
 
-  perspective: 500px;
+  perspective: 1200px;
 }
 
 .photo {

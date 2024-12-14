@@ -3,6 +3,8 @@
     /(translate3d\(([-+]?[0-9]+px,?\s?){3}\))\s?(rotate\([-+]?[0-9]+deg\))/gi;
   const REGEX_TRANSLATE3D =
     /translate3d\(((-?[0-9]+)px,?\s?)(((\+|-)?[0-9]+)px,?\s?)(((\+|-)?[0-9]+)px,?\s?)\)/gi;
+  const Z_AXIS_CHANGE = 10;
+  const Y_AXIS_CHANGE = 20;
 
   /**
    * @typedef {Object} ScrambledElement
@@ -17,41 +19,6 @@
   await waitForAllToLoad(photos);
   init();
 
-  /**
-   *
-   * @param {NodeListOf<HTMLElement>} photos
-   * @returns
-   */
-  function waitForAllToLoad(photos) {
-    /** @type {Array<HTMLElement>} */
-    let loaded = [];
-    return new Promise(async (resolve, reject) => {
-      for (const photo of photos) {
-        photo.onload = (event) => {
-          loaded.push(event.target);
-        };
-      }
-
-      let index = 0;
-      let totalWaitingTime = 0;
-      while (true) {
-        if (loaded.length === photos.length) {
-          resolve();
-          break;
-        }
-
-        if (index === 500) {
-          reject(new Error("Could not load all photos"));
-        }
-
-        waitTime = Math.log(index + 1) * 50;
-        totalWaitingTime += waitTime;
-        await waitFor(waitTime);
-        index++;
-      }
-    });
-  }
-
   function init() {
     const scrambledPhotos = calculateScramblePositions(photos);
 
@@ -64,68 +31,8 @@
 
     const stack = document.querySelector("#photos-stack");
     if (stack) {
-      swipe(stack, ".photo", scrambledPhotos);
+      addWheelEvent(stack, ".photo", scrambledPhotos);
     }
-  }
-
-  /**
-   *
-   * @param {NodeListOf<HTMLElement>} elements
-   * @returns {Array.<{ photo: HTMLElement, x: number, y: number, z: number, degrees: number }>}
-   */
-  function calculateScramblePositions(elements) {
-    const last = elements.length - 1;
-
-    /** @type {Array.<{ photo: HTMLElement, x: number, y: number, z: number, degrees: number }>} */
-    const scrambled = [];
-    for (const [i, photo] of elements.entries()) {
-      const y = calculateYAxis(photo, i, last, "DOWN");
-      const z = calculateZAxis(photo, i, last, "DOWN");
-      const { degrees, x } = calculateScramblePosition(i, last);
-      scrambled.push({ photo, x, y, z, degrees });
-    }
-
-    return scrambled;
-  }
-
-  /**
-   *
-   * @param {number} index
-   * @param {number} last
-   * @returns {ScrambledElement}
-   */
-  function calculateScramblePosition(index, last) {
-    if (index === last) {
-      return { x: 0, degrees: 0 };
-    }
-
-    const minDeg = index * 4 + 1;
-    const maxDeg = index * 5 + 5;
-    const degrees = randomIntFromInterval(minDeg, maxDeg);
-
-    const minX = randomPositiveNegative(20);
-    const maxX = randomPositiveNegative(30);
-    const x = randomIntFromInterval(minX, maxX);
-
-    return { degrees, x };
-  }
-
-  /**
-   *
-   * @param {Element} wrapper
-   * @param {string} photosSelector
-   * @param {Array<ScrambledElement>} scrambled
-   */
-  function swipe(wrapper, photosSelector, scrambled) {
-    addWheelEvent(wrapper, photosSelector, scrambled);
-
-    wrapper.addEventListener("touchstart", (event) => {
-      console.log("TOUCH START", event);
-    });
-
-    wrapper.addEventListener("touchmove", (event) => {
-      console.log("TOUCH MOVE", event);
-    });
   }
 
   /**
@@ -144,6 +51,11 @@
       const direction = event.deltaY > 0 ? "UP" : "DOWN";
 
       let sortedPhotos;
+      /*
+      When an animation starts, the `beforeRenderCb`, the position of the element that will be placed on top of
+      the stack, needs to be resetted or the animation will look janky and out of place. This callback ensures
+      that the position is in the appropriate place BEFORE the element is rendered back in the DOM.
+      */
       switch (direction) {
         case "UP":
           sortedPhotos = sortPhotos(
@@ -153,10 +65,10 @@
               if (index !== last) return;
 
               const { x, degrees } = findOriginalOrThrow(scrambled, element);
+              const y = Y_AXIS_CHANGE * last;
+              const z = Z_AXIS_CHANGE * last;
 
-              // element.style.transformOrigin = "50% 100%";
-              // element.style.transformOrigin = "0 0";
-              element.style.transform = `translate3d(${x}px, 20px, -20px) rotate(${degrees}deg)`;
+              element.style.transform = `translate3d(${x}px, ${y}px, -${z}px) rotate(${degrees}deg)`;
               element.style.zIndex = -2;
               element.style.transitionDuration = "150ms";
             },
@@ -169,10 +81,10 @@
             (element, index, last) => {
               if (index !== last) return;
               const { x, degrees } = findOriginalOrThrow(scrambled, element);
+              const y = Y_AXIS_CHANGE * last;
+              const z = Z_AXIS_CHANGE * last;
 
-              // element.style.transformOrigin = "50% 0";
-              // element.style.transformOrigin = "50% 50%";
-              element.style.transform = `translate3d(${x}px, -20px, -20px) rotate(${degrees}deg)`;
+              element.style.transform = `translate3d(${x}px, -${y}px, -${z}px) rotate(${degrees}deg)`;
               element.style.zIndex = -2;
               element.style.transitionDuration = "150ms";
             },
@@ -233,7 +145,7 @@
    * Executes the CB **Before** Rendering the element again in the document. Useful to apply a style on
    * mount.
    *
-   * @callback stylingCallback
+   * @callback beforeRenderCallback
    * @param {HTMLElement} element
    * @param {number} index
    * @param {number} last
@@ -243,9 +155,9 @@
    *
    * @param {NodeListOf<Element>} elms
    * @param {sortPhotosCallback} sortCb
-   * @param {stylingCallback} stylingCb
+   * @param {beforeRenderCallback} beforeRenderCb
    */
-  function sortPhotos(elms, sortCb, stylingCb) {
+  function sortPhotos(elms, sortCb, beforeRenderCb) {
     if (elms.length === 0) return Array.from(elms);
 
     const firstElement = elms[0];
@@ -265,7 +177,7 @@
 
     elements.forEach((element, index) => {
       element.remove();
-      stylingCb(element, index, last);
+      beforeRenderCb(element, index, last);
 
       parent.appendChild(element);
     });
@@ -289,10 +201,10 @@
     }
 
     if (z === 0) {
-      return -10 * (last - index);
+      return -Z_AXIS_CHANGE * (last - index);
     }
 
-    return z - 10;
+    return z - Z_AXIS_CHANGE;
   }
 
   /**
@@ -312,17 +224,28 @@
 
     if (direction === "DOWN") {
       if (y === 0) {
-        return 20 * (last - index);
+        return Y_AXIS_CHANGE * (last - index);
       }
 
-      return y + 20;
+      return y + Y_AXIS_CHANGE;
     }
 
     if (y === 0) {
-      return -20 * (last - index);
+      return -Y_AXIS_CHANGE * (last - index);
     }
 
-    return y - 20;
+    return y - Y_AXIS_CHANGE;
+  }
+
+  /**
+   *
+   * @param {number} index
+   * @returns
+   */
+  function calculateDegrees(index) {
+    const minDeg = index * 4 + 1;
+    const maxDeg = index * 5 + 5;
+    return randomIntFromInterval(minDeg, maxDeg);
   }
 
   /**
@@ -363,6 +286,46 @@
 
   /**
    *
+   * @param {NodeListOf<HTMLElement>} elements
+   * @returns {Array.<{ photo: HTMLElement, x: number, y: number, z: number, degrees: number }>}
+   */
+  function calculateScramblePositions(elements) {
+    const last = elements.length - 1;
+
+    /** @type {Array.<{ photo: HTMLElement, x: number, y: number, z: number, degrees: number }>} */
+    const scrambled = [];
+    for (const [i, photo] of elements.entries()) {
+      const y = calculateYAxis(photo, i, last, "DOWN");
+      const z = calculateZAxis(photo, i, last, "DOWN");
+      const { degrees, x } = calculateScramblePosition(i, last);
+      scrambled.push({ photo, x, y, z, degrees });
+    }
+
+    return scrambled;
+  }
+
+  /**
+   *
+   * @param {number} index
+   * @param {number} last
+   * @returns {ScrambledElement}
+   */
+  function calculateScramblePosition(index, last) {
+    if (index === last) {
+      return { x: 0, degrees: 0 };
+    }
+
+    const degrees = calculateDegrees(index);
+
+    const minX = randomPositiveNegative(20);
+    const maxX = randomPositiveNegative(40);
+    const x = randomIntFromInterval(minX, maxX);
+
+    return { degrees, x };
+  }
+
+  /**
+   *
    * @param {number} min
    * @param {number} max
    * @returns
@@ -379,6 +342,41 @@
   function randomPositiveNegative(number) {
     const sign = Math.random() < 0.5 ? -1 : 1;
     return number * sign;
+  }
+
+  /**
+   *
+   * @param {NodeListOf<HTMLElement>} photos
+   * @returns
+   */
+  function waitForAllToLoad(photos) {
+    /** @type {Array<HTMLElement>} */
+    let loaded = [];
+    return new Promise(async (resolve, reject) => {
+      for (const photo of photos) {
+        photo.onload = (event) => {
+          loaded.push(event.target);
+        };
+      }
+
+      let index = 0;
+      let totalWaitingTime = 0;
+      while (true) {
+        if (loaded.length === photos.length) {
+          resolve();
+          break;
+        }
+
+        if (index === 500) {
+          reject(new Error("Could not load all photos"));
+        }
+
+        waitTime = Math.log(index + 1) * 50;
+        totalWaitingTime += waitTime;
+        await waitFor(waitTime);
+        index++;
+      }
+    });
   }
 
   /**
