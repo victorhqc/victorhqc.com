@@ -38,16 +38,12 @@ a {
   perspective: 500px;
 }
 
-/* #photos-stack img:not(:last-child) {
-  opacity: 0;
-} */
-
 .photo {
   @apply absolute top-0 top-0 w-full;
   @apply border border-solid border-white border-8;
   @apply shadow-md bg-white;
 
-  transform-origin: center bottom;
+  /* transform-origin: center bottom; */
   transition-property: all;
   transition-duration: 0.15s;
   transition-timing-function: ease-out;
