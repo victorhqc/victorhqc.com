@@ -23,7 +23,7 @@ pub async fn get_all_photos_by_tag(
     let mut conn = pool.try_acquire().unwrap();
 
     let tag = Tag::find_by_name(&mut conn, name).await.unwrap();
-    let photos = Photo::find_by_tag_ids(&mut conn, &vec![tag.id])
+    let photos = Photo::find_by_tag_ids(&mut conn, &vec![tag.id], None)
         .await
         .unwrap()
         .into_iter()

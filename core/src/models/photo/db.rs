@@ -49,8 +49,9 @@ impl Photo {
     pub async fn find_by_tag_ids(
         conn: &mut SqliteConnection,
         ids: &Vec<String>,
+        max_results: Option<i32>,
     ) -> Result<Vec<(String, Photo)>, Error> {
-        find_by_tag_ids(conn, ids).await
+        find_by_tag_ids(conn, ids, max_results).await
     }
 
     pub async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
@@ -176,7 +177,9 @@ async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
 async fn find_by_tag_ids(
     conn: &mut SqliteConnection,
     ids: &Vec<String>,
+    max_results: Option<i32>,
 ) -> Result<Vec<(String, Photo)>, Error> {
+    let limit = max_results.unwrap_or(-1);
     let params = format!("?{}", ", ?".repeat(ids.len() - 1));
 
     let query = format!(
@@ -197,8 +200,9 @@ async fn find_by_tag_ids(
     WHERE
         pt.tag_id IN ( { } )
         AND deleted = false
+    LIMIT {}
     "#,
-        params
+        params, limit
     );
 
     let mut query = sqlx::query_as::<_, DBTagPhoto>(&query);
