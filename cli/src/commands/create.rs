@@ -20,7 +20,7 @@ use core_victorhqc_com::{
 use core_victorhqc_com::{
     exif::FromExifData,
     models::{
-        exif_meta::{Maker, PhotographyDetails},
+        exif_meta::{CameraMaker, PhotographyDetails},
         fujifilm::FujifilmRecipeDetails,
     },
     sqlx::error::Error as SqlxError,
@@ -114,11 +114,11 @@ async fn get_some_fujifilm_recipe<'a, 'b>(
     data: &'a Vec<ExifData>,
     conn: &'a mut Transaction<'b, Sqlite>,
 ) -> Result<Option<FujifilmRecipe>, Error> {
-    let maker = Maker::from_exif(data.as_slice()).context(MakerSnafu)?;
+    let maker = CameraMaker::from_exif(data.as_slice()).context(MakerSnafu)?;
     debug!("{:?}", maker);
 
     let mut recipe: Option<FujifilmRecipe> = None;
-    if maker == Maker::Fujifilm {
+    if maker == CameraMaker::Fujifilm {
         let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice())
             .context(FujifilmRecipeDetailsSnafu)?;
         debug!("{:?}", recipe_details);

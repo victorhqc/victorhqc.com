@@ -41,10 +41,12 @@ pub struct PhotographyDetails {
     pub date_taken: Option<DateTaken>,
     pub city: Option<City>,
     pub iso: Iso,
+    pub aperture: Aperture,
+    pub shutter_speed: ShutterSpeed,
     pub focal_length: FocalLength,
     pub exposure_compensation: ExposureCompensation,
-    pub aperture: Aperture,
-    pub maker: Maker,
+    pub camera_maker: CameraMaker,
+    pub lens_maker: LensMaker,
     pub camera_name: String,
     pub lens_name: Option<String>,
 }
@@ -74,12 +76,29 @@ pub struct ExposureCompensation(pub f64);
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Aperture(pub f64);
 
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct ShutterSpeed(pub String);
+
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, EnumDisplay, sqlx::Type, Eq, PartialEq)]
-pub enum Maker {
+pub enum CameraMaker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,
     #[strum(serialize = "KONICA")]
     Konica,
     #[strum(serialize = "CANON")]
     Canon,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, EnumDisplay, sqlx::Type, Eq, PartialEq)]
+pub enum LensMaker {
+    #[strum(serialize = "FUJIFILM")]
+    Fujifilm,
+    #[strum(serialize = "KONICA")]
+    Konica,
+    #[strum(serialize = "CANON")]
+    Canon,
+    #[strum(serialize = "7Artisans")]
+    SevenArtisans,
+    #[strum(serialize = "Unknown")]
+    Unknown,
 }
