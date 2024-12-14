@@ -199,7 +199,7 @@
       }, 50);
 
       isThrottled = true;
-      setTimeout(() => (isThrottled = false), 800);
+      setTimeout(() => (isThrottled = false), 400);
     });
   }
 
