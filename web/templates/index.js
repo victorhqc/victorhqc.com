@@ -14,7 +14,7 @@
    * @typedef {"UP" | "DOWN"} Direction
    */
 
-  const photos = document.querySelectorAll(".photo");
+  const photos = document.querySelectorAll(".photo-slide");
 
   await waitForAllToLoad(photos);
   init();
@@ -31,7 +31,7 @@
 
     const stack = document.querySelector("#photos-stack");
     if (stack) {
-      addWheelEvent(stack, ".photo", scrambledPhotos);
+      addWheelEvent(stack, ".photo-slide", scrambledPhotos);
     }
   }
 
@@ -346,14 +346,16 @@
 
   /**
    *
-   * @param {NodeListOf<HTMLElement>} photos
+   * @param {NodeListOf<HTMLElement>} photoSliders
    * @returns
    */
-  function waitForAllToLoad(photos) {
+  function waitForAllToLoad(photoSliders) {
     /** @type {Array<HTMLElement>} */
     let loaded = [];
     return new Promise(async (resolve, reject) => {
-      for (const photo of photos) {
+      for (const slide of photoSliders) {
+        const photo = slide.querySelector("img");
+
         photo.onload = (event) => {
           loaded.push(event.target);
         };
