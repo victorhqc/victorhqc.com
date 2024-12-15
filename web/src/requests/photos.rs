@@ -1,24 +1,40 @@
+use crate::gql::{get_portfolio, GetPortfolio};
+use graphql_client::{Error as GraphQLError, GraphQLQuery, Response};
 use reqwest::Error as ReqwestError;
-use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Photo {
-    pub id: String,
-    pub title: String,
-}
+type PortfolioPhotos = get_portfolio::GetPortfolioPhotos;
 
-pub async fn get_photos_from_tag(name: &str) -> Result<Vec<Photo>, Error> {
+pub async fn get_photos_from_tag(name: &str) -> Result<Vec<PortfolioPhotos>, Error> {
     let api_host = std::env::var("WEB_API_HOST").expect("WEB_API_HOST env variable is missing");
 
-    let photos: Vec<Photo> = reqwest::get(format!("{}/v1/photos/{}", api_host, name))
-        .await
-        .context(RequestSnafu)?
-        .json()
-        .await
-        .context(JsonParseSnafu)?;
+    let variables = get_portfolio::Variables {
+        tag: name.to_string(),
+        max: Some(12),
+    };
 
-    Ok(photos)
+    let request_body = GetPortfolio::build_query(variables);
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post(format!("{}/graphql", api_host))
+        .json(&request_body)
+        .send()
+        .await
+        .context(RequestSnafu)?;
+
+    let response_body: Response<get_portfolio::ResponseData> =
+        response.json().await.context(JsonParseSnafu)?;
+
+    if let Some(errors) = response_body.errors {
+        return Err(Error::GQLErrors { errors });
+    }
+
+    if let Some(data) = response_body.data {
+        return Ok(data.photos);
+    }
+
+    return Err(Error::NoData);
 }
 
 #[derive(Debug, Snafu)]
@@ -28,4 +44,10 @@ pub enum Error {
 
     #[snafu(display("Request Json Deserialization failed: {:?}", source))]
     JsonParse { source: ReqwestError },
+
+    #[snafu(display("No data from Request"))]
+    NoData,
+
+    #[snafu(display("Failed to get portgolio photos: {:?}", errors))]
+    GQLErrors { errors: Vec<GraphQLError> },
 }

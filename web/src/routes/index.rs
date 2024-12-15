@@ -1,3 +1,4 @@
+use crate::gql::get_portfolio;
 use crate::state::AppState;
 use crate::TEMPLATES;
 use actix_web::{get, web, HttpResponse, Responder};
@@ -12,15 +13,13 @@ pub async fn index(data: web::Data<AppState>) -> impl Responder {
     #[cfg(not(debug_assertions))]
     let is_production = true;
 
-    data.portfolio_photos
+    let random_photos: Vec<&get_portfolio::GetPortfolioPhotos> = data
+        .portfolio_photos
         .choose_multiple(&mut rand::thread_rng(), 3)
-        .enumerate()
-        .for_each(|(i, p)| {
-            println!("Inserted photo {} into context: {}", i, p.id);
+        .map(|p| p)
+        .collect();
 
-            context.insert(format!("photo_{}", i), p);
-        });
-
+    context.insert("photos", &random_photos);
     context.insert("api_host", &data.api_host);
     context.insert("is_production", &is_production);
 

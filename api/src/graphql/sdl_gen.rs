@@ -10,7 +10,7 @@ pub fn sdl_gen(schema: &RootSchema) -> Result<()> {
     let sdl = schema.sdl();
     // let manifest_dir = env!("CARGO_MANIFEST_DIR");
 
-    let path = Path::new("api/src/graphql/schema.gql");
+    let path = Path::new("api/schema.gql");
 
     let mut output = File::create(path).context(FileCreationSnafu)?;
     write!(output, "{}", sdl).context(SDLWriteSnafu)?;

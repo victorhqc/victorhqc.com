@@ -7,6 +7,7 @@ use snafu::prelude::*;
 use std::env;
 use tera::Tera;
 
+mod gql;
 mod requests;
 mod routes;
 mod state;
