@@ -34,7 +34,7 @@ pub async fn get_photos_from_tag(name: &str) -> Result<Vec<PortfolioPhotos>, Err
         return Ok(data.photos);
     }
 
-    return Err(Error::NoData);
+    Err(Error::NoData)
 }
 
 #[derive(Debug, Snafu)]

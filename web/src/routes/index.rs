@@ -16,7 +16,6 @@ pub async fn index(data: web::Data<AppState>) -> impl Responder {
     let random_photos: Vec<&get_portfolio::GetPortfolioPhotos> = data
         .portfolio_photos
         .choose_multiple(&mut rand::thread_rng(), 3)
-        .map(|p| p)
         .collect();
 
     context.insert("photos", &random_photos);
