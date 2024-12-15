@@ -30,3 +30,8 @@ else
     echo "Failed to download from $HTMX_URL."
     exit 1
 fi
+
+# TODO: Download from Github releases when available
+
+echo "Copying files to $OUTPUT_FOLDER..."
+cp ../victorhqc.com.libs/dist/** $OUTPUT_FOLDER
