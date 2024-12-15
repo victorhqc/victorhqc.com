@@ -25,7 +25,7 @@ impl Loader<PhotoByTagId> for AppLoader {
 
         let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
 
-        let values = Photo::find_by_tag_ids(&mut conn, &ids)
+        let values = Photo::find_by_tag_ids(&mut conn, &ids, None)
             .await
             .context(QuerySnafu)?;
 

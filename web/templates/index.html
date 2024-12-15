@@ -35,20 +35,30 @@
         </p>
       </section>
       <section id="photos-section">
-        <div id="photos-stack">
-          <img
-            class="photo active"
-            src="{{ api_host }}/v1/images/{{ photo_0.id }}/Md"
-          />
-          <img
-            class="photo"
-            src="{{ api_host }}/v1/images/{{ photo_1.id }}/Md"
-          />
-          <img
-            class="photo"
-            src="{{ api_host }}/v1/images/{{ photo_2.id }}/Md"
-          />
-        </div>
+        <ul id="photos-stack">
+          {% for photo in photos %}
+          <li class="photo-slide">
+            <div class="photo-wrapper">
+              <img
+                class="photo"
+                src="{{ api_host }}/v1/images/{{ photo.id }}/Md"
+                alt="{{ photo.title }}"
+              />
+              <div class="photo-description">
+                <h1>{{ photo.title }}</h1>
+                <p>
+                  Shot on {{ photo.exifMeta.focalLength.eq35Mm}}mm {{
+                  photo.exifMeta.cameraMaker }} {{ photo.exifMeta.cameraName }}
+                </p>
+                <p>
+                  {{ photo.exifMeta.iso }} ISO f{{ photo.exifMeta.aperture }} {{
+                  photo.exifMeta.shutterSpeed }} sec
+                </p>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
       </section>
     </div>
   </body>

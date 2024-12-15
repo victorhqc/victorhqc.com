@@ -126,9 +126,14 @@ type Photo {
 	tags: [Tag!]!
 }
 
+input PhotosQueryInput {
+	tag: String
+	maxResults: Int
+}
+
 type RootQuery {
 	photo(id: ID!): Photo!
-	photos: [Photo!]!
+	photos(input: PhotosQueryInput!): [Photo!]!
 	exifMeta(id: ID!): ExifMeta!
 	tag(name: String!): Tag!
 	fujifilmRecipes(filmSimulation: String!): [FujifilmRecipe!]!

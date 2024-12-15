@@ -1,0 +1,30 @@
+query GetPortfolio($tag: String!, $max: Int) {
+  photos(input: { tag: $tag, maxResults: $max }) {
+    id
+    title
+    tags {
+      id
+      name
+    }
+    exifMeta {
+      id
+      dateTaken
+      iso
+      aperture
+      shutterSpeed
+      focalLength {
+        value
+        eq35Mm
+      }
+      exposureCompensation
+      cameraMaker
+      lensMaker
+      lensName
+      cameraName
+      fujifilmRecipe {
+        id
+        filmSimulation
+      }
+    }
+  }
+}
