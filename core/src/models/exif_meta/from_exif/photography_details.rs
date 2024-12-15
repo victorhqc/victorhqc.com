@@ -1,7 +1,7 @@
 use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::{
-    Aperture, City, DateTaken, ExposureCompensation, FocalLength, Iso, Maker, PhotographyDetails,
-    Rating,
+    Aperture, CameraMaker, City, DateTaken, ExposureCompensation, FocalLength, Iso, LensMaker,
+    PhotographyDetails, Rating, ShutterSpeed,
 };
 use log::trace;
 
@@ -23,6 +23,10 @@ impl FromExifData for PhotographyDetails {
             trace!("Aperture Missing");
             None
         })?;
+        let shutter_speed = ShutterSpeed::from_exif(data).or_else(|| {
+            trace!("Shutter Speed Missing");
+            None
+        })?;
         let exposure_compensation = ExposureCompensation::from_exif(data).or_else(|| {
             trace!("Exposure Compensation Missing");
             None
@@ -35,8 +39,12 @@ impl FromExifData for PhotographyDetails {
             trace!("Iso Missing");
             None
         })?;
-        let maker = Maker::from_exif(data).or_else(|| {
-            trace!("Maker Missing");
+        let camera_maker = CameraMaker::from_exif(data).or_else(|| {
+            trace!("Camera Maker Missing");
+            None
+        })?;
+        let lens_maker = LensMaker::from_exif(data).or_else(|| {
+            trace!("Lens Maker Missing");
             None
         })?;
         let lens_name = data.find("LensModel").map(|n| n.value().to_string());
@@ -49,13 +57,15 @@ impl FromExifData for PhotographyDetails {
             rating,
             date_taken,
             city,
-            camera_name: camera_name.value().to_string(),
-            lens_name,
             aperture,
+            shutter_speed,
+            camera_maker,
+            camera_name: camera_name.value().to_string(),
+            lens_maker,
+            lens_name,
             exposure_compensation,
             focal_length,
             iso,
-            maker,
         })
     }
 }
@@ -74,6 +84,7 @@ mod tests {
             ExifData::new("Model", "X-T5"),
             ExifData::new("LensModel", "XF23mmF1.4 R LM WR"),
             ExifData::new("Aperture", "2.8"),
+            ExifData::new("ShutterSpeed", "1/2000"),
             ExifData::new("ExposureCompensation", "+0.67"),
             ExifData::new("FocalLength", "23.0 mm"),
             ExifData::new("FocalLength35efl", "23.0 mm (35 mm equivalent: 35.0 mm)"),
@@ -95,6 +106,7 @@ mod tests {
                 camera_name: "X-T5".to_string(),
                 lens_name: Some("XF23mmF1.4 R LM WR".to_string()),
                 aperture: Aperture(2.8),
+                shutter_speed: ShutterSpeed("1/2000".to_string()),
                 exposure_compensation: ExposureCompensation(0.67),
                 focal_length: FocalLength {
                     value: 23.0,
@@ -102,7 +114,8 @@ mod tests {
                     crop_factor: 1.5217391304347827,
                 },
                 iso: Iso(800),
-                maker: Maker::Fujifilm,
+                camera_maker: CameraMaker::Fujifilm,
+                lens_maker: LensMaker::Unknown,
             })
         );
     }

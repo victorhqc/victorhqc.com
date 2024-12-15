@@ -1,14 +1,22 @@
 
+enum CameraMaker {
+	FUJIFILM
+	KONICA
+	CANON
+}
+
 type ExifMeta {
 	id: ID!
 	rating: Int!
 	city: String
 	dateTaken: String
 	iso: Int!
+	aperture: Float!
+	shutterSpeed: String!
 	focalLength: FocalLength!
 	exposureCompensation: Float!
-	aperture: Float!
-	maker: Maker!
+	cameraMaker: CameraMaker!
+	lensMaker: LensMaker!
 	cameraName: String!
 	lensName: String
 	fujifilmRecipe: FujifilmRecipe
@@ -97,10 +105,12 @@ type FujifilmRecipeTransVSettings {
 
 
 
-enum Maker {
+enum LensMaker {
 	FUJIFILM
 	KONICA
 	CANON
+	SEVEN_ARTISANS
+	UNKNOWN
 }
 
 type Photo {

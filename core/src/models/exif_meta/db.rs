@@ -1,6 +1,6 @@
 use super::{
-    str::maker::Error as MakerError, Aperture, City, DateTaken, ExifMeta, ExposureCompensation,
-    FocalLength, Iso, Maker, PhotographyDetails, Rating,
+    str::maker::Error as MakerError, Aperture, CameraMaker, City, DateTaken, ExifMeta,
+    ExposureCompensation, FocalLength, Iso, LensMaker, PhotographyDetails, Rating, ShutterSpeed,
 };
 use crate::models::Timestamp;
 use snafu::prelude::*;
@@ -16,13 +16,15 @@ struct DBExifMeta {
     pub city: Option<String>,
     pub date_taken: Option<Timestamp>,
     pub iso: i64,
+    pub aperture: f64,
+    pub shutter_speed: String,
     pub focal_length: f64,
     pub exposure_compensation: f64,
-    pub aperture: f64,
-    pub maker: String,
-    pub crop_factor: f64,
+    pub camera_maker: String,
     pub camera_name: String,
+    pub lens_maker: String,
     pub lens_name: Option<String>,
+    pub crop_factor: f64,
     pub photo_id: String,
     pub fuji_recipe_id: Option<String>,
 }
@@ -55,13 +57,15 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<ExifMeta, E
         city,
         date_taken,
         iso,
+        aperture,
+        shutter_speed,
         focal_length,
         exposure_compensation,
-        aperture,
-        maker,
-        crop_factor,
+        camera_maker,
         camera_name,
+        lens_maker,
         lens_name,
+        crop_factor,
         photo_id,
         fuji_recipe_id
     FROM
@@ -92,13 +96,15 @@ async fn find_by_photo_ids(
         city,
         date_taken,
         iso,
+        aperture,
+        shutter_speed,
         focal_length,
         exposure_compensation,
-        aperture,
-        maker,
-        crop_factor,
+        camera_maker,
         camera_name,
+        lens_maker,
         lens_name,
+        crop_factor,
         photo_id,
         fuji_recipe_id
     FROM
@@ -132,17 +138,19 @@ async fn insert(conn: &mut SqliteConnection, exif: DBExifMeta) -> Result<String,
         city,
         date_taken,
         iso,
+        aperture,
+        shutter_speed,
         focal_length,
         exposure_compensation,
-        aperture,
-        maker,
-        crop_factor,
+        camera_maker,
         camera_name,
+        lens_maker,
         lens_name,
+        crop_factor,
         photo_id,
         fuji_recipe_id
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     "#,
     )
     .bind(exif.id)
@@ -150,13 +158,15 @@ async fn insert(conn: &mut SqliteConnection, exif: DBExifMeta) -> Result<String,
     .bind(exif.city)
     .bind(exif.date_taken)
     .bind(exif.iso)
+    .bind(exif.aperture)
+    .bind(exif.shutter_speed)
     .bind(exif.focal_length)
     .bind(exif.exposure_compensation)
-    .bind(exif.aperture)
-    .bind(exif.maker)
-    .bind(exif.crop_factor)
+    .bind(exif.camera_maker)
     .bind(exif.camera_name)
+    .bind(exif.lens_maker)
     .bind(exif.lens_name)
+    .bind(exif.crop_factor)
     .bind(exif.photo_id)
     .bind(exif.fuji_recipe_id)
     .execute(conn)
@@ -170,7 +180,8 @@ impl TryFrom<DBExifMeta> for ExifMeta {
     type Error = Error;
 
     fn try_from(value: DBExifMeta) -> Result<Self, Self::Error> {
-        let maker = Maker::from_str(&value.maker).context(MakerSnafu)?;
+        let camera_maker = CameraMaker::from_str(&value.camera_maker).context(CameraMakerSnafu)?;
+        let lens_maker = LensMaker::from_str(&value.lens_maker).context(LensMakerSnafu)?;
         let city = value.city.map(City);
         let date_taken = match value.date_taken {
             Some(d) => {
@@ -194,15 +205,17 @@ impl TryFrom<DBExifMeta> for ExifMeta {
                 city,
                 date_taken,
                 iso: Iso(value.iso),
+                aperture: Aperture(value.aperture),
+                shutter_speed: ShutterSpeed(value.shutter_speed),
                 focal_length: FocalLength {
                     value: value.focal_length,
                     eq_35mm: value.focal_length * value.crop_factor,
                     crop_factor: value.crop_factor,
                 },
                 exposure_compensation: ExposureCompensation(value.exposure_compensation),
-                aperture: Aperture(value.aperture),
-                maker,
+                camera_maker,
                 camera_name: value.camera_name,
+                lens_maker,
                 lens_name: value.lens_name,
             },
         })
@@ -222,13 +235,15 @@ impl From<&ExifMeta> for DBExifMeta {
             date_taken,
             city,
             iso: exif.details.iso.0,
+            aperture: exif.details.aperture.0,
+            shutter_speed: exif.details.shutter_speed.0.clone(),
             focal_length: exif.details.focal_length.value,
             exposure_compensation: exif.details.exposure_compensation.0,
-            aperture: exif.details.aperture.0,
-            maker: exif.details.maker.to_string(),
-            crop_factor: exif.details.focal_length.crop_factor,
+            camera_maker: exif.details.camera_maker.to_string(),
             camera_name: exif.details.camera_name.clone(),
+            lens_maker: exif.details.lens_maker.to_string(),
             lens_name: exif.details.lens_name.clone(),
+            crop_factor: exif.details.focal_length.crop_factor,
         }
     }
 }
@@ -238,8 +253,11 @@ pub enum Error {
     #[snafu(display("Failed to execute query: {:?}", source))]
     Sqlx { source: SqlxError },
 
+    #[snafu(display("Failed to parse Camera Maker {:?}", source))]
+    CameraMaker { source: MakerError },
+
     #[snafu(display("Failed to parse Maker {:?}", source))]
-    Maker { source: MakerError },
+    LensMaker { source: MakerError },
 
     #[snafu(display("Failed to parse date {:?}", source))]
     Time { source: ComponentRange },

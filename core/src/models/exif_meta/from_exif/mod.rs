@@ -7,3 +7,4 @@ mod iso;
 mod maker;
 mod photography_details;
 mod rating;
+mod shutter_speed;
