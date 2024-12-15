@@ -40,11 +40,6 @@ a {
 
 .photo-slide {
   @apply absolute top-0 top-0 w-full;
-
-  transition-property: all;
-  transition-duration: 0.15s;
-  transition-timing-function: ease-out;
-  transform-style: preserve-3d;
 }
 
 .photo-wrapper {
