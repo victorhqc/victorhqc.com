@@ -62,6 +62,7 @@ async fn main() -> Result<(), Error> {
             }))
             .service(fs::Files::new("/static", &static_path).show_files_listing())
             .service(routes::index::index)
+            .service(routes::portfolio::portfolio)
     })
     .workers(4)
     .bind(("127.0.0.1", port))

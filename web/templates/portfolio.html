@@ -1,0 +1,37 @@
+{% extends "_blocks/base.html" %}
+  {% import "_components/photo.html" as c %}
+
+{% block title %}Photography Portfolio{% endblock title %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/photo-stack.css" />
+{% endblock head %}
+
+{% block static_head %}
+  <script src="/static/photo-stack.min.js"></script>
+  <script src="/static/portfolio.css"></script>
+  <script src="/static/styles.css"></script>
+{% endblock static_head %}
+
+{% block tailwind_styles %}
+  {% include "portfolio.css" %}
+  {% include "styles.css" %}
+{% endblock tailwind_styles %}
+
+{% block dev_head %}
+  <script src="/static/photo-stack.js?v={{ get_random(start=0, end=999999) }}"></script>
+{% endblock dev_head %}
+
+
+{%block content %}
+  <section>
+    <h1>Photography Portfolio</h1>
+    <ul id="portfolio-photos">
+      {% for photo in portfolio_photos %}
+        <li>
+          {{ c::photo(data=photo, size="Md") }}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock content %}
