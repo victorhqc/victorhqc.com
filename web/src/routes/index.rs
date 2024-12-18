@@ -1,28 +1,20 @@
-use crate::gql::get_portfolio;
-use crate::state::AppState;
-use crate::TEMPLATES;
-use actix_web::{get, web, HttpResponse, Responder};
+use super::context::render_content;
+use crate::{gql::get_portfolio, state::AppState};
+use actix_web::{get, web, HttpResponse, Responder, Result};
 use rand::seq::SliceRandom;
 use tera::Context;
 
 #[get("/")]
-pub async fn index(data: web::Data<AppState>) -> impl Responder {
+pub async fn index(data: web::Data<AppState>) -> Result<impl Responder> {
     let mut context = Context::new();
-
-    let is_production = false;
-    #[cfg(not(debug_assertions))]
-    let is_production = true;
-
     let random_photos: Vec<&get_portfolio::GetPortfolioPhotos> = data
         .portfolio_photos
         .choose_multiple(&mut rand::thread_rng(), 3)
         .collect();
 
     context.insert("photos", &random_photos);
-    context.insert("api_host", &data.api_host);
-    context.insert("is_production", &is_production);
 
-    let content = TEMPLATES.render("index.html", &context).unwrap();
+    let content = render_content("index", &mut context, &data)?;
 
-    HttpResponse::Ok().body(content)
+    Ok(HttpResponse::Ok().body(content))
 }
