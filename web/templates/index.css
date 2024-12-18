@@ -49,6 +49,7 @@ a {
 .photo {
   @apply border border-solid border-white border-8;
   @apply shadow-md bg-white;
+  @apply w-full h-full;
 }
 
 .photo-description {
