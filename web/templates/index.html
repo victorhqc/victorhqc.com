@@ -7,14 +7,15 @@
     <link rel="stylesheet" href="/static/photo-stack.css" />
     {% if is_production %}
     <link rel="stylesheet" href="/static/index.css" />
+    <script src="/static/photo-stack.min.js"></script>
     {% else %}
     <script src="/static/tailwindcss.js.gz"></script>
     <style type="text/tailwindcss">
       {% include "index.css" %}
     </style>
+    <script src="/static/photo-stack.js?v={{ get_random(start=0, end=999999) }}"></script>
     {% endif %}
     <script src="/static/htmx.js.gz"></script>
-    <script src="/static/photo-stack.min.js"></script>
   </head>
   <body>
     <div class="grid grid-cols-8">
