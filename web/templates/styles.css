@@ -1,0 +1,24 @@
+/* TODO: Proper style splitting is needed. */
+
+.photo-wrapper {
+  @apply relative w-full h-full;
+}
+
+.photo {
+  @apply border border-solid border-white border-8;
+  @apply shadow-md bg-white;
+  @apply w-full h-full;
+}
+
+.photo-description {
+  @apply absolute bottom-0 left-0 w-full py-8 px-8;
+  @apply text-left text-white;
+}
+
+.photo-description h1 {
+  @apply text-3xl font-thin font-mono;
+}
+
+.photo-description p {
+  @apply text-sm font-mono;
+}

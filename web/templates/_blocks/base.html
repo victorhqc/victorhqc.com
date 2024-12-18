@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>victorhqc.com - {% block title %}{% endblock title %}</title>
+    {# Things that can appear in the HEAD regardless of the environment #}
+    {% block head %}{% endblock %}
+    {# Things that can appear in the HEAD only in production #}
+    {% if is_production %}
+      {% block static_head %}{% endblock %}
+    {% else %}
+      <script src="/static/tailwindcss.js.gz"></script>
+      {# Render Tailwind styles in the HEAD only in development #}
+      <style type="text/tailwindcss">
+        {% block tailwind_styles %}{% endblock %}
+      </style>
+      {# Things that can appear in the HEAD only in development #}
+      {% block dev_head %}{% endblock %}
+    {% endif %}
+    <script src="/static/htmx.js.gz"></script>
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+  </body>
+  {% block scripts %}{% endblock %}
+</html>
