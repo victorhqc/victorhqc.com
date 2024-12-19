@@ -1,3 +1,23 @@
-#portfolio-photos {
+.portfolio__main {
+  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2 p-2;
+}
+
+.portfolio__menu {
+  @apply col-span-1 p-2;
+}
+
+.portfolio__menu h1 {
+  @apply text-2xl font-light font-serif;
+}
+
+.portfolio__menu p {
+  @apply mt-3;
+}
+
+.portfolio__photos {
+  @apply col-span-1 md:col-span-3 lg:col-span-3;
+}
+
+.portfolio__photos > ul {
   @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4;
 }

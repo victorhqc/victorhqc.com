@@ -1,5 +1,5 @@
 {% extends "_blocks/base.html" %}
-  {% import "_components/photo.html" as c %}
+{% import "_components/photo.html" as c %}
 
 {% block title %}Photography Portfolio{% endblock title %}
 
@@ -24,14 +24,19 @@
 
 
 {%block content %}
-  <section>
+<div class="portfolio__main">
+  <section class="portfolio__menu">
     <h1>Photography Portfolio</h1>
-    <ul id="portfolio-photos">
+    <p>Welcome to my photography portfolio. Here are some collections I've taken in the past 2 years or so.</p>
+  </section>
+  <section class="portfolio__photos">
+    <ul>
       {% for photo in portfolio_photos %}
         <li>
-          {{ c::photo(data=photo, size="Md") }}
+          {{ c::photo(data=photo, size="Sm") }}
         </li>
       {% endfor %}
     </ul>
   </section>
+<div>
 {% endblock content %}

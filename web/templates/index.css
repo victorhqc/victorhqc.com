@@ -13,11 +13,11 @@ a {
 }
 
 #main-section h1 {
-  @apply text-2xl font-semibold font-serif;
+  @apply text-2xl font-medium font-serif;
 }
 
 #main-section h2 {
-  @apply text-xl font-serif italic;
+  @apply text-xl font-light font-serif italic text-gray-800;
 }
 
 #main-section p {
