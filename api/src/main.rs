@@ -110,6 +110,7 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
+#[derive(Clone)]
 struct AppState {
     db_pool: SqlitePool,
     img_cache: ImageCache,

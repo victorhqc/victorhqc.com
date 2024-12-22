@@ -12,6 +12,7 @@ use std::sync::Arc;
 pub type CachedImage = (PhotoId, ImageSize, Vec<u8>);
 pub type PhotoId = String;
 
+#[derive(Clone)]
 pub struct ImageCache {
     pub s3: S3,
     images: Arc<Mutex<Vec<CachedImage>>>,
@@ -55,16 +56,6 @@ impl ImageCache {
             }
         }
     }
-
-    // pub async fn get(&self, id: &PhotoId, size: &ImageSize) -> Option<Vec<u8>> {
-    //     let images = self.images.lock().await;
-    //     let index = images.iter().position(|(i, s, _)| i == id && s == size);
-
-    //     match index {
-    //         None => None,
-    //         Some(i) => images.get(i).map(|(_, _, v)| v.clone()),
-    //     }
-    // }
 
     pub async fn save(&self, id: &PhotoId, size: &ImageSize, data: Vec<u8>) {
         let mut images = self.images.lock().await;
