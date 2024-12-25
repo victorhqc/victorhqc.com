@@ -53,6 +53,9 @@ async fn main() -> Result<(), Error> {
     let static_path = format!("./{}static", root);
     info!("Serving static files from {}", static_path);
 
+    let scripts_path = format!("./{}scripts", root);
+    info!("Serving script files from {}", scripts_path);
+
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Compress::default())
@@ -60,7 +63,8 @@ async fn main() -> Result<(), Error> {
                 api_host: api_host.clone(),
                 portfolio_photos: photos.clone(),
             }))
-            .service(fs::Files::new("/static", &static_path).show_files_listing())
+            .service(fs::Files::new("/static", &static_path))
+            .service(fs::Files::new("/scripts", &scripts_path))
             .service(routes::index::index)
             .service(routes::portfolio::portfolio)
     })
