@@ -67,6 +67,7 @@ async fn main() -> Result<(), Error> {
             .service(fs::Files::new("/scripts", &scripts_path))
             .service(routes::index::index)
             .service(routes::portfolio::portfolio)
+            .service(routes::portfolio::collection)
     })
     .workers(4)
     .bind(("127.0.0.1", port))

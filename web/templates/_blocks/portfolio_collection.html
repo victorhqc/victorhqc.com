@@ -1,0 +1,7 @@
+{% import "_components/photo.html" as c %}
+
+<ul>
+  {% for photo in portfolio_photos %}
+  <li>{{ c::photo(data=photo, size="Sm") }}</li>
+  {% endfor %}
+</ul>

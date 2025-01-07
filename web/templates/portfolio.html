@@ -22,21 +22,40 @@
   <script src="/static/photo-stack.js?v={{ get_random(start=0, end=999999) }}"></script>
 {% endblock dev_head %}
 
+{% block scripts %}
+<script src="/scripts/portfolio.js"></script>
+{% endblock scripts %}
 
-{%block content %}
+{% block content %}
 <div class="portfolio__main">
   <section class="portfolio__menu">
     <h1>Photography Portfolio</h1>
     <p>Welcome to my photography portfolio. Here are some collections I've taken in the past 2 years or so.</p>
+    <nav class="portfolio__collections-menu">
+      <ol>
+        <li
+          hx-get="/collection/portfolio"
+          hx-target=".portfolio__photos"
+          class="portfolio__collection-item portfolio__collection-item--active">
+            Portfolio
+        </li>
+        <li
+          hx-get="/collection/berlin"
+          hx-target=".portfolio__photos"
+          class="portfolio__collection-item">
+          Berlin
+        </li>
+        <li
+          hx-get="/collection/japan"
+          hx-target=".portfolio__photos"
+          class="portfolio__collection-item">
+          Japan
+        </li>
+      </ol>
+    </nav>
   </section>
   <section class="portfolio__photos">
-    <ul>
-      {% for photo in portfolio_photos %}
-        <li>
-          {{ c::photo(data=photo, size="Sm") }}
-        </li>
-      {% endfor %}
-    </ul>
+    {% include "_blocks/portfolio_collection.html" %}
   </section>
 <div>
 {% endblock content %}

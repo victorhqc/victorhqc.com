@@ -21,3 +21,19 @@
 .portfolio__photos > ul {
   @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4;
 }
+
+.portfolio__collections-menu {
+  @apply mt-10;
+}
+
+.portfolio__collection-item {
+  @apply py-2 px-4 -mx-4 cursor-pointer;
+}
+
+.portfolio__collection-item:hover {
+  @apply bg-gray-100;
+}
+
+.portfolio__collection-item--active {
+  @apply underline;
+}

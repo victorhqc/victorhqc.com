@@ -5267,6 +5267,8 @@ dependencies = [
  "reqwest",
  "serde",
  "snafu",
+ "strum",
+ "strum_macros",
  "tera",
 ]
 
