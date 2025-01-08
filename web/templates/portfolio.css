@@ -27,13 +27,14 @@
 }
 
 .portfolio__collection-item {
-  @apply py-2 px-4 -mx-4 cursor-pointer;
+  @apply py-2 px-2 -mx-2 cursor-pointer;
+  @apply border border-solid border-transparent;
 
   text-transform: capitalize;
 }
 
 .portfolio__collection-item:hover {
-  @apply bg-gray-100;
+  @apply border-black;
 }
 
 .portfolio__collection-item--active {
