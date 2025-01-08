@@ -67,6 +67,7 @@ async fn main() -> Result<(), Error> {
             .service(fs::Files::new("/scripts", &scripts_path))
             .service(routes::index::index)
             .service(routes::portfolio::portfolio)
+            .service(routes::portfolio::portfolio_collection)
             .service(routes::portfolio::collection)
     })
     .workers(4)

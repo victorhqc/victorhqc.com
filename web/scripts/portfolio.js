@@ -4,11 +4,30 @@
   const menu = document.querySelector(".portfolio__collections-menu");
   if (!menu) return;
 
-  const elements = menu.querySelectorAll("li");
+  setInitialActive();
+  initMenu();
 
-  elements.forEach((e) => {
-    e.addEventListener("click", onClick);
-  });
+  function setInitialActive() {
+    const routeMatches = [
+      ...window.location.pathname.matchAll(/\/portfolio\/([a-z]+)/gi),
+    ];
+
+    const collection =
+      routeMatches.length > 0 ? routeMatches[0][1] : "portfolio";
+
+    const active = menu.querySelector(`[data-collection="${collection}"]`);
+    if (!active) return;
+
+    active.classList.add(ACTIVE);
+  }
+
+  function initMenu() {
+    const elements = menu.querySelectorAll("li");
+
+    elements.forEach((e) => {
+      e.addEventListener("click", onClick);
+    });
+  }
 
   /**
    *

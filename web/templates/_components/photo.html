@@ -1,8 +1,8 @@
-{% macro photo(data, size="Md") %}
-  <div class="photo-wrapper">
+{% macro photo(data, size="Md", class="") %}
+  <div class="photo-wrapper {{ class }}">
     <img
       class="photo"
-      src="{{ api_host }}/v1/images/{{ data.id }}/{{size}}"
+      src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
       alt="{{ data.title }}"
     />
     <div class="photo-description">
