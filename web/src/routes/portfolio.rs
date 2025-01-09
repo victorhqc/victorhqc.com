@@ -95,7 +95,7 @@ pub async fn ajax_collection(
     );
     context.insert("portfolio_photos", &collection);
 
-    let content = render_content("_blocks/portfolio_collection", &mut context, &data)?;
+    let content = render_content("_ajax/portfolio_collection", &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -114,7 +114,7 @@ pub async fn ajax_one_photo(
 
     context.insert("photo", &photo);
 
-    let content = render_content("_blocks/one_photo", &mut context, &data)?;
+    let content = render_content("_ajax/one_photo", &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
