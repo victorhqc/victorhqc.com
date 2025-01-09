@@ -6,6 +6,13 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use tera::Context;
 
+#[derive(Debug, serde::Serialize)]
+struct PortfolioPhoto {
+    photo: GetPortfolioPhotos,
+    len: usize,
+    index: usize,
+}
+
 #[derive(Debug, Clone, Display, PartialEq, EnumString, serde::Serialize)]
 enum Collection {
     #[strum(serialize = "portfolio")]
@@ -151,10 +158,18 @@ pub async fn collection_photo(
     Ok(HttpResponse::Ok().body(content))
 }
 
-async fn get_collection(value: &Collection) -> std::result::Result<Vec<GetPortfolioPhotos>, Error> {
+async fn get_collection(value: &Collection) -> std::result::Result<Vec<PortfolioPhoto>, Error> {
     let photos = requests::photos::get_photos_from_tag(&value.to_string())
         .await
         .context(PortfolioSnafu)?;
+
+    let len = photos.len();
+
+    let photos: Vec<PortfolioPhoto> = photos
+        .into_iter()
+        .enumerate()
+        .map(|(index, photo)| PortfolioPhoto { photo, index, len })
+        .collect();
 
     Ok(photos)
 }
