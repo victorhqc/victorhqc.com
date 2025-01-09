@@ -1,3 +1,14 @@
 {% import "_components/photo.html" as c %}
 
 {{ c::photo(data=photo, size="Hd", class="open__photo") }}
+
+<script>
+(function() {
+  if (window.__active_collection__) {
+    delete window.__active_collection__;
+  }
+
+  window.__active_collection__ = {{ collection_route | json_encode() | safe }};
+})();
+</script>
+<script src="/scripts/one_photo.js"></script>

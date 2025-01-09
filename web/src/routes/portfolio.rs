@@ -100,18 +100,24 @@ pub async fn ajax_collection(
     Ok(HttpResponse::Ok().body(content))
 }
 
-#[get("/one_photo/{id}")]
+#[get("/one_photo/{name}/{id}")]
 pub async fn ajax_one_photo(
-    path: web::Path<String>,
+    path: web::Path<(String, String)>,
     data: web::Data<AppState>,
 ) -> Result<impl Responder> {
-    let id = path.into_inner();
+    let (name, id) = path.into_inner();
     let mut context = Context::new();
+
+    let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
 
     let photo = requests::one_photo::get_one_photo(id)
         .await
         .context(OnePhotoSnafu)?;
 
+    context.insert(
+        "collection_route",
+        &CollectionRoute::from(&active_collection),
+    );
     context.insert("photo", &photo);
 
     let content = render_content("_ajax/one_photo", &mut context, &data)?;

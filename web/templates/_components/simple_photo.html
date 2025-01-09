@@ -4,7 +4,7 @@
     class="photo"
     src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
     alt="{{ data.title }}"
-    hx-get="/one_photo/{{ data.id }}"
+    hx-get="/one_photo/{{ collection_route.name }}/{{ data.id }}"
     hx-push-url="/portfolio/{{ collection_route.name }}/{{ data.id }}"
     hx-target=".portfolio__photos"
   />
