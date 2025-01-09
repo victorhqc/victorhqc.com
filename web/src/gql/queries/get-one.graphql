@@ -1,0 +1,30 @@
+query GetOne($id: ID!) {
+  photo(id: $id) {
+    id
+    title
+    tags {
+      id
+      name
+    }
+    exifMeta {
+      id
+      dateTaken
+      iso
+      aperture
+      shutterSpeed
+      focalLength {
+        value
+        eq35Mm
+      }
+      exposureCompensation
+      cameraMaker
+      lensMaker
+      lensName
+      cameraName
+      fujifilmRecipe {
+        id
+        filmSimulation
+      }
+    }
+  }
+}

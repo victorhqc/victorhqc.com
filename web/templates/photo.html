@@ -1,27 +1,21 @@
 {% extends "_blocks/base.html" %}
-{% import "_components/simple_photo.html" as c %}
+{% import "_components/photo.html" as c %}
 
 {% block title %}Photography Portfolio{% endblock title %}
 
 {% block static_head %}
   <script src="/static/portfolio.css"></script>
+  <script src="/static/photo.css"></script>
   <script src="/static/styles.css"></script>
 {% endblock static_head %}
 
 {% block tailwind_styles %}
   {% include "portfolio.css" %}
+  {% include "photo.css" %}
   {% include "styles.css" %}
 {% endblock tailwind_styles %}
 
-{% block dev_head %}
-  <script src="/static/photo-stack.js"></script>
-{% endblock dev_head %}
-
 {% block scripts %}
-<script>
-window.__active_collection__ = {{ collection_route | json_encode() | safe }};
-</script>
-{# <script src="/scripts/portfolio.js?v={{ get_random(start=0, end=999999) }}"></script> #}
 <script src="/scripts/portfolio.js"></script>
 {% endblock scripts %}
 
@@ -46,7 +40,7 @@ window.__active_collection__ = {{ collection_route | json_encode() | safe }};
     </nav>
   </section>
   <section class="portfolio__photos">
-    {% include "_blocks/portfolio_collection.html" %}
+    {{ c::photo(data=photo, size="Hd", class="open__photo") }}
   </section>
 <div>
 {% endblock content %}

@@ -9,3 +9,11 @@ use graphql_client::GraphQLQuery;
     response_derives = "Debug, Clone, Serialize"
 )]
 pub struct GetPortfolio;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "../api/schema.gql",
+    query_path = "src/gql/queries/get-one.graphql",
+    response_derives = "Debug, Clone, Serialize"
+)]
+pub struct GetOne;

@@ -6,7 +6,7 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use tera::Context;
 
-#[derive(Debug, Display, PartialEq, EnumString, serde::Serialize)]
+#[derive(Debug, Clone, Display, PartialEq, EnumString, serde::Serialize)]
 enum Collection {
     #[strum(serialize = "portfolio")]
     #[serde(rename(serialize = "portfolio"))]
@@ -21,7 +21,7 @@ enum Collection {
 
 #[derive(Debug, serde::Serialize)]
 struct CollectionRoute {
-    name: &'static Collection,
+    name: Collection,
     path: String,
     ajax_path: String,
 }
@@ -30,13 +30,16 @@ static COLLECTIONS: &[Collection] = &[Collection::Portfolio, Collection::Berlin,
 
 #[get("/portfolio")]
 pub async fn portfolio(data: web::Data<AppState>) -> Result<impl Responder> {
-    let collection_name = Collection::Portfolio.to_string();
+    let active_collection = Collection::Portfolio;
     let mut context = Context::new();
 
-    let portfolio = get_collection(&collection_name).await?;
+    let portfolio = get_collection(&active_collection).await?;
 
     context.insert("portfolio_photos", &portfolio);
-    context.insert("collection_name", &collection_name);
+    context.insert(
+        "collection_route",
+        &CollectionRoute::from(&active_collection),
+    );
     context.insert("available_collections", &build_collection_routes());
 
     let content = render_content("portfolio", &mut context, &data)?;
@@ -52,10 +55,18 @@ pub async fn portfolio_collection(
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
-    let photos = get_collection(&collection_name).await?;
+    let active_collection =
+        Collection::from_str(&collection_name).context(UnknownCollectionSnafu {
+            name: collection_name,
+        })?;
+
+    let photos = get_collection(&active_collection).await?;
 
     context.insert("portfolio_photos", &photos);
-    context.insert("collection_name", &collection_name);
+    context.insert(
+        "collection_route",
+        &CollectionRoute::from(&active_collection),
+    );
     context.insert("available_collections", &build_collection_routes());
 
     let content = render_content("portfolio", &mut context, &data)?;
@@ -71,7 +82,12 @@ pub async fn collection(
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
-    let collection = get_collection(&collection_name).await?;
+    let active_collection =
+        Collection::from_str(&collection_name).context(UnknownCollectionSnafu {
+            name: collection_name,
+        })?;
+
+    let collection = get_collection(&active_collection).await?;
 
     context.insert("portfolio_photos", &collection);
 
@@ -80,11 +96,34 @@ pub async fn collection(
     Ok(HttpResponse::Ok().body(content))
 }
 
-async fn get_collection(value: &str) -> std::result::Result<Vec<GetPortfolioPhotos>, Error> {
-    let collection_name =
-        Collection::from_str(value).context(UnknownCollectionSnafu { name: value })?;
+#[get("/portfolio/{name}/{id}")]
+pub async fn collection_photo(
+    path: web::Path<(String, String)>,
+    data: web::Data<AppState>,
+) -> Result<impl Responder> {
+    let (name, id) = path.into_inner();
+    let mut context = Context::new();
 
-    let photos = requests::photos::get_photos_from_tag(&collection_name.to_string())
+    let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
+
+    let photo = requests::one_photo::get_one_photo(id)
+        .await
+        .context(OnePhotoSnafu)?;
+
+    context.insert(
+        "collection_route",
+        &CollectionRoute::from(&active_collection),
+    );
+    context.insert("available_collections", &build_collection_routes());
+    context.insert("photo", &photo);
+
+    let content = render_content("photo", &mut context, &data)?;
+
+    Ok(HttpResponse::Ok().body(content))
+}
+
+async fn get_collection(value: &Collection) -> std::result::Result<Vec<GetPortfolioPhotos>, Error> {
+    let photos = requests::photos::get_photos_from_tag(&value.to_string())
         .await
         .context(PortfolioSnafu)?;
 
@@ -92,30 +131,33 @@ async fn get_collection(value: &str) -> std::result::Result<Vec<GetPortfolioPhot
 }
 
 fn build_collection_routes() -> Vec<CollectionRoute> {
-    COLLECTIONS
-        .iter()
-        .map(|c| {
-            let path = if *c == Collection::Portfolio {
-                String::from("/portfolio")
-            } else {
-                format!("/portfolio/{}", c)
-            };
+    COLLECTIONS.iter().map(CollectionRoute::from).collect()
+}
 
-            let ajax_path = format!("/collection/{}", c);
-
-            CollectionRoute {
-                name: c,
-                path,
-                ajax_path,
-            }
-        })
-        .collect()
+impl From<&Collection> for CollectionRoute {
+    fn from(value: &Collection) -> Self {
+        match value {
+            Collection::Portfolio => CollectionRoute {
+                path: "/portfolio".to_string(),
+                ajax_path: format!("/collection/{}", value),
+                name: value.clone(),
+            },
+            _ => CollectionRoute {
+                path: format!("/portfolio/{}", value),
+                ajax_path: format!("/collection/{}", value),
+                name: value.clone(),
+            },
+        }
+    }
 }
 
 #[derive(Debug, Snafu)]
 pub enum Error {
     Portfolio {
         source: requests::photos::Error,
+    },
+    OnePhoto {
+        source: requests::one_photo::Error,
     },
     UnknownCollection {
         name: String,
@@ -127,6 +169,9 @@ impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         match self {
             Error::Portfolio { source } => {
+                HttpResponse::InternalServerError().body(source.to_string())
+            }
+            Error::OnePhoto { source } => {
                 HttpResponse::InternalServerError().body(source.to_string())
             }
             Error::UnknownCollection { name, source: _ } => {

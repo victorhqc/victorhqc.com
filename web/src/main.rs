@@ -69,6 +69,7 @@ async fn main() -> Result<(), Error> {
             .service(routes::portfolio::portfolio)
             .service(routes::portfolio::portfolio_collection)
             .service(routes::portfolio::collection)
+            .service(routes::portfolio::collection_photo)
     })
     .workers(4)
     .bind(("127.0.0.1", port))

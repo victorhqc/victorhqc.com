@@ -2,11 +2,14 @@
 
 .photo-wrapper {
   @apply relative w-full h-full;
+  @apply border border-solid border-black;
+
+  @apply p-3;
+  @apply shadow-md bg-white;
 }
 
 .photo {
-  @apply border border-solid border-white border-8;
-  @apply shadow-md bg-white;
+  /* @apply border border-solid border-gray-500; */
   @apply w-full h-full;
 }
 
