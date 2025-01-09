@@ -53,7 +53,7 @@ async fn main() -> Result<(), Error> {
     let static_path = format!("./{}static", root);
     info!("Serving static files from {}", static_path);
 
-    let scripts_path = format!("./{}scripts", root);
+    let scripts_path = format!("./{}public", root);
     info!("Serving script files from {}", scripts_path);
 
     HttpServer::new(move || {
@@ -64,7 +64,7 @@ async fn main() -> Result<(), Error> {
                 portfolio_photos: photos.clone(),
             }))
             .service(fs::Files::new("/static", &static_path))
-            .service(fs::Files::new("/scripts", &scripts_path))
+            .service(fs::Files::new("/public", &scripts_path))
             .service(routes::index::index)
             .service(routes::portfolio::portfolio)
             .service(routes::portfolio::portfolio_collection)
