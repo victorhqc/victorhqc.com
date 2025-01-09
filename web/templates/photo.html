@@ -40,7 +40,7 @@
     </nav>
   </section>
   <section class="portfolio__photos">
-    {{ c::photo(data=photo, size="Hd", class="open__photo") }}
+    {% include "_blocks/one_photo.html" %}
   </section>
 <div>
 {% endblock content %}

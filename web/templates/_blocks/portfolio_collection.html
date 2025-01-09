@@ -5,3 +5,13 @@
   <li>{{ c::simple_photo(data=photo, size="Sm", class="portfolio__photo") }}</li>
   {% endfor %}
 </ul>
+
+<script>
+(function() {
+  if (window.__active_collection__) {
+    delete window.__active_collection__;
+  }
+
+  window.__active_collection__ = {{ collection_route | json_encode() | safe }};
+})();
+</script>

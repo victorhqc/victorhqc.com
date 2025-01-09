@@ -18,9 +18,6 @@
 {% endblock dev_head %}
 
 {% block scripts %}
-<script>
-window.__active_collection__ = {{ collection_route | json_encode() | safe }};
-</script>
 {# <script src="/scripts/portfolio.js?v={{ get_random(start=0, end=999999) }}"></script> #}
 <script src="/scripts/portfolio.js"></script>
 {% endblock scripts %}

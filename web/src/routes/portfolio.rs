@@ -75,7 +75,7 @@ pub async fn portfolio_collection(
 }
 
 #[get("/collection/{name}")]
-pub async fn collection(
+pub async fn ajax_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
 ) -> Result<impl Responder> {
@@ -89,9 +89,32 @@ pub async fn collection(
 
     let collection = get_collection(&active_collection).await?;
 
+    context.insert(
+        "collection_route",
+        &CollectionRoute::from(&active_collection),
+    );
     context.insert("portfolio_photos", &collection);
 
     let content = render_content("_blocks/portfolio_collection", &mut context, &data)?;
+
+    Ok(HttpResponse::Ok().body(content))
+}
+
+#[get("/one_photo/{id}")]
+pub async fn ajax_one_photo(
+    path: web::Path<String>,
+    data: web::Data<AppState>,
+) -> Result<impl Responder> {
+    let id = path.into_inner();
+    let mut context = Context::new();
+
+    let photo = requests::one_photo::get_one_photo(id)
+        .await
+        .context(OnePhotoSnafu)?;
+
+    context.insert("photo", &photo);
+
+    let content = render_content("_blocks/one_photo", &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -136,16 +159,18 @@ fn build_collection_routes() -> Vec<CollectionRoute> {
 
 impl From<&Collection> for CollectionRoute {
     fn from(value: &Collection) -> Self {
+        let ajax_path = format!("/collection/{}", value);
+
         match value {
             Collection::Portfolio => CollectionRoute {
                 path: "/portfolio".to_string(),
-                ajax_path: format!("/collection/{}", value),
                 name: value.clone(),
+                ajax_path,
             },
             _ => CollectionRoute {
                 path: format!("/portfolio/{}", value),
-                ajax_path: format!("/collection/{}", value),
                 name: value.clone(),
+                ajax_path,
             },
         }
     }
