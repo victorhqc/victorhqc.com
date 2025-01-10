@@ -1,9 +1,11 @@
 use super::context::{render_content, TemplateKind};
-use crate::{gql::get_portfolio::GetPortfolioPhotos, requests, state::AppState};
+use crate::{
+    gql::get_portfolio::GetPortfolioPhotos, prefetch::PrefetchedCollection, state::AppState,
+    Collection, COLLECTIONS,
+};
 use actix_web::{error::ResponseError, get, web, HttpResponse, Responder, Result};
 use snafu::prelude::*;
 use std::str::FromStr;
-use strum_macros::{Display, EnumString};
 use tera::Context;
 
 #[derive(Debug, serde::Serialize)]
@@ -15,19 +17,6 @@ struct PortfolioPhoto {
     index: usize,
 }
 
-#[derive(Debug, Clone, Display, PartialEq, EnumString, serde::Serialize)]
-enum Collection {
-    #[strum(serialize = "portfolio")]
-    #[serde(rename(serialize = "portfolio"))]
-    Portfolio,
-    #[strum(serialize = "berlin")]
-    #[serde(rename(serialize = "berlin"))]
-    Berlin,
-    #[strum(serialize = "japan")]
-    #[serde(rename(serialize = "japan"))]
-    Japan,
-}
-
 #[derive(Debug, serde::Serialize)]
 struct CollectionRoute {
     name: Collection,
@@ -35,14 +24,12 @@ struct CollectionRoute {
     ajax_path: String,
 }
 
-static COLLECTIONS: &[Collection] = &[Collection::Portfolio, Collection::Berlin, Collection::Japan];
-
 #[get("/portfolio")]
 pub async fn portfolio(data: web::Data<AppState>) -> Result<impl Responder> {
     let active_collection = Collection::Portfolio;
     let mut context = Context::new();
 
-    let portfolio = get_collection(&active_collection).await?;
+    let portfolio = get_collection(&active_collection, &data.prefetched).await?;
 
     context.insert("portfolio_photos", &portfolio);
     context.insert(
@@ -69,7 +56,7 @@ pub async fn portfolio_collection(
             name: collection_name,
         })?;
 
-    let photos = get_collection(&active_collection).await?;
+    let photos = get_collection(&active_collection, &data.prefetched).await?;
 
     context.insert("portfolio_photos", &photos);
     context.insert(
@@ -96,7 +83,7 @@ pub async fn ajax_collection(
             name: collection_name,
         })?;
 
-    let collection = get_collection(&active_collection).await?;
+    let collection = get_collection(&active_collection, &data.prefetched).await?;
 
     context.insert(
         "collection_route",
@@ -124,7 +111,7 @@ pub async fn ajax_one_photo(
 
     let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
 
-    let collection = get_collection(&active_collection).await?;
+    let collection = get_collection(&active_collection, &data.prefetched).await?;
     let photo = collection.iter().find(|p| p.photo.id == id).unwrap();
 
     context.insert(
@@ -148,7 +135,7 @@ pub async fn collection_photo(
 
     let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
 
-    let collection = get_collection(&active_collection).await?;
+    let collection = get_collection(&active_collection, &data.prefetched).await?;
     let photo = collection.iter().find(|p| p.photo.id == id).unwrap();
 
     context.insert(
@@ -163,11 +150,11 @@ pub async fn collection_photo(
     Ok(HttpResponse::Ok().body(content))
 }
 
-async fn get_collection(value: &Collection) -> std::result::Result<Vec<PortfolioPhoto>, Error> {
-    let photos = requests::photos::get_photos_from_tag(&value.to_string())
-        .await
-        .context(PortfolioSnafu)?;
-
+async fn get_collection(
+    value: &Collection,
+    prefetched: &PrefetchedCollection,
+) -> std::result::Result<Vec<PortfolioPhoto>, Error> {
+    let photos = prefetched.get(value).unwrap();
     let len = photos.len();
 
     let first_id = photos.first().map(|p| p.id.clone());
@@ -225,9 +212,6 @@ impl From<&Collection> for CollectionRoute {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    Portfolio {
-        source: requests::photos::Error,
-    },
     UnknownCollection {
         name: String,
         source: strum::ParseError,
@@ -237,9 +221,6 @@ pub enum Error {
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         match self {
-            Error::Portfolio { source } => {
-                HttpResponse::InternalServerError().body(source.to_string())
-            }
             Error::UnknownCollection { name, source: _ } => {
                 HttpResponse::BadRequest().body(format!("Unknown Collection: {}", name))
             }

@@ -5,9 +5,11 @@ use lazy_static::lazy_static;
 use log::info;
 use snafu::prelude::*;
 use std::env;
+use strum_macros::{Display, EnumString};
 use tera::Tera;
 
 mod gql;
+mod prefetch;
 mod requests;
 mod routes;
 mod state;
@@ -28,6 +30,22 @@ lazy_static! {
     };
 }
 
+#[derive(Debug, Clone, Display, PartialEq, EnumString, serde::Serialize, Hash, Eq)]
+pub enum Collection {
+    #[strum(serialize = "portfolio")]
+    #[serde(rename(serialize = "portfolio"))]
+    Portfolio,
+    #[strum(serialize = "berlin")]
+    #[serde(rename(serialize = "berlin"))]
+    Berlin,
+    #[strum(serialize = "japan")]
+    #[serde(rename(serialize = "japan"))]
+    Japan,
+}
+
+pub static COLLECTIONS: &[Collection] =
+    &[Collection::Portfolio, Collection::Berlin, Collection::Japan];
+
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
     dotenvy::dotenv().unwrap();
@@ -44,9 +62,7 @@ async fn main() -> Result<(), Error> {
         return Err(Error::MissingTemplates);
     }
 
-    let photos = requests::photos::get_photos_from_tag("portfolio")
-        .await
-        .context(PortfolioSnafu)?;
+    let prefetched = prefetch::fetch_photos().await.context(PrefetchSnafu)?;
 
     info!("Booting Web in port {}", port);
 
@@ -61,7 +77,7 @@ async fn main() -> Result<(), Error> {
             .wrap(middleware::Compress::default())
             .app_data(web::Data::new(AppState {
                 api_host: api_host.clone(),
-                portfolio_photos: photos.clone(),
+                prefetched: prefetched.clone(),
             }))
             .service(fs::Files::new("/static", &static_path))
             .service(fs::Files::new("/public", &scripts_path))
@@ -88,9 +104,9 @@ enum Error {
     #[snafu(display("Failed to start server: {:?}", source))]
     Start { source: std::io::Error },
 
-    #[snafu(display("Failed to load Porftolio photos: {:?}", source))]
-    Portfolio { source: requests::photos::Error },
-
     #[snafu(display("Failed to load Templates, maybe the path is incorrect"))]
     MissingTemplates,
+
+    #[snafu(display("Failed to prefetch photos: {:?}", source))]
+    Prefetch { source: prefetch::Error },
 }
