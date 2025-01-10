@@ -11,16 +11,14 @@
     const source = document.querySelector(".open__photo");
     const img = source.querySelector("img");
     const target = document.querySelector(".photo-info__wrapper");
-    const icon = document.querySelector(".photo-info__icon");
 
-    if (!target || !source || !icon || !img) {
+    if (!target || !source || !img) {
       return;
     }
 
     img.onload = () => {
       const dimensions = source.getBoundingClientRect();
       target.style.height = `${dimensions.height}px`;
-      icon.classList.remove("hidden");
     };
   }
 
