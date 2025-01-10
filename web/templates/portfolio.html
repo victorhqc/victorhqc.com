@@ -1,5 +1,6 @@
 {% extends "_blocks/base.html" %}
 {% import "_components/simple_photo.html" as c %}
+{% import "_components/portfolio_menu.html" as m %}
 
 {% block title %}Photography Portfolio{% endblock title %}
 
@@ -23,26 +24,9 @@
 
 {% block content %}
 <div class="portfolio__main">
-  <section class="portfolio__menu">
-    <h1>Photography Portfolio</h1>
-    <p>Welcome to my photography portfolio. Here are some collections I've taken in the past 2 years or so.</p>
-    <nav class="portfolio__collections-menu">
-      <ol>
-        {% for collection in available_collections %}
-        <li
-          hx-get="{{ collection.ajax_path }}"
-          hx-push-url="{{ collection.path }}"
-          hx-target=".portfolio__photos"
-          data-collection="{{collection.name}}"
-          class="portfolio__collection-item">
-            {{ collection.name }}
-        </li>
-        {% endfor %}
-      </ol>
-    </nav>
-  </section>
+  {{ m::portfolio_menu(collections=available_collections) }}
   <section class="portfolio__photos">
-    {% include "_ajax/portfolio_collection.html" %}
+    {% include "_ajax/portfolio_collection.tera" %}
   </section>
 <div>
 {% endblock content %}
