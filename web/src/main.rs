@@ -13,6 +13,7 @@ mod prefetch;
 mod requests;
 mod routes;
 mod state;
+mod tera_utils;
 
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
@@ -25,6 +26,10 @@ lazy_static! {
             }
         };
         tera.autoescape_on(vec![".html", ".tera", ".css", ".js"]);
+        tera.register_function(
+            "get_film_simulation_img",
+            tera_utils::functions::get_film_simulation_image(),
+        );
 
         tera
     };
@@ -70,7 +75,7 @@ async fn main() -> Result<(), Error> {
     info!("Serving static files from {}", static_path);
 
     let scripts_path = format!("./{}public", root);
-    info!("Serving script files from {}", scripts_path);
+    info!("Serving public files from {}", scripts_path);
 
     HttpServer::new(move || {
         App::new()

@@ -1,13 +1,75 @@
 {% macro photo_info(data, class="") %}
-<div class="photo-wrapper {{ class }}">
-  <h1>{{ data.title }}</h1>
-  <p>
-    Shot on {{ data.exifMeta.focalLength.eq35Mm}}mm {{
-    data.exifMeta.cameraMaker }} {{ data.exifMeta.cameraName }}
-  </p>
-  <p>
-    {{ data.exifMeta.iso }} ISO f{{ data.exifMeta.aperture }} {{
-    data.exifMeta.shutterSpeed }} sec
-  </p>
+<div class="photo-info__wrapper {{ class }}">
+  <div class="photo-info__data">
+    <h1>{{ data.title }}</h1>
+    <p>
+      Shot on {{ data.exifMeta.focalLength.eq35Mm}}mm {{
+      data.exifMeta.cameraMaker }} {{ data.exifMeta.cameraName }}
+    </p>
+    <p>
+      {{ data.exifMeta.iso }} ISO f{{ data.exifMeta.aperture }} {{
+      data.exifMeta.shutterSpeed }} sec
+    </p>
+  </div>
+  <div class="photo-info__film-sim">
+    <div
+      class="film-sim__icon"
+      style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=data.exifMeta.fujifilmRecipe.filmSimulation)}}')"
+    ></div>
+    <div class="film-sim__content">
+      <div>
+        <div>
+          <h3>Film Simulation</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.filmSimulation }}</p>
+        </div>
+        <div>
+          <h3>White Balance</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.whiteBalance }}</p>
+        </div>
+        <div>
+          <h3>Color Chrome Effect</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.colorChromeEffect }}</p>
+        </div>
+        <div>
+          <h3>Dynamic Range</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.dynamicRange }}</p>
+        </div>
+        <div>
+          <h3>Color</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.color }}</p>
+        </div>
+        <div>
+          <h3>Clarity</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.clarity }}</p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h3>Grain Effect</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.grainEffect }}</p>
+        </div>
+        <div>
+          <h3>Tone Curve</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.toneCurve }}</p>
+        </div>
+        <div>
+          <h3>Color Chrome FX Blue</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.colorChromeFxBlue }}</p>
+        </div>
+        <div>
+          <h3>DRange Priority</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.dRangePriority }}</p>
+        </div>
+        <div>
+          <h3>High ISO NR</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.highIsoNoiseReduction }}</p>
+        </div>
+        <div>
+          <h3>Sharpness</h3>
+          <p>{{ data.exifMeta.fujifilmRecipe.settings.sharpness }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endmacro photo_info %}

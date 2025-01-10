@@ -24,6 +24,23 @@ query GetPortfolio($tag: String!, $max: Int) {
       fujifilmRecipe {
         id
         filmSimulation
+        settings {
+          __typename
+          ... on FujifilmRecipeTransVSettings {
+            whiteBalance
+            dynamicRange
+            dRangePriority
+            grainEffect
+            colorChromeEffect
+            colorChromeFxBlue
+            toneCurve
+            color
+            monochromaticColor
+            sharpness
+            highIsoNoiseReduction
+            clarity
+          }
+        }
       }
     }
   }

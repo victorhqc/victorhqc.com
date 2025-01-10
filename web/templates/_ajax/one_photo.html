@@ -1,11 +1,13 @@
 {% import "_components/photo.html" as c %}
+{% import "_components/photo_info.html" as i %}
 
 <div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
 <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
 <div class="photo-card__wrapper">
   <div class="relative">
-    {{ c::photo(data=photo.photo, size="Hd", class="open__photo") }}
-    <button class="photo-info"></button>
+    {{ i::photo_info(data=photo.photo, class="photo-wrapper") }}
+    {{ c::photo(data=photo.photo, size="Hd", class="open__photo photo--visible") }}
+    <button class="photo-info__icon"></button>
   </div>
 </div>
 

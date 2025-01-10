@@ -4,6 +4,36 @@
   document.title = `victorhqc.com - ${window.__open_photo__.photo.title}`;
 
   registerKeyboardNavigation();
+  registerIconToggle();
+  adjustInfoHeight();
+
+  function adjustInfoHeight() {
+    const source = document.querySelector(".open__photo");
+    const target = document.querySelector(".photo-info__wrapper");
+
+    if (!target || !source) return;
+
+    const dimensions = source.getBoundingClientRect();
+    target.style.height = `${dimensions.height}px`;
+  }
+
+  function registerIconToggle() {
+    const icon = document.querySelector(".photo-info__icon");
+    if (!icon) return;
+
+    icon.addEventListener("click", () => {
+      const target = document.querySelector(".open__photo");
+      if (!target) return;
+
+      if (target.classList.contains("photo--hidden")) {
+        target.classList.remove("photo--hidden");
+        icon.classList.remove("photo-info__icon--black");
+      } else {
+        target.classList.add("photo--hidden");
+        icon.classList.add("photo-info__icon--black");
+      }
+    });
+  }
 
   function registerKeyboardNavigation() {
     const ac = window.__active_collection__;
