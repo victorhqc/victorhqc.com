@@ -106,7 +106,7 @@ pub async fn ajax_collection(
 
     let content = render_content(
         "_ajax/portfolio_collection",
-        TemplateKind::Tera,
+        TemplateKind::Html,
         &mut context,
         &data,
     )?;
@@ -133,7 +133,7 @@ pub async fn ajax_one_photo(
     );
     context.insert("photo", &photo);
 
-    let content = render_content("_ajax/one_photo", TemplateKind::Tera, &mut context, &data)?;
+    let content = render_content("_ajax/one_photo", TemplateKind::Html, &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
