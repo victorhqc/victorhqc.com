@@ -22,7 +22,7 @@ lazy_static! {
                 ::std::process::exit(1);
             }
         };
-        tera.autoescape_on(vec![".html", ".css", ".js"]);
+        tera.autoescape_on(vec![".html", ".tera", ".css", ".js"]);
 
         tera
     };

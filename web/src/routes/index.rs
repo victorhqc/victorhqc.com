@@ -1,4 +1,4 @@
-use super::context::render_content;
+use super::context::{render_content, TemplateKind};
 use crate::{gql::get_portfolio, state::AppState};
 use actix_web::{get, web, HttpResponse, Responder, Result};
 use rand::seq::SliceRandom;
@@ -14,7 +14,7 @@ pub async fn index(data: web::Data<AppState>) -> Result<impl Responder> {
 
     context.insert("photos", &random_photos);
 
-    let content = render_content("index", &mut context, &data)?;
+    let content = render_content("index", TemplateKind::Html, &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }

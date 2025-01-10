@@ -1,4 +1,4 @@
-use super::context::render_content;
+use super::context::{render_content, TemplateKind};
 use crate::{gql::get_portfolio::GetPortfolioPhotos, requests, state::AppState};
 use actix_web::{error::ResponseError, get, web, HttpResponse, Responder, Result};
 use snafu::prelude::*;
@@ -51,7 +51,7 @@ pub async fn portfolio(data: web::Data<AppState>) -> Result<impl Responder> {
     );
     context.insert("available_collections", &build_collection_routes());
 
-    let content = render_content("portfolio", &mut context, &data)?;
+    let content = render_content("portfolio", TemplateKind::Html, &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -78,7 +78,7 @@ pub async fn portfolio_collection(
     );
     context.insert("available_collections", &build_collection_routes());
 
-    let content = render_content("portfolio", &mut context, &data)?;
+    let content = render_content("portfolio", TemplateKind::Html, &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -104,7 +104,12 @@ pub async fn ajax_collection(
     );
     context.insert("portfolio_photos", &collection);
 
-    let content = render_content("_ajax/portfolio_collection", &mut context, &data)?;
+    let content = render_content(
+        "_ajax/portfolio_collection",
+        TemplateKind::Tera,
+        &mut context,
+        &data,
+    )?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -128,7 +133,7 @@ pub async fn ajax_one_photo(
     );
     context.insert("photo", &photo);
 
-    let content = render_content("_ajax/one_photo", &mut context, &data)?;
+    let content = render_content("_ajax/one_photo", TemplateKind::Tera, &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -153,7 +158,7 @@ pub async fn collection_photo(
     context.insert("available_collections", &build_collection_routes());
     context.insert("photo", &photo);
 
-    let content = render_content("photo", &mut context, &data)?;
+    let content = render_content("photo", TemplateKind::Html, &mut context, &data)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
