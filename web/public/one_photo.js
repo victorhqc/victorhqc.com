@@ -9,12 +9,19 @@
 
   function adjustInfoHeight() {
     const source = document.querySelector(".open__photo");
+    const img = source.querySelector("img");
     const target = document.querySelector(".photo-info__wrapper");
+    const icon = document.querySelector(".photo-info__icon");
 
-    if (!target || !source) return;
+    if (!target || !source || !icon || !img) {
+      return;
+    }
 
-    const dimensions = source.getBoundingClientRect();
-    target.style.height = `${dimensions.height}px`;
+    img.onload = () => {
+      const dimensions = source.getBoundingClientRect();
+      target.style.height = `${dimensions.height}px`;
+      icon.classList.remove("hidden");
+    };
   }
 
   function registerIconToggle() {
@@ -23,12 +30,14 @@
 
     icon.addEventListener("click", () => {
       const target = document.querySelector(".open__photo");
-      if (!target) return;
+      const info = document.querySelector(".photo-info__wrapper");
+      if (!target || !info) return;
 
       if (target.classList.contains("photo--hidden")) {
         target.classList.remove("photo--hidden");
         icon.classList.remove("photo-info__icon--black");
       } else {
+        info.classList.remove("invisible");
         target.classList.add("photo--hidden");
         icon.classList.add("photo-info__icon--black");
       }
