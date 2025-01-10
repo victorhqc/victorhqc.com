@@ -9,7 +9,7 @@
 
   function setInitialActive() {
     const routeMatches = [
-      ...window.location.pathname.matchAll(/\/portfolio\/([a-z]+)/gi),
+      ...window.location.pathname.matchAll(/\/photography\/([a-z]+)/gi),
     ];
 
     const collection =

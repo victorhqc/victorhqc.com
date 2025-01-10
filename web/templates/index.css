@@ -1,13 +1,5 @@
-body {
-  @apply p-2;
-}
-
-a {
-  @apply underline;
-}
-
 #main-section {
-  @apply col-span-3 px-4;
+  @apply col-span-3 mx-4;
 
   align-content: center;
 }
@@ -27,7 +19,7 @@ a {
 #photos-section {
   @apply col-span-5 w-full text-center;
 
-  height: calc(100vh - 1rem);
+  height: calc(100vh - 1rem - 72px);
   align-content: center;
 }
 

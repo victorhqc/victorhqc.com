@@ -1,5 +1,13 @@
 /* TODO: Proper style splitting is needed. */
 
+body {
+  @apply p-2;
+}
+
+a {
+  @apply underline;
+}
+
 .photo-wrapper {
   @apply relative w-full h-full;
   @apply border border-solid border-black;
@@ -24,4 +32,29 @@
 
 .photo-description p {
   @apply text-sm font-mono;
+}
+
+.main-menu {
+  @apply flex gap-6;
+  @apply mx-4 my-4 mb-8;
+}
+
+.main_menu__element a {
+  @apply no-underline;
+}
+
+.main_menu__element:hover a {
+  @apply underline;
+}
+
+.main_menu__element--active a {
+  @apply underline !important;
+}
+
+.main-menu__elements {
+  @apply flex gap-3;
+}
+
+.main-menu__title {
+  @apply font-serif italic;
 }

@@ -82,7 +82,7 @@ async fn main() -> Result<(), Error> {
             .service(fs::Files::new("/static", &static_path))
             .service(fs::Files::new("/public", &scripts_path))
             .service(routes::index::index)
-            .service(routes::portfolio::portfolio)
+            .service(routes::portfolio::photography)
             .service(routes::portfolio::portfolio_collection)
             .service(routes::portfolio::collection_photo)
             .service(routes::portfolio::ajax_collection)

@@ -24,8 +24,8 @@ struct CollectionRoute {
     ajax_path: String,
 }
 
-#[get("/portfolio")]
-pub async fn portfolio(data: web::Data<AppState>) -> Result<impl Responder> {
+#[get("/photography")]
+pub async fn photography(data: web::Data<AppState>) -> Result<impl Responder> {
     let active_collection = Collection::Portfolio;
     let mut context = Context::new();
 
@@ -43,7 +43,7 @@ pub async fn portfolio(data: web::Data<AppState>) -> Result<impl Responder> {
     Ok(HttpResponse::Ok().body(content))
 }
 
-#[get("/portfolio/{name}")]
+#[get("/photography/{name}")]
 pub async fn portfolio_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
@@ -125,7 +125,7 @@ pub async fn ajax_one_photo(
     Ok(HttpResponse::Ok().body(content))
 }
 
-#[get("/portfolio/{name}/{id}")]
+#[get("/photography/{name}/{id}")]
 pub async fn collection_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
@@ -197,12 +197,12 @@ impl From<&Collection> for CollectionRoute {
 
         match value {
             Collection::Portfolio => CollectionRoute {
-                path: "/portfolio".to_string(),
+                path: "/photography".to_string(),
                 name: value.clone(),
                 ajax_path,
             },
             _ => CollectionRoute {
-                path: format!("/portfolio/{}", value),
+                path: format!("/photography/{}", value),
                 name: value.clone(),
                 ajax_path,
             },
