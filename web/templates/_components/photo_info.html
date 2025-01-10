@@ -1,0 +1,13 @@
+{% macro photo_info(data, class="") %}
+<div class="photo-wrapper {{ class }}">
+  <h1>{{ data.title }}</h1>
+  <p>
+    Shot on {{ data.exifMeta.focalLength.eq35Mm}}mm {{
+    data.exifMeta.cameraMaker }} {{ data.exifMeta.cameraName }}
+  </p>
+  <p>
+    {{ data.exifMeta.iso }} ISO f{{ data.exifMeta.aperture }} {{
+    data.exifMeta.shutterSpeed }} sec
+  </p>
+</div>
+{% endmacro photo_info %}
