@@ -1,7 +1,7 @@
 {% extends "_blocks/base.html" %}
 {% import "_components/photo.html" as c %}
 
-{% block title %}Photography Portfolio{% endblock title %}
+{% block title %}{{ photo.photo.title }}{% endblock title %}
 
 {% block static_head %}
   <script src="/static/portfolio.css"></script>

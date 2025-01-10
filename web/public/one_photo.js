@@ -1,6 +1,8 @@
 (function () {
   if (!window.__active_collection__ || !window.__open_photo__) return;
 
+  document.title = `victorhqc.com - ${window.__open_photo__.photo.title}`;
+
   registerKeyboardNavigation();
 
   function registerKeyboardNavigation() {
