@@ -3,7 +3,10 @@
 <div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
 <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
 <div class="photo-card__wrapper">
-  {{ c::photo(data=photo.photo, size="Hd", class="open__photo") }}
+  <div class="relative">
+    {{ c::photo(data=photo.photo, size="Hd", class="open__photo") }}
+    <button class="photo-info"></button>
+  </div>
 </div>
 
 <script>
