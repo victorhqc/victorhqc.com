@@ -9,6 +9,8 @@ use tera::Context;
 #[derive(Debug, serde::Serialize)]
 struct PortfolioPhoto {
     photo: GetPortfolioPhotos,
+    next_id: String,
+    prev_id: String,
     len: usize,
     index: usize,
 }
@@ -117,9 +119,8 @@ pub async fn ajax_one_photo(
 
     let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
 
-    let photo = requests::one_photo::get_one_photo(id)
-        .await
-        .context(OnePhotoSnafu)?;
+    let collection = get_collection(&active_collection).await?;
+    let photo = collection.iter().find(|p| p.photo.id == id).unwrap();
 
     context.insert(
         "collection_route",
@@ -142,9 +143,8 @@ pub async fn collection_photo(
 
     let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
 
-    let photo = requests::one_photo::get_one_photo(id)
-        .await
-        .context(OnePhotoSnafu)?;
+    let collection = get_collection(&active_collection).await?;
+    let photo = collection.iter().find(|p| p.photo.id == id).unwrap();
 
     context.insert(
         "collection_route",
@@ -165,13 +165,34 @@ async fn get_collection(value: &Collection) -> std::result::Result<Vec<Portfolio
 
     let len = photos.len();
 
-    let photos: Vec<PortfolioPhoto> = photos
-        .into_iter()
-        .enumerate()
-        .map(|(index, photo)| PortfolioPhoto { photo, index, len })
-        .collect();
+    let first_id = photos.first().map(|p| p.id.clone());
+    let mut iter = photos.iter().enumerate().peekable();
 
-    Ok(photos)
+    let mut result: Vec<PortfolioPhoto> = Vec::new();
+    while let Some((index, photo)) = iter.next() {
+        let next_id = if let Some((_, p)) = iter.peek() {
+            p.id.clone()
+        } else {
+            first_id.as_ref().unwrap().clone()
+        };
+
+        let prev_index: usize = if index == 0 {
+            photos.len() - 1
+        } else {
+            index - 1
+        };
+        let prev_id = photos.get(prev_index).map(|p| p.id.clone()).unwrap();
+
+        result.push(PortfolioPhoto {
+            photo: photo.clone(),
+            next_id,
+            prev_id,
+            index,
+            len,
+        });
+    }
+
+    Ok(result)
 }
 
 fn build_collection_routes() -> Vec<CollectionRoute> {
@@ -202,9 +223,6 @@ pub enum Error {
     Portfolio {
         source: requests::photos::Error,
     },
-    OnePhoto {
-        source: requests::one_photo::Error,
-    },
     UnknownCollection {
         name: String,
         source: strum::ParseError,
@@ -215,9 +233,6 @@ impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         match self {
             Error::Portfolio { source } => {
-                HttpResponse::InternalServerError().body(source.to_string())
-            }
-            Error::OnePhoto { source } => {
                 HttpResponse::InternalServerError().body(source.to_string())
             }
             Error::UnknownCollection { name, source: _ } => {

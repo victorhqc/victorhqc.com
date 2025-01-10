@@ -1,6 +1,8 @@
 {% import "_components/photo.html" as c %}
 
-{{ c::photo(data=photo, size="Hd", class="open__photo") }}
+<div class="next-photo-ref" hx-push-url="/portfolio/{{ collection_route.name }}/{{ photo.next_id }}"></div>
+<div class="prev-photo-ref" hx-push-url="/portfolio/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
+{{ c::photo(data=photo.photo, size="Hd", class="open__photo") }}
 
 <script>
 (function() {
@@ -8,7 +10,12 @@
     delete window.__active_collection__;
   }
 
+  if (window.__open_photo__) {
+    delete window.__open_photo__;
+  }
+
   window.__active_collection__ = {{ collection_route | json_encode() | safe }};
+  window.__open_photo__ = {{ photo | json_encode() | safe }};
 })();
 </script>
 <script src="/public/one_photo.js"></script>
