@@ -9,9 +9,6 @@ pub enum TemplateKind {
     #[strum(serialize = "html")]
     #[serde(rename(serialize = "html"))]
     Html,
-    #[strum(serialize = "tera")]
-    #[serde(rename(serialize = "tera"))]
-    Tera,
 }
 
 pub fn render_content(
