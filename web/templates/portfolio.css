@@ -126,7 +126,7 @@
 }
 
 .info_photo {
-  @apply mb-3;
+  @apply mb-3 w-full;
 }
 
 .photo-info__wrapper h1 {
