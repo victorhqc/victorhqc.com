@@ -17,7 +17,6 @@ a {
 }
 
 .photo {
-  /* @apply border border-solid border-gray-500; */
   @apply w-full h-full;
 }
 
@@ -46,7 +45,7 @@ a {
 .main-menu {
   @apply flex place-content-between;
   @apply col-span-1 md:col-span-3 lg:col-span-3;
-  @apply my-4 mb-8 px-5;
+  @apply my-4 mb-8 pr-5 pl-3;
 }
 
 .main_menu__element a {
