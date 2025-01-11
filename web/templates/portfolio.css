@@ -63,6 +63,40 @@
   background-image: url("/public/icons/info-black.svg");
 }
 
+.photo-info__navigation {
+  @apply -mt-3 mb-3;
+}
+
+.photo-info__navigation ol {
+  @apply flex place-content-between;
+}
+
+.photo-info__navigation button {
+  @apply text-sm cursor-pointer;
+}
+
+.photo-info__left-arrow::before {
+  @apply bg-cover inline-block;
+
+  content: "";
+
+  vertical-align: text-bottom;
+  width: 15px;
+  height: 15px;
+  background-image: url("/public/icons/arrow-left.svg");
+}
+
+.photo-info__right-arrow::after {
+  @apply bg-cover inline-block;
+
+  content: "";
+
+  vertical-align: text-bottom;
+  width: 15px;
+  height: 15px;
+  background-image: url("/public/icons/arrow-right.svg");
+}
+
 .photo--visible {
   visibility: visible;
   opacity: 1;

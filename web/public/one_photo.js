@@ -59,19 +59,16 @@
     const listenerRightArrow = (e) => {
       if (e.key !== "ArrowRight") return;
 
-      htmx
-        .ajax("GET", nextPath, {
-          source: ".next-photo-ref",
-          target: ".portfolio__photos",
-        })
-        .then(() => {
-          cleanupListeners(listeners);
-        });
+      goNext();
     };
 
     const listenerLeftArrow = (e) => {
       if (e.key !== "ArrowLeft") return;
 
+      goPrev();
+    };
+
+    const goPrev = () => {
       htmx
         .ajax("GET", prevPath, {
           source: ".prev-photo-ref",
@@ -82,6 +79,27 @@
         });
     };
 
+    const goNext = () => {
+      htmx
+        .ajax("GET", nextPath, {
+          source: ".next-photo-ref",
+          target: ".portfolio__photos",
+        })
+        .then(() => {
+          cleanupListeners(listeners);
+        });
+    };
+
+    const registerArrows = () => {
+      const left = document.querySelector(".photo-info__left-arrow");
+      const right = document.querySelector(".photo-info__right-arrow");
+
+      if (!left || !right) return;
+
+      left.addEventListener("click", goPrev);
+      right.addEventListener("click", goNext);
+    };
+
     const listeners = [
       listenerEsc,
       listenerRightArrow,
@@ -89,6 +107,7 @@
       listenerSpace,
     ];
 
+    registerArrows();
     addListeners(listeners);
   }
 

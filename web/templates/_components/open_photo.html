@@ -1,5 +1,15 @@
 {% macro open_photo(data, size="Md", class="") %}
 {% set exif = data.exifMeta %}
+<nav class="photo-info__navigation">
+  <ol>
+    <li>
+      <button class="photo-info__left-arrow">Prev</button>
+    </li>
+    <li>
+      <button class="photo-info__right-arrow">Next</button>
+    </li>
+  </ol>
+</nav>
 <div class="photo-wrapper open__photo">
   <div class="photo__container photo--visible">
     <img
