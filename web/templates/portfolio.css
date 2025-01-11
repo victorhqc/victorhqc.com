@@ -1,5 +1,5 @@
 .portfolio__main {
-  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2 p-2;
+  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2 px-2;
 }
 
 .portfolio__menu {
@@ -72,7 +72,7 @@
 }
 
 .photo-info__wrapper {
-  @apply top-0 left-0;
+  @apply top-0 left-0 w-full h-full p-4;
   @apply grid grid-cols-2;
   position: absolute !important;
 }
@@ -83,7 +83,7 @@
 
 .photo-info__film-sim {
   @apply border-l border-black border-dashed;
-  @apply p-3 -m-3;
+  @apply px-3 -mx-3;
   @apply text-right;
 }
 

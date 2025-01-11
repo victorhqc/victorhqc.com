@@ -25,7 +25,7 @@
 
 #photos-stack {
   @apply block relative m-auto w-10/12;
-  height: 50vh;
+  height: 70vh;
 
   perspective: 1200px;
 }
