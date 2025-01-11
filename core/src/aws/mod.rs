@@ -4,6 +4,7 @@ pub mod photo;
 pub use aws_sdk_s3::primitives::ByteStream;
 use aws_sdk_s3::Client;
 
+#[derive(Clone)]
 pub struct S3 {
     client: Client,
     bucket_name: String,

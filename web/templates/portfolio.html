@@ -1,0 +1,35 @@
+{% extends "_blocks/base.html" %}
+{% import "_components/simple_photo.html" as c %}
+{% import "_components/portfolio_menu.html" as m %}
+{% import "_components/main_menu.html" as a %}
+
+{% block title %}Photography Portfolio{% endblock title %}
+
+{% block static_head %}
+  <script src="/static/portfolio.css"></script>
+  <script src="/static/styles.css"></script>
+{% endblock static_head %}
+
+{% block tailwind_styles %}
+  {% include "portfolio.css" %}
+  {% include "styles.css" %}
+{% endblock tailwind_styles %}
+
+{% block dev_head %}
+  <script src="/static/photo-stack.js"></script>
+{% endblock dev_head %}
+
+{% block scripts %}
+<script src="/public/menu.js"></script>
+{% endblock scripts %}
+
+{% block content %}
+
+{{ a::main_menu(show_title=True) }}
+<div class="portfolio__main">
+  {{ m::portfolio_menu(collections=available_collections) }}
+  <section class="portfolio__photos">
+    {% include "_ajax/portfolio_collection.html" %}
+  </section>
+<div>
+{% endblock content %}

@@ -1,23 +1,16 @@
-body {
-  @apply p-2;
-}
-
-a {
-  @apply underline;
-}
-
 #main-section {
-  @apply col-span-3 px-4;
+  @apply col-span-3 mx-4;
 
+  height: 70vh;
   align-content: center;
 }
 
 #main-section h1 {
-  @apply text-2xl font-semibold font-serif;
+  @apply text-2xl font-medium font-serif;
 }
 
 #main-section h2 {
-  @apply text-xl font-serif italic;
+  @apply text-xl font-light font-serif italic text-gray-800;
 }
 
 #main-section p {
@@ -27,40 +20,17 @@ a {
 #photos-section {
   @apply col-span-5 w-full text-center;
 
-  height: calc(100vh - 1rem);
+  height: calc(100vh - 1rem - 72px);
   align-content: center;
 }
 
 #photos-stack {
   @apply block relative m-auto w-10/12;
-  height: 50vh;
+  height: 70vh;
 
   perspective: 1200px;
 }
 
 .photo-slide {
   @apply absolute top-0 top-0 w-full;
-}
-
-.photo-wrapper {
-  @apply relative w-full h-full;
-}
-
-.photo {
-  @apply border border-solid border-white border-8;
-  @apply shadow-md bg-white;
-  @apply w-full h-full;
-}
-
-.photo-description {
-  @apply absolute bottom-0 left-0 w-full py-8 px-8;
-  @apply text-left text-white;
-}
-
-.photo-description h1 {
-  @apply text-3xl font-thin font-mono;
-}
-
-.photo-description p {
-  @apply text-sm font-mono;
 }

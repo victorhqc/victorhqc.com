@@ -2,6 +2,7 @@ use crate::AppState;
 use core_victorhqc_com::aws::image_size::ImageSize;
 use core_victorhqc_com::models::{photo::Photo, tag::Tag};
 use log::{debug, info};
+use rocket::futures::future::join_all;
 use rocket::tokio;
 use std::collections::HashSet;
 
@@ -30,25 +31,36 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
         // Removes repeated photos.
         let photos_set: HashSet<Photo> = HashSet::from_iter(photos);
 
-        for photo in photos_set {
-            for img_size in sizes.iter() {
-                let response = state
-                    .img_cache
-                    .s3
-                    .download_from_aws_s3((&photo, img_size))
-                    .await
-                    .unwrap();
+        let download_futures = photos_set
+            .iter()
+            .flat_map(|photo| {
+                sizes.iter().map(|img_size| {
+                    let state = state.clone();
+                    let photo = photo.clone();
 
-                let data = response.body.collect().await.unwrap();
-                let bytes = data.into_bytes().to_vec();
-                state
-                    .img_cache
-                    .save(&photo.id, img_size, bytes.clone())
-                    .await;
+                    async move {
+                        let response = state
+                            .img_cache
+                            .s3
+                            .download_from_aws_s3((&photo, img_size))
+                            .await
+                            .unwrap();
 
-                debug!("Cached Photo {} in {}", &photo.id, img_size);
-            }
-        }
+                        let data = response.body.collect().await.unwrap();
+                        let bytes = data.into_bytes().to_vec();
+
+                        state
+                            .img_cache
+                            .save(&photo.id, img_size, bytes.clone())
+                            .await;
+
+                        debug!("Cached photo {} in {}", &photo.id, img_size);
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
+
+        join_all(download_futures).await;
 
         state
     })

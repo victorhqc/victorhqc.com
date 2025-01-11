@@ -89,8 +89,8 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let img_sm = img.clone();
         let handle_sm: BuildHandle = thread::spawn(move || {
             trace!("Building SM Image");
-            let img_sm = resize(img_sm, 0.1);
-            let img_sm = compress(img_sm, 30)?;
+            let img_sm = resize(img_sm, 0.15);
+            let img_sm = compress(img_sm, 70)?;
             trace!("SM Image Processing completed");
 
             tx.send(ImageProcess::Processed((ImageSize::Sm, img_sm)))

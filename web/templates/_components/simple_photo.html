@@ -1,0 +1,12 @@
+{% macro simple_photo(data, size="Sm", class="") %}
+<div class="photo-wrapper {{ class }}">
+  <img
+    class="photo"
+    src="{{ api_host }}/v1/images/{{ data.photo.id }}/{{ size }}"
+    alt="{{ data.photo.title }}"
+    hx-get="/one_photo/{{ collection_route.name }}/{{ data.photo.id }}"
+    hx-push-url="/photography/{{ collection_route.name }}/{{ data.photo.id }}"
+    hx-target=".portfolio__photos"
+  />
+</div>
+{% endmacro simple_photo %}

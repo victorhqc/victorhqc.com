@@ -117,7 +117,7 @@ Run the project
 cargo run -p api-victorhqc-com
 
 # With hot reload
-bacon api
+bacon
 ```
 
 ## Web Frontend Development

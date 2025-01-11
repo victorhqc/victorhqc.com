@@ -5258,6 +5258,7 @@ version = "0.1.0"
 dependencies = [
  "actix-files",
  "actix-web",
+ "core-victorhqc-com",
  "dotenvy",
  "graphql_client",
  "lazy_static",
@@ -5267,6 +5268,8 @@ dependencies = [
  "reqwest",
  "serde",
  "snafu",
+ "strum",
+ "strum_macros",
  "tera",
 ]
 

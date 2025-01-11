@@ -1,71 +1,61 @@
-<!doctype html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>victorhqc.com</title>
-    <link rel="stylesheet" href="/static/photo-stack.css" />
-    {% if is_production %}
-    <link rel="stylesheet" href="/static/index.css" />
-    <script src="/static/photo-stack.min.js"></script>
-    {% else %}
-    <script src="/static/tailwindcss.js.gz"></script>
-    <style type="text/tailwindcss">
-      {% include "index.css" %}
-    </style>
-    <script src="/static/photo-stack.js?v={{ get_random(start=0, end=999999) }}"></script>
-    {% endif %}
-    <script src="/static/htmx.js.gz"></script>
-  </head>
-  <body>
-    <div class="grid grid-cols-8">
-      <section id="main-section">
-        <h1>Victor Quiroz Castro</h1>
-        <h2>Software Engineer</h2>
-        <p>
-          I'm a Software Engineer specialized in Web Technologies like
-          JavaScript, Rust, Servers, DBs, AWS, etc.
-        </p>
-        <p>
-          I like fantasy literature specially science fiction. The Bobiverse,
-          Red Rising, 3-Body Problem and The way of kings are some of my
-          favorite sagas, but there are too many to mention here.
-        </p>
-        <p>
-          I really enjoy taking photos whenever I go. You can see some of my
-          work
-          <a href="#">here</a>.
-        </p>
-      </section>
-      <section id="photos-section">
-        <ul id="photos-stack">
-          {% for photo in photos %}
-          <li class="photo-slide">
-            <div class="photo-wrapper">
-              <img
-                class="photo"
-                src="{{ api_host }}/v1/images/{{ photo.id }}/Md"
-                alt="{{ photo.title }}"
-              />
-              <div class="photo-description">
-                <h1>{{ photo.title }}</h1>
-                <p>
-                  Shot on {{ photo.exifMeta.focalLength.eq35Mm}}mm {{
-                  photo.exifMeta.cameraMaker }} {{ photo.exifMeta.cameraName }}
-                </p>
-                <p>
-                  {{ photo.exifMeta.iso }} ISO f{{ photo.exifMeta.aperture }} {{
-                  photo.exifMeta.shutterSpeed }} sec
-                </p>
-              </div>
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
-    </div>
-  </body>
-  <script>
-    {% include "index.js" %}
-  </script>
-</html>
+{% extends "_blocks/base.html" %}
+{% import "_components/photo.html" as c %}
+{% import "_components/main_menu.html" as a %}
+
+{% block title %}Index{% endblock title %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/photo-stack.css" />
+{% endblock head %}
+
+{% block static_head %}
+  <script src="/static/photo-stack.min.js"></script>
+  <script src="/static/index.css"></script>
+  <script src="/static/styles.css"></script>
+{% endblock static_head %}
+
+{% block tailwind_styles %}
+  {% include "index.css" %}
+  {% include "styles.css" %}
+{% endblock tailwind_styles %}
+
+{% block dev_head %}
+  <script src="/static/photo-stack.js"></script>
+{% endblock dev_head %}
+
+{% block scripts %}
+<script src="/public/index.js"></script>
+{% endblock scripts %}
+
+{%block content %}
+  {{ a::main_menu(show_title=False) }}
+  <div class="grid grid-cols-8">
+    <section id="main-section">
+      <h1>Victor Quiroz Castro</h1>
+      <h2>Software Engineer</h2>
+      <p>
+        I'm a Software Engineer specialized in Web Technologies like
+        JavaScript, Rust, Servers, DBs, AWS, etc.
+      </p>
+      <p>
+        I like fantasy literature specially science fiction. The Bobiverse,
+        Red Rising, 3-Body Problem and The way of kings are some of my
+        favorite sagas, but there are too many to mention here.
+      </p>
+      <p>
+        I really enjoy taking photos whenever I go. You can see some of my
+        work
+        <a href="/photography">here</a>.
+      </p>
+    </section>
+    <section id="photos-section">
+      <ul id="photos-stack">
+        {% for photo in photos %}
+        <li class="photo-slide">
+          {{ c::photo(data=photo, size="Md") }}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+{% endblock content %}

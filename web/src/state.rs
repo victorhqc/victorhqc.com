@@ -1,7 +1,7 @@
-use crate::gql::get_portfolio;
+use crate::prefetch::PrefetchedCollection;
 
 #[derive(Debug)]
 pub struct AppState {
     pub api_host: String,
-    pub portfolio_photos: Vec<get_portfolio::GetPortfolioPhotos>,
+    pub prefetched: PrefetchedCollection,
 }
