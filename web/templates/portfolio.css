@@ -78,9 +78,8 @@
 }
 
 .photo-info__wrapper {
-  @apply top-0 left-0 m-3 p-3;
-  @apply grid grid-cols-2;
-  @apply border border-dashed border-gray-500;
+  @apply top-0 left-0 m-3;
+  @apply grid grid-cols-12;
 
   width: calc(100% - 1.5rem);
   height: calc(100% - 1.5rem);
@@ -89,6 +88,7 @@
 
 .photo-info__data {
   @apply px-3 -ml-3 mr-3;
+  @apply col-span-8;
 }
 
 .info_photo {
@@ -102,6 +102,7 @@
 .photo-info__film-sim {
   @apply border-l border-gray-500 border-dashed;
   @apply p-3 -m-3;
+  @apply col-span-4;
   @apply text-right;
 }
 
