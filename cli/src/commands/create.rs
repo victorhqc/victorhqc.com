@@ -110,9 +110,9 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     Ok(())
 }
 
-async fn get_some_fujifilm_recipe<'a, 'b>(
+async fn get_some_fujifilm_recipe<'a>(
     data: &'a Vec<ExifData>,
-    conn: &'a mut Transaction<'b, Sqlite>,
+    conn: &'a mut Transaction<'_, Sqlite>,
 ) -> Result<Option<FujifilmRecipe>, Error> {
     let maker = CameraMaker::from_exif(data.as_slice()).context(MakerSnafu)?;
     debug!("{:?}", maker);

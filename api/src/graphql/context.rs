@@ -20,8 +20,8 @@ pub async fn get_pool<'a>(
     Ok(pool)
 }
 
-pub async fn get_conn<'a>(
-    ctx: &'a AsyncGraphqlContext<'_>,
+pub async fn get_conn(
+    ctx: &AsyncGraphqlContext<'_>,
 ) -> Result<PoolConnection<Sqlite>, AsyncGraphqlError> {
     let pool = get_pool(ctx).await?;
     let conn = pool.acquire().await?;
