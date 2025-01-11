@@ -38,3 +38,22 @@ pub fn get_film_simulation_image() -> impl Function {
         Ok(to_value(img).unwrap())
     })
 }
+
+pub fn parse_film_simulation_name() -> impl Function {
+    Box::new(move |args: &HashMap<String, Value>| -> Result<Value> {
+        let name = args.get("name").unwrap();
+        let name = from_value::<String>(name.clone()).unwrap();
+        let film_sim = FilmSimulation::from_str(&name).expect("Invalid film sim");
+
+        let mc = args.get("monochromatic_color").unwrap();
+        let mc = from_value::<String>(mc.clone()).unwrap();
+
+        let val = match film_sim {
+            FilmSimulation::Monochrome { filter: _ } => format!("{} ({})", name, mc),
+            FilmSimulation::Acros { filter: _ } => format!("{} ({})", name, mc),
+            _ => name,
+        };
+
+        Ok(to_value(val).unwrap())
+    })
+}

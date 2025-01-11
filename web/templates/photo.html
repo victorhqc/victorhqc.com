@@ -1,6 +1,7 @@
 {% extends "_blocks/base.html" %}
 {% import "_components/open_photo.html" as c %}
 {% import "_components/portfolio_menu.html" as m %}
+{% import "_components/main_menu.html" as a %}
 
 {% block title %}{{ photo.photo.title }}{% endblock title %}
 
@@ -21,7 +22,7 @@
 {% endblock scripts %}
 
 {% block content %}
-  {% include "_blocks/main_menu.html" %}
+{{ a::main_menu(show_title=True) }}
 <div class="portfolio__main">
   {{ m::portfolio_menu(collections=available_collections) }}
   <section class="portfolio__photos">

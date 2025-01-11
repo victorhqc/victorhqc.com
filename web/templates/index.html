@@ -1,5 +1,6 @@
 {% extends "_blocks/base.html" %}
 {% import "_components/photo.html" as c %}
+{% import "_components/main_menu.html" as a %}
 
 {% block title %}Index{% endblock title %}
 
@@ -27,7 +28,7 @@
 {% endblock scripts %}
 
 {%block content %}
-  {% include "_blocks/main_menu.html" %}
+  {{ a::main_menu(show_title=False) }}
   <div class="grid grid-cols-8">
     <section id="main-section">
       <h1>Victor Quiroz Castro</h1>

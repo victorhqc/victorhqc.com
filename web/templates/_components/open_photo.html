@@ -1,4 +1,5 @@
 {% macro open_photo(data, size="Md", class="") %}
+{% set exif = data.exifMeta %}
 <div class="photo-wrapper open__photo">
   <div class="photo__container photo--visible">
     <img
@@ -9,89 +10,97 @@
     <div class="photo-description">
       <h1>{{ data.title }}</h1>
       <p>
-        Shot on {{ data.exifMeta.focalLength.eq35Mm}}mm {{
-        data.exifMeta.cameraMaker }} {{ data.exifMeta.cameraName }}
+        Shot on {{ exif.focalLength.eq35Mm}}mm {{
+        exif.cameraMaker }} {{ exif.cameraName }}
       </p>
       <p>
-        {{ data.exifMeta.iso }} ISO f{{ data.exifMeta.aperture }} {{
-        data.exifMeta.shutterSpeed }} sec
+        {{ exif.iso }} ISO f{{ exif.aperture }} {{
+        exif.shutterSpeed }} sec
       </p>
     </div>
   </div>
   <div class="photo-info__wrapper photo--visible photo--hidden">
     <div class="photo-info__data">
+      <img
+        class="info_photo"
+        src="{{ api_host }}/v1/images/{{ data.id }}/Sm"
+        alt="{{ data.title }}"
+      />
       <h1>{{ data.title }}</h1>
       <p>
-        Shot on {{ data.exifMeta.focalLength.eq35Mm}}mm {{
-        data.exifMeta.cameraMaker }} {{ data.exifMeta.cameraName }}
+        Shot on {{ exif.focalLength.eq35Mm}}mm {{
+        exif.cameraMaker }} {{ exif.cameraName }}
       </p>
       <p>
-        {{ data.exifMeta.iso }} ISO f{{ data.exifMeta.aperture }} {{
-        data.exifMeta.shutterSpeed }} sec
+        {{ exif.iso }} ISO f{{ exif.aperture }} {{
+        exif.shutterSpeed }} sec
       </p>
     </div>
+    {% if exif.cameraMaker == "FUJIFILM" %}
+    {% set film_sim = exif.fujifilmRecipe %}
     <div class="photo-info__film-sim">
       <div
         class="film-sim__icon"
-        style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=data.exifMeta.fujifilmRecipe.filmSimulation)}}')"
+        style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=film_sim.filmSimulation)}}')"
       ></div>
       <div class="film-sim__content">
         <div>
           <div>
             <h3>Film Simulation</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.filmSimulation }}</p>
+            <p>{{ parse_film_simulation_name(name=film_sim.filmSimulation,monochromatic_color=film_sim.settings.monochromaticColor) }}</p>
           </div>
           <div>
             <h3>White Balance</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.whiteBalance }}</p>
+            <p>{{ film_sim.settings.whiteBalance }}</p>
           </div>
           <div>
             <h3>Color Chrome Effect</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.colorChromeEffect }}</p>
+            <p>{{ film_sim.settings.colorChromeEffect }}</p>
           </div>
           <div>
             <h3>Dynamic Range</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.dynamicRange }}</p>
+            <p>{{ film_sim.settings.dynamicRange }}</p>
           </div>
           <div>
             <h3>Color</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.color }}</p>
+            <p>{{ film_sim.settings.color }}</p>
           </div>
           <div>
             <h3>Clarity</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.clarity }}</p>
+            <p>{{ film_sim.settings.clarity }}</p>
           </div>
         </div>
         <div>
           <div>
             <h3>Grain Effect</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.grainEffect }}</p>
+            <p>{{ film_sim.settings.grainEffect }}</p>
           </div>
           <div>
             <h3>Tone Curve</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.toneCurve }}</p>
+            <p>{{ film_sim.settings.toneCurve }}</p>
           </div>
           <div>
             <h3>Color Chrome FX Blue</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.colorChromeFxBlue }}</p>
+            <p>{{ film_sim.settings.colorChromeFxBlue }}</p>
           </div>
           <div>
             <h3>DRange Priority</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.dRangePriority }}</p>
+            <p>{{ film_sim.settings.dRangePriority }}</p>
           </div>
           <div>
             <h3>High ISO NR</h3>
             <p>
-              {{ data.exifMeta.fujifilmRecipe.settings.highIsoNoiseReduction }}
+              {{ film_sim.settings.highIsoNoiseReduction }}
             </p>
           </div>
           <div>
             <h3>Sharpness</h3>
-            <p>{{ data.exifMeta.fujifilmRecipe.settings.sharpness }}</p>
+            <p>{{ film_sim.settings.sharpness }}</p>
           </div>
         </div>
       </div>
     </div>
+    {% endif %}
   </div>
   <button class="photo-info__icon"></button>
 </div>

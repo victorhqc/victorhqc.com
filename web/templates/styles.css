@@ -34,9 +34,19 @@ a {
   @apply text-sm font-mono;
 }
 
+.main-menu__wrapper {
+  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2;
+}
+
+.main-menu__offset {
+  @apply hidden md:block lg:block;
+  @apply md:col-span-1 lg:col-span-1;
+}
+
 .main-menu {
-  @apply flex gap-6;
-  @apply mx-4 my-4 mb-8;
+  @apply flex place-content-between;
+  @apply col-span-1 md:col-span-3 lg:col-span-3;
+  @apply my-4 mb-8 px-5;
 }
 
 .main_menu__element a {
@@ -56,5 +66,9 @@ a {
 }
 
 .main-menu__title {
-  @apply font-serif italic;
+  @apply font-serif italic text-xl font-extralight;
+}
+
+.main-menu__title a {
+  @apply no-underline;
 }

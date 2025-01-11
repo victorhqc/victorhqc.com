@@ -10,22 +10,24 @@
     const icon = document.querySelector(".photo-info__icon");
     if (!icon) return;
 
-    icon.addEventListener("click", () => {
-      const target = document.querySelector(".open__photo .photo__container");
-      const info = document.querySelector(".photo-info__wrapper");
-      console.log({ target, info });
-      if (!target || !info) return;
+    icon.addEventListener("click", toggleInfo);
+  }
 
-      if (target.classList.contains("photo--hidden")) {
-        info.classList.add("photo--hidden");
-        target.classList.remove("photo--hidden");
-        icon.classList.remove("photo-info__icon--black");
-      } else {
-        info.classList.remove("photo--hidden");
-        target.classList.add("photo--hidden");
-        icon.classList.add("photo-info__icon--black");
-      }
-    });
+  function toggleInfo() {
+    const icon = document.querySelector(".photo-info__icon");
+    const target = document.querySelector(".open__photo .photo__container");
+    const info = document.querySelector(".photo-info__wrapper");
+    if (!target || !info || !icon) return;
+
+    if (target.classList.contains("photo--hidden")) {
+      info.classList.add("photo--hidden");
+      target.classList.remove("photo--hidden");
+      icon.classList.remove("photo-info__icon--black");
+    } else {
+      info.classList.remove("photo--hidden");
+      target.classList.add("photo--hidden");
+      icon.classList.add("photo-info__icon--black");
+    }
   }
 
   function registerKeyboardNavigation() {
@@ -34,6 +36,12 @@
 
     const nextPath = `/one_photo/${ac.name}/${data.next_id}`;
     const prevPath = `/one_photo/${ac.name}/${data.prev_id}`;
+
+    const listenerSpace = (e) => {
+      if (e.key !== " ") return;
+
+      toggleInfo();
+    };
 
     const listenerEsc = (e) => {
       if (e.key !== "Escape") return;
@@ -44,9 +52,7 @@
           target: ".portfolio__photos",
         })
         .then(() => {
-          document.removeEventListener("keyup", listenerEsc);
-          document.removeEventListener("keyup", listenerRightArrow);
-          document.removeEventListener("keyup", listenerLeftArrow);
+          cleanupListeners(listeners);
         });
     };
 
@@ -59,9 +65,7 @@
           target: ".portfolio__photos",
         })
         .then(() => {
-          document.removeEventListener("keyup", listenerEsc);
-          document.removeEventListener("keyup", listenerRightArrow);
-          document.removeEventListener("keyup", listenerLeftArrow);
+          cleanupListeners(listeners);
         });
     };
 
@@ -74,14 +78,29 @@
           target: ".portfolio__photos",
         })
         .then(() => {
-          document.removeEventListener("keyup", listenerEsc);
-          document.removeEventListener("keyup", listenerRightArrow);
-          document.removeEventListener("keyup", listenerLeftArrow);
+          cleanupListeners(listeners);
         });
     };
 
-    document.addEventListener("keyup", listenerEsc);
-    document.addEventListener("keyup", listenerRightArrow);
-    document.addEventListener("keyup", listenerLeftArrow);
+    const listeners = [
+      listenerEsc,
+      listenerRightArrow,
+      listenerLeftArrow,
+      listenerSpace,
+    ];
+
+    addListeners(listeners);
+  }
+
+  function cleanupListeners(listeners) {
+    for (const listener of listeners) {
+      document.removeEventListener("keyup", listener);
+    }
+  }
+
+  function addListeners(listeners) {
+    for (const listener of listeners) {
+      document.addEventListener("keyup", listener);
+    }
   }
 })();

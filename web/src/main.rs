@@ -26,9 +26,14 @@ lazy_static! {
             }
         };
         tera.autoescape_on(vec![".html", ".tera", ".css", ".js"]);
+
         tera.register_function(
             "get_film_simulation_img",
             tera_utils::functions::get_film_simulation_image(),
+        );
+        tera.register_function(
+            "parse_film_simulation_name",
+            tera_utils::functions::parse_film_simulation_name(),
         );
 
         tera

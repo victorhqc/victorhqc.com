@@ -1,6 +1,7 @@
 #main-section {
   @apply col-span-3 mx-4;
 
+  height: 70vh;
   align-content: center;
 }
 

@@ -1,9 +1,11 @@
 .portfolio__main {
-  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2 px-2;
+  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2;
+  @apply px-5;
 }
 
 .portfolio__menu {
-  @apply col-span-1 p-2;
+  @apply col-span-1;
+  @apply pr-3;
 }
 
 .portfolio__menu h1 {
@@ -45,6 +47,10 @@
   @apply cursor-pointer;
 }
 
+.open__photo .photo {
+  aspect-ratio: 3/2;
+}
+
 .photo-info__icon {
   @apply bg-cover absolute bottom-8 right-8;
 
@@ -72,9 +78,21 @@
 }
 
 .photo-info__wrapper {
-  @apply top-0 left-0 w-full h-full p-4;
+  @apply top-0 left-0 m-3 p-3;
   @apply grid grid-cols-2;
+  @apply border border-dashed border-gray-500;
+
+  width: calc(100% - 1.5rem);
+  height: calc(100% - 1.5rem);
   position: absolute !important;
+}
+
+.photo-info__data {
+  @apply px-3 -ml-3 mr-3;
+}
+
+.info_photo {
+  @apply mb-3;
 }
 
 .photo-info__wrapper h1 {
@@ -82,15 +100,15 @@
 }
 
 .photo-info__film-sim {
-  @apply border-l border-black border-dashed;
-  @apply px-3 -mx-3;
+  @apply border-l border-gray-500 border-dashed;
+  @apply p-3 -m-3;
   @apply text-right;
 }
 
 .film-sim__icon {
   @apply bg-cover right-8;
 
-  margin: 0 18px 0 auto;
+  /* margin: 0 18px 0 auto; */
   width: 136px;
   height: 100px;
 }

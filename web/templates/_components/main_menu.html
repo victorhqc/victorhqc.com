@@ -1,0 +1,21 @@
+{% macro main_menu(show_title=True) %}
+<div class="main-menu__wrapper">
+  <div class="main-menu__offset"></div>
+  <nav class="main-menu">
+    {% if show_title %}
+    <h1 class="main-menu__title"><a href="/">Victor Quiroz Castro</a></h1>
+    {% else %}
+    <div></div>
+    {% endif %}
+    <ol class="main-menu__elements">
+      <li class="main_menu__element" data-mainmenu="home">
+        <a href="/">Home</a>
+      </li>
+      <li class="main_menu__element" data-mainmenu="photography">
+        <a href="/photography">Photography</a>
+      </li>
+    </ol>
+  </nav>
+</div>
+<script src="/public/main_menu.js"></script>
+{% endmacro main_menu %}
