@@ -19,6 +19,22 @@
       {% block dev_head %}{% endblock %}
     {% endif %}
     <script src="/static/htmx.js.gz"></script>
+    <script>
+    let __LISTENERS__ = [];
+
+    function CLEANUP_EXISTING_LISTENERS() {
+      __LISTENERS__.forEach(([listener, type, target]) => {
+        target.removeEventListener(type, listener);
+      });
+
+      __LISTENERS__ = [];
+    }
+
+    function REGISTER_LISTENER([listener, type, target]) {
+      target.addEventListener(type, listener)
+      __LISTENERS__.push([listener, type, target]);
+    }
+    </script>
   </head>
   <body>
     {% block content %}{% endblock %}

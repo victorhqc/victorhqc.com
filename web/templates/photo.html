@@ -7,13 +7,11 @@
 
 {% block static_head %}
   <script src="/static/portfolio.css"></script>
-  <script src="/static/photo.css"></script>
   <script src="/static/styles.css"></script>
 {% endblock static_head %}
 
 {% block tailwind_styles %}
   {% include "portfolio.css" %}
-  {% include "photo.css" %}
   {% include "styles.css" %}
 {% endblock tailwind_styles %}
 
@@ -25,8 +23,8 @@
 {{ a::main_menu(show_title=True) }}
 <div class="portfolio__main">
   {{ m::portfolio_menu(collections=available_collections) }}
-  <section class="portfolio__photos">
-    {% include "_ajax/one_photo.html" %}
+  <section class="portfolio__photos-wrapper">
+  {% include "_ajax/one_photo.html" %}
   </section>
 <div>
 {% endblock content %}

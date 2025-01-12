@@ -24,12 +24,13 @@
 {% endblock scripts %}
 
 {% block content %}
-
 {{ a::main_menu(show_title=True) }}
 <div class="portfolio__main">
   {{ m::portfolio_menu(collections=available_collections) }}
-  <section class="portfolio__photos">
-    {% include "_ajax/portfolio_collection.html" %}
+  <section class="portfolio__photos-wrapper">
+    <div class="portfolio__photos">
+      {% include "_ajax/portfolio_collection.html" %}
+    </div>
   </section>
 <div>
 {% endblock content %}
