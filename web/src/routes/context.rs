@@ -1,5 +1,6 @@
 use crate::{state::AppState, TEMPLATES};
 use actix_web::{web, ResponseError, Result};
+use log::error;
 use snafu::prelude::*;
 use strum_macros::Display;
 use tera::Context;
@@ -41,8 +42,12 @@ pub enum Error {
 impl ResponseError for Error {
     fn error_response(&self) -> actix_web::HttpResponse {
         match self {
-            Error::Template { source, route } => actix_web::HttpResponse::InternalServerError()
-                .body(format!("{}: {}", route, source)),
+            Error::Template { source, route } => {
+                error!("Failed to render route {}: {:?}", route, source);
+
+                actix_web::HttpResponse::InternalServerError()
+                    .body(format!("{}: {}", route, source))
+            }
         }
     }
 }

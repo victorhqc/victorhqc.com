@@ -1,11 +1,29 @@
 {% import "_components/open_photo.html" as c %}
 
-<div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
 <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
+<div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
+<nav class="photo-info__navigation">
+  <ol>
+    <li>
+      <button
+        class="photo-info__left-arrow"
+        hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
+        hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
+        hx-target=".portfolio__photos-wrapper"
+      >Prev</button>
+    </li>
+    <li>
+      <button
+        class="photo-info__right-arrow"
+        hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
+        hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
+        hx-target=".portfolio__photos-wrapper"
+      >Next</button>
+    </li>
+  </ol>
+</nav>
 <div class="photo-card__wrapper">
-  <div class="relative">
-    {{ c::open_photo(data=photo.photo, size="Hd") }}
-  </div>
+  {{ c::open_photo(data=photo.photo, size="Hd") }}
 </div>
 
 <script>

@@ -1,6 +1,6 @@
 {% import "_components/simple_photo.html" as c %}
 
-<ul>
+<ul class="portfolio__photos-collection">
   {% for data in portfolio_photos %}
   <li>{{ c::simple_photo(data=data, size="Sm", class="portfolio__photo") }}</li>
   {% endfor %}
@@ -14,4 +14,10 @@
 
   window.__active_collection__ = {{ collection_route | json_encode() | safe }};
 })();
+</script>
+<script>
+  (function() {
+    CLEANUP_EXISTING_LISTENERS();
+  })();
+
 </script>

@@ -16,11 +16,11 @@
   @apply mt-3;
 }
 
-.portfolio__photos {
+.portfolio__photos-wrapper {
   @apply col-span-1 md:col-span-3 lg:col-span-3;
 }
 
-.portfolio__photos > ul {
+.portfolio__photos-collection {
   @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4;
 }
 

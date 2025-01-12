@@ -2,6 +2,7 @@
   if (!window.__active_collection__ || !window.__open_photo__) return;
 
   document.title = `victorhqc.com - ${window.__open_photo__.photo.title}`;
+  CLEANUP_EXISTING_LISTENERS();
 
   registerKeyboardNavigation();
   registerIconToggle();
@@ -49,11 +50,9 @@
       htmx
         .ajax("GET", ac.ajax_path, {
           source: `li[data-collection="${ac.name}"]`,
-          target: ".portfolio__photos",
+          target: ".portfolio__photos-wrapper",
         })
-        .then(() => {
-          cleanupListeners(listeners);
-        });
+        .then(CLEANUP_EXISTING_LISTENERS);
     };
 
     const listenerRightArrow = (e) => {
@@ -72,54 +71,31 @@
       htmx
         .ajax("GET", prevPath, {
           source: ".prev-photo-ref",
-          target: ".portfolio__photos",
+          target: ".portfolio__photos-wrapper",
         })
-        .then(() => {
-          cleanupListeners(listeners);
-        });
+        .then(CLEANUP_EXISTING_LISTENERS);
     };
 
     const goNext = () => {
       htmx
         .ajax("GET", nextPath, {
           source: ".next-photo-ref",
-          target: ".portfolio__photos",
+          target: ".portfolio__photos-wrapper",
         })
-        .then(() => {
-          cleanupListeners(listeners);
-        });
-    };
-
-    const registerArrows = () => {
-      const left = document.querySelector(".photo-info__left-arrow");
-      const right = document.querySelector(".photo-info__right-arrow");
-
-      if (!left || !right) return;
-
-      left.addEventListener("click", goPrev);
-      right.addEventListener("click", goNext);
+        .then(CLEANUP_EXISTING_LISTENERS);
     };
 
     const listeners = [
-      listenerEsc,
-      listenerRightArrow,
-      listenerLeftArrow,
-      listenerSpace,
+      [listenerEsc, "keyup", document],
+      [listenerRightArrow, "keyup", document],
+      [listenerLeftArrow, "keyup", document],
+      [listenerSpace, "keyup", document],
     ];
 
-    registerArrows();
     addListeners(listeners);
   }
 
-  function cleanupListeners(listeners) {
-    for (const listener of listeners) {
-      document.removeEventListener("keyup", listener);
-    }
-  }
-
   function addListeners(listeners) {
-    for (const listener of listeners) {
-      document.addEventListener("keyup", listener);
-    }
+    listeners.forEach(REGISTER_LISTENER);
   }
 })();
