@@ -1,8 +1,9 @@
-use super::context::{render_content, TemplateKind};
+use super::context::{render_content, RenderArgs, TemplateKind};
 use crate::{
     gql::get_portfolio::GetPortfolioPhotos, prefetch::PrefetchedCollection, state::AppState,
     Collection, COLLECTIONS,
 };
+use actix_quick_extract::headers::UserAgent;
 use actix_web::{error::ResponseError, get, web, HttpResponse, Responder, Result};
 use snafu::prelude::*;
 use std::str::FromStr;
@@ -25,7 +26,10 @@ struct CollectionRoute {
 }
 
 #[get("/photography")]
-pub async fn photography(data: web::Data<AppState>) -> Result<impl Responder> {
+pub async fn photography(
+    data: web::Data<AppState>,
+    user_agent: UserAgent,
+) -> Result<impl Responder> {
     let active_collection = Collection::Portfolio;
     let mut context = Context::new();
 
@@ -38,7 +42,14 @@ pub async fn photography(data: web::Data<AppState>) -> Result<impl Responder> {
     );
     context.insert("available_collections", &build_collection_routes());
 
-    let content = render_content("portfolio", TemplateKind::Html, &mut context, &data)?;
+    let args = RenderArgs {
+        route: "portfolio",
+        kind: TemplateKind::Html,
+        ctx: &mut context,
+        data: &data,
+        user_agent: user_agent.0.as_str(),
+    };
+    let content = render_content(args)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -47,6 +58,7 @@ pub async fn photography(data: web::Data<AppState>) -> Result<impl Responder> {
 pub async fn portfolio_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
+    user_agent: UserAgent,
 ) -> Result<impl Responder> {
     let collection_name = path.into_inner();
     let mut context = Context::new();
@@ -65,7 +77,14 @@ pub async fn portfolio_collection(
     );
     context.insert("available_collections", &build_collection_routes());
 
-    let content = render_content("portfolio", TemplateKind::Html, &mut context, &data)?;
+    let args = RenderArgs {
+        route: "portfolio",
+        kind: TemplateKind::Html,
+        ctx: &mut context,
+        data: &data,
+        user_agent: user_agent.0.as_str(),
+    };
+    let content = render_content(args)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -74,6 +93,7 @@ pub async fn portfolio_collection(
 pub async fn ajax_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
+    user_agent: UserAgent,
 ) -> Result<impl Responder> {
     let collection_name = path.into_inner();
     let mut context = Context::new();
@@ -91,12 +111,14 @@ pub async fn ajax_collection(
     );
     context.insert("portfolio_photos", &collection);
 
-    let content = render_content(
-        "_ajax/portfolio_collection",
-        TemplateKind::Html,
-        &mut context,
-        &data,
-    )?;
+    let args = RenderArgs {
+        route: "_ajax/portfolio_collection",
+        kind: TemplateKind::Html,
+        ctx: &mut context,
+        data: &data,
+        user_agent: user_agent.0.as_str(),
+    };
+    let content = render_content(args)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -105,6 +127,7 @@ pub async fn ajax_collection(
 pub async fn ajax_one_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
+    user_agent: UserAgent,
 ) -> Result<impl Responder> {
     let (name, id) = path.into_inner();
     let mut context = Context::new();
@@ -120,7 +143,14 @@ pub async fn ajax_one_photo(
     );
     context.insert("photo", &photo);
 
-    let content = render_content("_ajax/one_photo", TemplateKind::Html, &mut context, &data)?;
+    let args = RenderArgs {
+        route: "_ajax/one_photo",
+        kind: TemplateKind::Html,
+        ctx: &mut context,
+        data: &data,
+        user_agent: user_agent.0.as_str(),
+    };
+    let content = render_content(args)?;
 
     Ok(HttpResponse::Ok().body(content))
 }
@@ -129,6 +159,7 @@ pub async fn ajax_one_photo(
 pub async fn collection_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
+    user_agent: UserAgent,
 ) -> Result<impl Responder> {
     let (name, id) = path.into_inner();
     let mut context = Context::new();
@@ -145,7 +176,14 @@ pub async fn collection_photo(
     context.insert("available_collections", &build_collection_routes());
     context.insert("photo", &photo);
 
-    let content = render_content("photo", TemplateKind::Html, &mut context, &data)?;
+    let args = RenderArgs {
+        route: "photo",
+        kind: TemplateKind::Html,
+        ctx: &mut context,
+        data: &data,
+        user_agent: user_agent.0.as_str(),
+    };
+    let content = render_content(args)?;
 
     Ok(HttpResponse::Ok().body(content))
 }

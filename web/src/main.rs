@@ -15,6 +15,7 @@ mod requests;
 mod routes;
 mod state;
 mod tera_utils;
+mod utils;
 
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
@@ -65,7 +66,7 @@ async fn main() -> Result<(), Error> {
 
     let parser = UserAgentParser::builder()
         .with_unicode_support(false)
-        .with_device(false)
+        .with_device(true)
         .with_os(true)
         .with_user_agent(false)
         .build_from_yaml(regexes_path.as_os_str().to_str().unwrap())
