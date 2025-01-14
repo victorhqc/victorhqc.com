@@ -17,7 +17,7 @@
   function toggleInfo() {
     const icon = document.querySelector(".photo-info__icon");
     const target = document.querySelector(".open__photo .photo__container");
-    const info = document.querySelector(".photo-info__wrapper");
+    const info = document.querySelector(".open-photo-info__wrapper");
     if (!target || !info || !icon) return;
 
     if (target.classList.contains("photo--hidden")) {

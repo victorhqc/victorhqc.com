@@ -23,7 +23,7 @@
 }
 
 .portfolio__photos-collection {
-  @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4;
+  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4;
   @apply gap-3 md:gap-4 lg:gap-4;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .portfolio__photo {
-  @apply cursor-pointer;
+  @apply cursor-zoom-in;
 }
 
 .portfolio__one-photo-wrapper {
@@ -59,7 +59,7 @@
 
   left: 50%;
   transform: translateX(-50%);
-  height: calc(100vh);
+  height: 100vh;
 }
 
 .portfolio__one-photo-bg {
@@ -67,22 +67,30 @@
 }
 
 .open-photo__wrapper {
-  @apply w-full pb-3;
-  /* 100% - navigation*/
+  @apply w-full;
   height: calc(100% - 24px - 1.5rem);
 }
 
 .open__photo {
-  height: 100%;
+  width: calc(100vw - 1.5rem);
   aspect-ratio: 3/2;
 }
 
-.open__photo .photo {
-  /* aspect-ratio: 3/2; */
+@media (min-width: 768px) {
+  .open__photo {
+    width: calc(100vw - 5rem);
+  }
+}
+
+@media (min-aspect-ratio: 3/2) {
+  .open__photo {
+    @apply w-full h-full;
+  }
 }
 
 .photo-info__icon {
   @apply bg-cover absolute bottom-8 right-8;
+  @apply hidden md:block lg:block;
 
   width: 18px;
   height: 18px;
@@ -103,7 +111,7 @@
 }
 
 .photo-info__navigation button {
-  @apply text-sm cursor-pointer;
+  @apply md:text-sm lg:text-sm cursor-pointer;
 }
 
 .photo-info__left-arrow::before {
@@ -157,7 +165,7 @@
     opacity 150ms linear;
 }
 
-.photo-info__wrapper {
+.open-photo-info__wrapper {
   @apply top-0 left-0 m-3;
   @apply grid grid-cols-12;
 
@@ -166,7 +174,7 @@
   position: absolute !important;
 }
 
-.photo-info__data {
+.open-photo-info__data {
   @apply px-3 -ml-3 mr-3;
   @apply col-span-8;
 }
@@ -175,15 +183,34 @@
   @apply mb-3 w-full;
 }
 
-.photo-info__wrapper h1 {
-  @apply font-serif italic text-2xl mb-4;
+.open-photo-info__wrapper h1 {
+  @apply mb-4;
 }
 
-.photo-info__film-sim {
+.open-photo-info__wrapper h1,
+.photo-info__data h1 {
+  @apply font-serif italic text-2xl;
+}
+
+.open-photo-info__film-sim {
   @apply border-l border-gray-500 border-dashed;
   @apply p-3 -m-3;
   @apply col-span-4;
-  @apply text-right;
+}
+
+.open-photo-info__film-sim h1,
+.photo-info__film-sim h1 {
+  @apply italic font-serif text-xl my-4;
+}
+
+.photo-info__wrapper {
+  @apply mt-6 p-2;
+  @apply border border-black border-dashed;
+  @apply md:hidden lg:hidden;
+}
+
+.photo-info__data {
+  @apply flex place-content-between;
 }
 
 .film-sim__icon {
@@ -196,7 +223,6 @@
 
 .film-sim__content {
   @apply grid grid-cols-2 text-left;
-  @apply mt-4;
 }
 
 .film-sim__content h3 {

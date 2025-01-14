@@ -1,4 +1,5 @@
 {% import "_components/open_photo.html" as c %}
+{% import "_components/photo_info.html" as i %}
 <div class="portfolio__one-photo-bg"></div>
 <div class="portfolio__one-photo-wrapper">
   <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
@@ -35,7 +36,12 @@
     </ol>
   </nav>
   <div class="open-photo__wrapper">
+    {% if is_mobile %}
+    {{ c::open_photo(data=photo.photo, size="Md") }}
+    {{ i::photo_info(data=photo.photo) }}
+    {% else %}
     {{ c::open_photo(data=photo.photo, size="Hd") }}
+    {% endif %}
   </div>
 </div>
 
