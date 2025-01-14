@@ -1,13 +1,11 @@
 .portfolio__main {
-  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2;
+  @apply grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-2;
   @apply px-3 md:px-5 lg:px-5;
-}
-
-.portfolio__menu {
-  @apply col-span-1;
+  @apply md:mt-10 lg:mt-10;
 }
 
 .portfolio__photos-about {
+  @apply col-span-1 md:col-span-3 lg:col-span-3;
   @apply md:pr-3 lg:pr-3;
   @apply mt-4 md:mt-0 lg:mt-0;
 }
@@ -21,7 +19,7 @@
 }
 
 .portfolio__photos-wrapper {
-  @apply col-span-1 md:col-span-3 lg:col-span-3;
+  @apply col-span-1 md:col-span-9 lg:col-span-9;
 }
 
 .portfolio__photos-collection {
@@ -56,8 +54,31 @@
   @apply cursor-pointer;
 }
 
-.open__photo .photo {
+.portfolio__one-photo-wrapper {
+  @apply absolute h-full top-0;
+
+  left: 50%;
+  transform: translateX(-50%);
+  height: calc(100vh);
+}
+
+.portfolio__one-photo-bg {
+  @apply bg-white w-full h-full top-0 left-0 fixed z-0;
+}
+
+.open-photo__wrapper {
+  @apply w-full pb-3;
+  /* 100% - navigation*/
+  height: calc(100% - 24px - 1.5rem);
+}
+
+.open__photo {
+  height: 100%;
   aspect-ratio: 3/2;
+}
+
+.open__photo .photo {
+  /* aspect-ratio: 3/2; */
 }
 
 .photo-info__icon {
@@ -73,7 +94,7 @@
 }
 
 .photo-info__navigation {
-  @apply -mt-3 mb-3;
+  @apply my-3;
 }
 
 .photo-info__navigation ol {
@@ -104,6 +125,10 @@
   width: 15px;
   height: 15px;
   background-image: url("/public/icons/arrow-right.svg");
+}
+
+.photo__container {
+  @apply h-full w-full;
 }
 
 .photo--visible {

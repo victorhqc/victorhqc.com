@@ -25,8 +25,8 @@
   <section class="portfolio__photos-about">
     <h1>Photography Portfolio</h1>
     <p>Welcome to my photography portfolio. Here are some collections I've taken in the past 2 years or so.</p>
+    {{ m::portfolio_menu(collections=available_collections) }}
   </section>
-  {{ m::portfolio_menu(collections=available_collections) }}
   <section class="portfolio__photos-wrapper">
   {% include "_ajax/one_photo.html" %}
   </section>

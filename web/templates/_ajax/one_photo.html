@@ -1,29 +1,31 @@
 {% import "_components/open_photo.html" as c %}
-
-<div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
-<div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
-<nav class="photo-info__navigation">
-  <ol>
-    <li>
-      <button
-        class="photo-info__left-arrow"
-        hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
-        hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
-        hx-target=".portfolio__photos-wrapper"
-      >Prev</button>
-    </li>
-    <li>
-      <button
-        class="photo-info__right-arrow"
-        hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
-        hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
-        hx-target=".portfolio__photos-wrapper"
-      >Next</button>
-    </li>
-  </ol>
-</nav>
-<div class="photo-card__wrapper">
-  {{ c::open_photo(data=photo.photo, size="Hd") }}
+<div class="portfolio__one-photo-bg"></div>
+<div class="portfolio__one-photo-wrapper">
+  <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
+  <div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
+  <nav class="photo-info__navigation">
+    <ol>
+      <li>
+        <button
+          class="photo-info__left-arrow"
+          hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
+          hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
+          hx-target=".portfolio__photos-wrapper"
+        >Prev</button>
+      </li>
+      <li>
+        <button
+          class="photo-info__right-arrow"
+          hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
+          hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
+          hx-target=".portfolio__photos-wrapper"
+        >Next</button>
+      </li>
+    </ol>
+  </nav>
+  <div class="open-photo__wrapper">
+    {{ c::open_photo(data=photo.photo, size="Hd") }}
+  </div>
 </div>
 
 <script>
