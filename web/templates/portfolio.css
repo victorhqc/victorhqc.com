@@ -1,18 +1,22 @@
 .portfolio__main {
   @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2;
-  @apply px-5;
+  @apply px-3 md:px-5 lg:px-5;
 }
 
 .portfolio__menu {
   @apply col-span-1;
-  @apply pr-3;
 }
 
-.portfolio__menu h1 {
-  @apply text-2xl font-light font-serif;
+.portfolio__photos-about {
+  @apply md:pr-3 lg:pr-3;
+  @apply mt-4 md:mt-0 lg:mt-0;
 }
 
-.portfolio__menu p {
+.portfolio__photos-about h1 {
+  @apply text-xl md:text-2xl lg:text-2xl font-light font-serif;
+}
+
+.portfolio__photos-about p {
   @apply mt-3;
 }
 
@@ -21,11 +25,16 @@
 }
 
 .portfolio__photos-collection {
-  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4;
+  @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4;
+  @apply gap-3 md:gap-4 lg:gap-4;
 }
 
 .portfolio__collections-menu {
-  @apply mt-10;
+  @apply my-4 md:my-6 lg:my-6;
+}
+
+.portfolio__collections-menu ol {
+  @apply grid grid-cols-3 md:grid-cols-1 lg:grid-cols-1;
 }
 
 .portfolio__collection-item {
