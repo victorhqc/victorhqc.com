@@ -52,7 +52,11 @@
       <ul id="photos-stack">
         {% for photo in photos %}
         <li class="photo-slide">
+          {% if is_mobile %}
+          {{ c::photo(data=photo, size="Sm") }}
+          {% else %}
           {{ c::photo(data=photo, size="Md") }}
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
