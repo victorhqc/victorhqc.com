@@ -11,9 +11,9 @@ a {
 .photo-wrapper {
   @apply relative w-full h-full;
   @apply border border-solid border-black;
-
-  @apply p-3;
   @apply shadow-md bg-white;
+
+  @apply p-2 md:p-3 lg:p-3;
 }
 
 .photo {
@@ -21,16 +21,21 @@ a {
 }
 
 .photo-description {
-  @apply absolute bottom-0 left-0 w-full py-8 px-8;
+  @apply absolute bottom-0 left-0 w-full py-4 px-4;
   @apply text-left text-white;
+
+  @apply md:py-8 md:px-8;
+  @apply lg:py-8 lg:px-8;
 }
 
 .photo-description h1 {
-  @apply text-3xl font-thin font-mono;
+  @apply font-thin font-mono;
+  @apply text-xl md:text-3xl lg:text-3xl;
 }
 
 .photo-description p {
-  @apply text-sm font-mono;
+  @apply font-mono;
+  @apply text-xs md:text-sm lg:text-sm;
 }
 
 .main-menu__wrapper {
