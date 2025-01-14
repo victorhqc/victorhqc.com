@@ -4,14 +4,23 @@
   <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
   <div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
   <nav class="photo-info__navigation">
+    <button
+      class="photo-info__close"
+      hx-get="{{ collection_route.ajax_path }}"
+      hx-push-url="{{ collection_route.path }}"
+      hx-target=".portfolio__photos-wrapper"
+    >
+      Close
+    </button>
     <ol>
-      <li>
         <button
           class="photo-info__left-arrow"
           hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
           hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
           hx-target=".portfolio__photos-wrapper"
-        >Prev</button>
+        >
+          Prev
+        </button>
       </li>
       <li>
         <button
@@ -19,7 +28,9 @@
           hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
           hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
           hx-target=".portfolio__photos-wrapper"
-        >Next</button>
+        >
+          Next
+        </button>
       </li>
     </ol>
   </nav>

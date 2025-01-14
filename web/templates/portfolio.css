@@ -95,10 +95,11 @@
 
 .photo-info__navigation {
   @apply my-3;
+  @apply flex place-content-between;
 }
 
 .photo-info__navigation ol {
-  @apply flex place-content-between;
+  @apply flex gap-4;
 }
 
 .photo-info__navigation button {
@@ -125,6 +126,17 @@
   width: 15px;
   height: 15px;
   background-image: url("/public/icons/arrow-right.svg");
+}
+
+.photo-info__close::after {
+  @apply bg-cover inline-block;
+
+  content: "";
+
+  vertical-align: text-bottom;
+  width: 15px;
+  height: 15px;
+  background-image: url("/public/icons/x.svg");
 }
 
 .photo__container {
