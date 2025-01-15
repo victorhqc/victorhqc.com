@@ -9,8 +9,8 @@
         exif.cameraMaker }} {{ exif.cameraName }}
       </p>
       <p>
-        {{ exif.iso }} ISO f{{ exif.aperture }} {{
-        exif.shutterSpeed }} sec
+        ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{
+        exif.shutterSpeed }} s
       </p>
     </div>
       {% if exif.cameraMaker == "FUJIFILM" %}
@@ -21,6 +21,7 @@
       ></div>
       {%endif %}
   </div>
+  <div class="photo-info__ticket-dashed"></div>
   {% if exif.cameraMaker == "FUJIFILM" %}
   {% set film_sim = exif.fujifilmRecipe %}
   <div class="photo-info__film-sim">

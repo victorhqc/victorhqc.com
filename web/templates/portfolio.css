@@ -68,7 +68,7 @@
 
 .open-photo__wrapper {
   @apply w-full;
-  height: calc(100% - 24px - 1.5rem);
+  height: calc(100% - 24px - 2.5rem);
 }
 
 .open__photo {
@@ -184,7 +184,7 @@
 }
 
 .open-photo-info__wrapper h1 {
-  @apply mb-4;
+  @apply mb-2;
 }
 
 .open-photo-info__wrapper h1,
@@ -198,18 +198,29 @@
   @apply col-span-4;
 }
 
-.open-photo-info__film-sim h1,
+.open-photo-info__film-sim h1 {
+  @apply italic font-serif text-xl;
+}
+
 .photo-info__film-sim h1 {
   @apply italic font-serif text-xl my-4;
 }
 
 .photo-info__wrapper {
   @apply mt-6 p-2;
-  @apply border border-black border-dashed;
+  @apply border border-black border-solid;
   @apply md:hidden lg:hidden;
 }
 
-.photo-info__data {
+.photo-info__ticket-dashed {
+  @apply border-b border-black border-dashed;
+  @apply mb-4 -mx-2;
+
+  height: 20px;
+}
+
+.photo-info__data,
+.open-photo-info__data-container {
   @apply flex place-content-between;
 }
 

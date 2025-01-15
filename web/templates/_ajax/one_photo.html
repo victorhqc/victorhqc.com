@@ -59,4 +59,6 @@
   window.__open_photo__ = {{ photo | json_encode() | safe }};
 })();
 </script>
+{% if not is_mobile %}
 <script src="/public/one_photo.js"></script>
+{% endif %}
