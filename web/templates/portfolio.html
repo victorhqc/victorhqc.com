@@ -12,6 +12,8 @@
 
 {% block tailwind_styles %}
   {% include "portfolio.css" %}
+  {% include "_components/portfolio_menu.css" %}
+  {% include "_ajax/portfolio_collection.css" %}
   {% include "styles.css" %}
 {% endblock tailwind_styles %}
 
@@ -25,16 +27,14 @@
 
 {% block content %}
 {{ a::main_menu(show_title=True) }}
-<div class="portfolio__main">
-  <section class="portfolio__photos-about">
+<div class="portfolio__wrapper">
+  <section class="portfolio__side-section">
     <h1>Photography Portfolio</h1>
     <p>Welcome to my photography portfolio. Here are some collections I've taken in the past 2 years or so.</p>
     {{ m::portfolio_menu(collections=available_collections) }}
   </section>
-  <section class="portfolio__photos-wrapper">
-    <div class="portfolio__photos">
-      {% include "_ajax/portfolio_collection.html" %}
-    </div>
+  <section class="portfolio__photos-section">
+    {% include "_ajax/portfolio_collection.html" %}
   </section>
 <div>
 {% endblock content %}

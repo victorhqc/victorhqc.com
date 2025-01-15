@@ -1,24 +1,36 @@
-{% macro open_photo(data, size="Md", class="") %}
+{% macro open_photo_no_info(data, size="Sm") %}
+<div class="open-photo">
+  <div class="open-photo__container photo-wrapper">
+    <img
+      class="photo"
+      src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
+      alt="{{ data.title }}"
+    />
+  </div>
+</div>
+{% endmacro open_photo_no_info %}
+
+{% macro open_photo(data, size="Md") %}
 {% set exif = data.exifMeta %}
-<div class="open__photo">
-  <div class="photo-wrapper">
-    <div class="photo__container photo--visible">
+<div class="open-photo">
+  <div class="open-photo__container photo-wrapper">
+    <div class="open-photo__photo-wrapper photo--visible">
       <img
         class="photo"
         src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
         alt="{{ data.title }}"
       />
     </div>
-    <div class="open-photo-info__wrapper photo--visible photo--hidden">
-      <div class="open-photo-info__data">
+    <div class="open-photo__info-wrapper photo--visible photo--hidden">
+      <div class="open-photo__info-photo-wrapper">
         <img
-          class="info_photo"
+          class="open-photo__info_photo"
           src="{{ api_host }}/v1/images/{{ data.id }}/Md"
           alt="{{ data.title }}"
         />
       </div>
-      <div class="open-photo-info__film-sim">
-        <div class="open-photo-info__data-container">
+      <div class="open-photo__info-data">
+        <div class="open-photo__info-head">
           <div>
             <h1>{{ data.title }}</h1>
             <p>
@@ -33,7 +45,7 @@
           {% if exif.cameraMaker == "FUJIFILM" %}
           {% set film_sim = exif.fujifilmRecipe %}
           <div
-            class="film-sim__icon"
+            class="open-photo__film-sim-icon"
             style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=film_sim.filmSimulation)}}')"
           ></div>
           {% endif %}
@@ -41,7 +53,7 @@
         {% if exif.cameraMaker == "FUJIFILM" %}
         {% set film_sim = exif.fujifilmRecipe %}
         <h1>Fujifilm Recipe</h1>
-        <div class="film-sim__content">
+        <div class="open-photo__film-simulation">
           <div>
             <div>
               <h3>Film Simulation</h3>
@@ -100,7 +112,7 @@
       {% endif %}
       </div>
     </div>
-    <button class="photo-info__icon"></button>
+    <button class="open-photo__icon"></button>
   </div>
 </div>
 {% endmacro open_photo %}

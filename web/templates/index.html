@@ -30,7 +30,7 @@
 {%block content %}
   {{ a::main_menu(show_title=False) }}
   <div class="index__sections-wrapper">
-    <section id="main-section">
+    <section id="index__main-section">
       <h1>Victor Quiroz Castro</h1>
       <h2>Software Engineer</h2>
       <p>
@@ -48,10 +48,10 @@
         <a href="/photography">here</a>.
       </p>
     </section>
-    <section id="photos-section">
-      <ul id="photos-stack">
+    <section id="index__photos-section">
+      <ul id="index__photos-stack">
         {% for photo in photos %}
-        <li class="photo-slide">
+        <li class="index__photo-slide photo-slide">
           {% if is_mobile %}
           {{ c::photo(data=photo, size="Sm") }}
           {% else %}

@@ -1,7 +1,7 @@
 (function () {
-  const ACTIVE = "portfolio__collection-item--active";
+  const ACTIVE = "portfolio-menu__item--active";
 
-  const menu = document.querySelector(".portfolio__collections-menu");
+  const menu = document.querySelector(".portfolio-menu");
   if (!menu) return;
 
   setInitialActive();

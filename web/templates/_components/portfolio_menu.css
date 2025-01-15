@@ -1,0 +1,22 @@
+.portfolio-menu {
+  @apply my-4 md:my-6 lg:my-6;
+}
+
+.portfolio-menu ol {
+  @apply grid grid-cols-3 md:grid-cols-1 lg:grid-cols-1;
+}
+
+.portfolio-menu__item {
+  @apply py-2 px-2 -mx-2 cursor-pointer;
+  @apply border border-solid border-transparent;
+
+  text-transform: capitalize;
+}
+
+.portfolio-menu__item:hover {
+  @apply border-black;
+}
+
+.portfolio-menu__item--active {
+  @apply underline;
+}

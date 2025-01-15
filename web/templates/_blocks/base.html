@@ -13,6 +13,7 @@
       <script src="/static/tailwindcss.js.gz"></script>
       {# Render Tailwind styles in the HEAD only in development #}
       <style type="text/tailwindcss">
+        {% include "_components/main_menu.css" %}
         {% block tailwind_styles %}{% endblock %}
       </style>
       {# Things that can appear in the HEAD only in development #}

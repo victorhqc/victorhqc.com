@@ -1,43 +1,43 @@
 {% import "_components/open_photo.html" as c %}
 {% import "_components/photo_info.html" as i %}
-<div class="portfolio__one-photo-bg"></div>
-<div class="portfolio__one-photo-wrapper">
+<div class="one-photo__background"></div>
+<div class="one-photo__wrapper">
   <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
   <div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
-  <nav class="photo-info__navigation">
+  <nav class="one-photo__navigation">
     <button
-      class="photo-info__close"
+      class="one-photo__close"
       hx-get="{{ collection_route.ajax_path }}"
       hx-push-url="{{ collection_route.path }}"
-      hx-target=".portfolio__photos-wrapper"
+      hx-target=".portfolio__photos-section"
     >
       Close
     </button>
     <ol>
         <button
-          class="photo-info__left-arrow"
+          class="one-photo__left-arrow"
           hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
           hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
-          hx-target=".portfolio__photos-wrapper"
+          hx-target=".portfolio__photos-section"
         >
           Prev
         </button>
       </li>
       <li>
         <button
-          class="photo-info__right-arrow"
+          class="one-photo__right-arrow"
           hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
           hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
-          hx-target=".portfolio__photos-wrapper"
+          hx-target=".portfolio__photos-section"
         >
           Next
         </button>
       </li>
     </ol>
   </nav>
-  <div class="open-photo__wrapper">
+  <div class="one-photo__container">
     {% if is_mobile %}
-    {{ c::open_photo(data=photo.photo, size="Md") }}
+    {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
     {{ i::photo_info(data=photo.photo) }}
     {% else %}
     {{ c::open_photo(data=photo.photo, size="Hd") }}

@@ -2,13 +2,11 @@
 {% set exif = data.exifMeta %}
 <div class="photo-info__wrapper">
   <div class="photo-info__data">
-    <div>
+    <div class="photo-info__data-container">
       <h1>{{ data.title }}</h1>
-      <p>
-        Shot on {{ exif.focalLength.eq35Mm}}mm {{
-        exif.cameraMaker }} {{ exif.cameraName }}
-      </p>
-      <p>
+      <p>{{ exif.cameraMaker }} {{ exif.cameraName }}</p>
+      <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+      <p class="photo-info__p--small">
         ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{
         exif.shutterSpeed }} s
       </p>
@@ -16,7 +14,7 @@
       {% if exif.cameraMaker == "FUJIFILM" %}
       {% set film_sim = exif.fujifilmRecipe %}
       <div
-        class="film-sim__icon"
+        class="photo-info__film-sim-icon"
         style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=film_sim.filmSimulation)}}')"
       ></div>
       {%endif %}
@@ -26,7 +24,7 @@
   {% set film_sim = exif.fujifilmRecipe %}
   <div class="photo-info__film-sim">
     <h1>Fujifilm Recipe</h1>
-    <div class="film-sim__content">
+    <div class="photo-info__film-simulation">
       <div>
         <div>
           <h3>Film Simulation</h3>

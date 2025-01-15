@@ -8,26 +8,28 @@
   registerIconToggle();
 
   function registerIconToggle() {
-    const icon = document.querySelector(".photo-info__icon");
+    const icon = document.querySelector(".open-photo__icon");
     if (!icon) return;
 
     icon.addEventListener("click", toggleInfo);
   }
 
   function toggleInfo() {
-    const icon = document.querySelector(".photo-info__icon");
-    const target = document.querySelector(".open__photo .photo__container");
-    const info = document.querySelector(".open-photo-info__wrapper");
+    const icon = document.querySelector(".open-photo__icon");
+    const target = document.querySelector(
+      ".open-photo .open-photo__photo-wrapper",
+    );
+    const info = document.querySelector(".open-photo__info-wrapper");
     if (!target || !info || !icon) return;
 
     if (target.classList.contains("photo--hidden")) {
       info.classList.add("photo--hidden");
       target.classList.remove("photo--hidden");
-      icon.classList.remove("photo-info__icon--black");
+      icon.classList.remove("open-photo__icon--black");
     } else {
       info.classList.remove("photo--hidden");
       target.classList.add("photo--hidden");
-      icon.classList.add("photo-info__icon--black");
+      icon.classList.add("open-photo__icon--black");
     }
   }
 
@@ -50,7 +52,7 @@
       htmx
         .ajax("GET", ac.ajax_path, {
           source: `li[data-collection="${ac.name}"]`,
-          target: ".portfolio__photos-wrapper",
+          target: ".portfolio__photos-section",
         })
         .then(CLEANUP_EXISTING_LISTENERS);
     };
@@ -71,7 +73,7 @@
       htmx
         .ajax("GET", prevPath, {
           source: ".prev-photo-ref",
-          target: ".portfolio__photos-wrapper",
+          target: ".portfolio__photos-section",
         })
         .then(CLEANUP_EXISTING_LISTENERS);
     };
@@ -80,7 +82,7 @@
       htmx
         .ajax("GET", nextPath, {
           source: ".next-photo-ref",
-          target: ".portfolio__photos-wrapper",
+          target: ".portfolio__photos-section",
         })
         .then(CLEANUP_EXISTING_LISTENERS);
     };

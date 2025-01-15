@@ -1,15 +1,16 @@
 {% macro portfolio_menu(collections) %}
-<div class="portfolio__menu">
-  <nav class="portfolio__collections-menu">
+<div class="portfolio-menu__wrapper">
+  <nav class="portfolio-menu">
     <ol>
       {% for collection in collections %}
       <li
         hx-get="{{ collection.ajax_path }}"
         hx-push-url="{{ collection.path }}"
-        hx-target=".portfolio__photos-wrapper"
+        hx-target=".portfolio__photos-section"
         data-collection="{{collection.name}}"
-        class="portfolio__collection-item">
-          {{ collection.name }}
+        class="portfolio-menu__item"
+      >
+        {{ collection.name }}
       </li>
       {% endfor %}
     </ol>
