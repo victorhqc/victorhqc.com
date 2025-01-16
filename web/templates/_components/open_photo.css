@@ -56,7 +56,7 @@
 }
 
 .open-photo__info-data {
-  @apply border-l border-gray-500 border-dashed;
+  @apply border-l border-gray-500 border-solid;
   @apply p-3 -m-3;
   @apply col-span-4;
 }
