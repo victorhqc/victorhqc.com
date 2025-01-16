@@ -27,7 +27,9 @@ jobs:
             - name: Install sccache
               run: |
                   curl -L https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+                  chmod +x sccache-*/sccache
                   sudo mv sccache-*/sccache /usr/local/bin/sccache
+                  sccache --version
 
             - name: Cache sccache
               uses: actions/cache@v3
@@ -55,10 +57,10 @@ jobs:
                   shared-key: "rust-cache"
 
             - name: Install SQLX
-              uses: actions-rs/cargo@v1
-              with:
-                  command: install
-                  args: sqlx-cli --no-default-features --features sqlite --locked
+              env:
+                  RUSTC_WRAPPER: "" # Temporarily disable sccache for this step
+              run: |
+                  cargo install sqlx-cli --no-default-features --features sqlite
 
             - name: Init DB
               run: |
