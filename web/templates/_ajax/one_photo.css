@@ -1,0 +1,66 @@
+.one-photo__background {
+  @apply bg-white w-full h-full top-0 left-0 fixed z-0;
+}
+
+.one-photo__wrapper {
+  @apply absolute h-full top-0;
+
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100vh;
+}
+
+.one-photo__navigation {
+  @apply my-3;
+  @apply flex place-content-between;
+}
+
+.one-photo__navigation ol {
+  @apply flex gap-4;
+}
+
+.one-photo__navigation button {
+  @apply md:text-sm lg:text-sm cursor-pointer;
+}
+
+.one-photo__navigation button:hover {
+  @apply underline;
+}
+
+.one-photo__close::after {
+  @apply bg-cover inline-block;
+
+  content: "";
+
+  vertical-align: text-bottom;
+  width: 15px;
+  height: 15px;
+  background-image: url("/public/icons/x.svg");
+}
+
+.one-photo__left-arrow::before {
+  @apply bg-cover inline-block;
+
+  content: "";
+
+  vertical-align: text-bottom;
+  width: 15px;
+  height: 15px;
+  background-image: url("/public/icons/arrow-left.svg");
+}
+
+.one-photo__right-arrow::after {
+  @apply bg-cover inline-block;
+
+  content: "";
+
+  vertical-align: text-bottom;
+  width: 15px;
+  height: 15px;
+  background-image: url("/public/icons/arrow-right.svg");
+}
+
+.one-photo__container {
+  @apply w-full;
+  height: calc(100% - 24px - 2.5rem);
+}

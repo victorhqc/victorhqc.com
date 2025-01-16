@@ -1,29 +1,48 @@
 {% import "_components/open_photo.html" as c %}
-
-<div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
-<div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
-<nav class="photo-info__navigation">
-  <ol>
-    <li>
-      <button
-        class="photo-info__left-arrow"
-        hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
-        hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
-        hx-target=".portfolio__photos-wrapper"
-      >Prev</button>
-    </li>
-    <li>
-      <button
-        class="photo-info__right-arrow"
-        hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
-        hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
-        hx-target=".portfolio__photos-wrapper"
-      >Next</button>
-    </li>
-  </ol>
-</nav>
-<div class="photo-card__wrapper">
-  {{ c::open_photo(data=photo.photo, size="Hd") }}
+{% import "_components/photo_info.html" as i %}
+<div class="one-photo__background"></div>
+<div class="one-photo__wrapper">
+  <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>
+  <div class="next-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"></div>
+  <nav class="one-photo__navigation">
+    <button
+      class="one-photo__close"
+      hx-get="{{ collection_route.ajax_path }}"
+      hx-push-url="{{ collection_route.path }}"
+      hx-target=".portfolio__photos-section"
+    >
+      Close
+    </button>
+    <ol>
+        <button
+          class="one-photo__left-arrow"
+          hx-get="/one_photo/{{ collection_route.name }}/{{ photo.prev_id }}"
+          hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"
+          hx-target=".portfolio__photos-section"
+        >
+          Prev
+        </button>
+      </li>
+      <li>
+        <button
+          class="one-photo__right-arrow"
+          hx-get="/one_photo/{{ collection_route.name }}/{{ photo.next_id }}"
+          hx-push-url="/photography/{{ collection_route.name }}/{{ photo.next_id }}"
+          hx-target=".portfolio__photos-section"
+        >
+          Next
+        </button>
+      </li>
+    </ol>
+  </nav>
+  <div class="one-photo__container">
+    {% if is_mobile %}
+    {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
+    {{ i::photo_info(data=photo.photo) }}
+    {% else %}
+    {{ c::open_photo(data=photo.photo, size="Hd") }}
+    {% endif %}
+  </div>
 </div>
 
 <script>
@@ -40,4 +59,6 @@
   window.__open_photo__ = {{ photo | json_encode() | safe }};
 })();
 </script>
+{% if not is_mobile %}
 <script src="/public/one_photo.js"></script>
+{% endif %}

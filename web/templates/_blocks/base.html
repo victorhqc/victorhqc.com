@@ -10,16 +10,18 @@
     {% if is_production %}
       {% block static_head %}{% endblock %}
     {% else %}
-      <script src="/static/tailwindcss.js.gz"></script>
+      <script src="/static/tailwindcss.js"></script>
       {# Render Tailwind styles in the HEAD only in development #}
       <style type="text/tailwindcss">
+        {% include "_components/main_menu.css" %}
         {% block tailwind_styles %}{% endblock %}
       </style>
       {# Things that can appear in the HEAD only in development #}
       {% block dev_head %}{% endblock %}
     {% endif %}
-    <script src="/static/htmx.js.gz"></script>
+    <script src="/static/htmx.js"></script>
     <script>
+    let __IS_MOBILE__ = {{ is_mobile  }};
     let __LISTENERS__ = [];
 
     function CLEANUP_EXISTING_LISTENERS() {

@@ -1,0 +1,51 @@
+.photo-info__wrapper {
+  @apply mt-6 p-2;
+  @apply border border-black border-solid;
+}
+
+.photo-info__data {
+  @apply flex place-content-between;
+}
+
+.photo-info__data h1 {
+  @apply font-serif italic text-2xl;
+}
+
+.photo-info__p--small {
+  @apply text-sm;
+}
+
+.photo-info__data-container {
+  @apply shrink;
+}
+
+.photo-info__film-sim-icon {
+  @apply bg-cover right-8;
+  @apply shrink-0;
+
+  width: 136px;
+  height: 100px;
+}
+
+.photo-info__ticket-dashed {
+  @apply border-b border-black border-dashed;
+  @apply mb-4 -mx-2;
+
+  height: 20px;
+}
+
+.photo-info__film-sim h1 {
+  @apply italic font-serif text-xl my-4;
+}
+
+.photo-info__film-simulation {
+  @apply grid grid-cols-2 text-left;
+}
+
+.photo-info__film-simulation h3 {
+  @apply font-semibold text-sm;
+}
+
+.photo-info__film-simulation p {
+  @apply text-sm;
+}

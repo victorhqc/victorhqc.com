@@ -6,6 +6,7 @@ publish = false
 
 [dependencies]
 actix-files = "0.6.6"
+actix-quick-extract = "0.1.0-beta.0"
 actix-web = "4.9.0"
 core-victorhqc-com.workspace = true
 dotenvy.workspace = true
@@ -20,3 +21,7 @@ snafu = { workspace = true, features = ["default", "backtrace"] }
 strum.workspace = true
 strum_macros.workspace = true
 tera = "1.20.0"
+uaparser = "0.6.4"
+
+[build-dependencies]
+reqwest = { version = "0.11", features = ["blocking"] }

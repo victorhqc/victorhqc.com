@@ -1,8 +1,8 @@
 {% import "_components/simple_photo.html" as c %}
 
-<ul class="portfolio__photos-collection">
+<ul class="portfolio-collection">
   {% for data in portfolio_photos %}
-  <li>{{ c::simple_photo(data=data, size="Sm", class="portfolio__photo") }}</li>
+  <li>{{ c::simple_photo(data=data, size="Sm", class="portfolio-collection__photo") }}</li>
   {% endfor %}
 </ul>
 
@@ -13,6 +13,7 @@
   }
 
   window.__active_collection__ = {{ collection_route | json_encode() | safe }};
+  document.title = `victorhqc.com - Photography Portfolio`;
 })();
 </script>
 <script>

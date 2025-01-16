@@ -1,75 +1,86 @@
-{% macro photo_info(data, class="") %}
-<div class="photo-info__wrapper {{ class }}">
+{% macro photo_info(data) %}
+{% set exif = data.exifMeta %}
+<div class="photo-info__wrapper">
   <div class="photo-info__data">
-    <h1>{{ data.title }}</h1>
-    <p>
-      Shot on {{ data.exifMeta.focalLength.eq35Mm}}mm {{
-      data.exifMeta.cameraMaker }} {{ data.exifMeta.cameraName }}
-    </p>
-    <p>
-      {{ data.exifMeta.iso }} ISO f{{ data.exifMeta.aperture }} {{
-      data.exifMeta.shutterSpeed }} sec
-    </p>
+    <div class="photo-info__data-container">
+      <h1>{{ data.title }}</h1>
+      <p>{{ exif.cameraMaker }} {{ exif.cameraName }}</p>
+      <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+      <p class="photo-info__p--small">
+        ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{
+        exif.shutterSpeed }} s
+      </p>
+    </div>
+      {% if exif.cameraMaker == "FUJIFILM" %}
+      {% set film_sim = exif.fujifilmRecipe %}
+      <div
+        class="photo-info__film-sim-icon"
+        style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=film_sim.filmSimulation)}}')"
+      ></div>
+      {%endif %}
   </div>
+  <div class="photo-info__ticket-dashed"></div>
+  {% if exif.cameraMaker == "FUJIFILM" %}
+  {% set film_sim = exif.fujifilmRecipe %}
   <div class="photo-info__film-sim">
-    <div
-      class="film-sim__icon"
-      style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=data.exifMeta.fujifilmRecipe.filmSimulation)}}')"
-    ></div>
-    <div class="film-sim__content">
+    <h1>Fujifilm Recipe</h1>
+    <div class="photo-info__film-simulation">
       <div>
         <div>
           <h3>Film Simulation</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.filmSimulation }}</p>
+          <p>{{ parse_film_simulation_name(name=film_sim.filmSimulation,monochromatic_color=film_sim.settings.monochromaticColor) }}</p>
         </div>
         <div>
           <h3>White Balance</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.whiteBalance }}</p>
+          <p>{{ film_sim.settings.whiteBalance }}</p>
         </div>
         <div>
           <h3>Color Chrome Effect</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.colorChromeEffect }}</p>
+          <p>{{ film_sim.settings.colorChromeEffect }}</p>
         </div>
         <div>
           <h3>Dynamic Range</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.dynamicRange }}</p>
+          <p>{{ film_sim.settings.dynamicRange }}</p>
         </div>
         <div>
           <h3>Color</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.color }}</p>
+          <p>{{ film_sim.settings.color }}</p>
         </div>
         <div>
           <h3>Clarity</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.clarity }}</p>
+          <p>{{ film_sim.settings.clarity }}</p>
         </div>
       </div>
       <div>
         <div>
           <h3>Grain Effect</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.grainEffect }}</p>
+          <p>{{ film_sim.settings.grainEffect }}</p>
         </div>
         <div>
           <h3>Tone Curve</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.toneCurve }}</p>
+          <p>{{ film_sim.settings.toneCurve }}</p>
         </div>
         <div>
           <h3>Color Chrome FX Blue</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.colorChromeFxBlue }}</p>
+          <p>{{ film_sim.settings.colorChromeFxBlue }}</p>
         </div>
         <div>
           <h3>DRange Priority</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.dRangePriority }}</p>
+          <p>{{ film_sim.settings.dRangePriority }}</p>
         </div>
         <div>
           <h3>High ISO NR</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.highIsoNoiseReduction }}</p>
+          <p>
+            {{ film_sim.settings.highIsoNoiseReduction }}
+          </p>
         </div>
         <div>
           <h3>Sharpness</h3>
-          <p>{{ data.exifMeta.fujifilmRecipe.settings.sharpness }}</p>
+          <p>{{ film_sim.settings.sharpness }}</p>
         </div>
       </div>
     </div>
   </div>
+  {% endif %}
 </div>
 {% endmacro photo_info %}

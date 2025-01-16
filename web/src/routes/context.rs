@@ -1,9 +1,11 @@
+use crate::utils::device;
 use crate::{state::AppState, TEMPLATES};
 use actix_web::{web, ResponseError, Result};
 use log::error;
 use snafu::prelude::*;
 use strum_macros::Display;
 use tera::Context;
+use uaparser::Parser;
 
 #[derive(Debug, Display, serde::Serialize)]
 pub enum TemplateKind {
@@ -12,23 +14,30 @@ pub enum TemplateKind {
     Html,
 }
 
-pub fn render_content(
-    route: &str,
-    template_kind: TemplateKind,
-    ctx: &mut Context,
-    data: &web::Data<AppState>,
-) -> Result<String> {
+pub struct RenderArgs<'a> {
+    pub route: &'a str,
+    pub kind: TemplateKind,
+    pub ctx: &'a mut Context,
+    pub data: &'a web::Data<AppState>,
+    pub user_agent: &'a str,
+}
+
+pub fn render_content(args: RenderArgs) -> Result<String> {
     let is_production = false;
     #[cfg(not(debug_assertions))]
     let is_production = true;
 
-    ctx.insert("api_host", &data.api_host);
-    ctx.insert("is_production", &is_production);
+    let parsed = args.data.ua_parser.parse(args.user_agent);
+    let is_mobile = device::is_mobile(&parsed.device, &parsed.os);
+
+    args.ctx.insert("api_host", &args.data.api_host);
+    args.ctx.insert("is_production", &is_production);
+    args.ctx.insert("is_mobile", &is_mobile);
 
     let content = TEMPLATES
-        .render(format!("{}.{}", route, template_kind).as_str(), ctx)
+        .render(format!("{}.{}", args.route, args.kind).as_str(), args.ctx)
         .context(TemplateSnafu {
-            route: route.to_string(),
+            route: args.route.to_string(),
         })?;
 
     Ok(content)

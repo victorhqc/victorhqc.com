@@ -1,0 +1,9 @@
+.portfolio-collection {
+  @apply grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6;
+  @apply gap-3 md:gap-4 lg:gap-4;
+}
+
+.portfolio-collection__photo {
+  @apply cursor-zoom-in;
+  @apply p-2 !important;
+}

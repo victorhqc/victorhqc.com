@@ -4,9 +4,10 @@ use actix_web::{middleware, web, App, HttpServer};
 use lazy_static::lazy_static;
 use log::info;
 use snafu::prelude::*;
-use std::env;
+use std::{env, path::PathBuf};
 use strum_macros::{Display, EnumString};
 use tera::Tera;
+use uaparser::UserAgentParser;
 
 mod gql;
 mod prefetch;
@@ -14,10 +15,11 @@ mod requests;
 mod routes;
 mod state;
 mod tera_utils;
+mod utils;
 
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
-        let root = std::env::var("WEB_ROOT").unwrap_or("".to_string());
+        let root = env::var("WEB_ROOT").unwrap_or("".to_string());
         let mut tera = match Tera::new(&format!("{}templates/**/*", root)) {
             Ok(t) => t,
             Err(e) => {
@@ -60,6 +62,15 @@ pub static COLLECTIONS: &[Collection] =
 async fn main() -> Result<(), Error> {
     dotenvy::dotenv().unwrap();
     pretty_env_logger::init();
+    let regexes_path = PathBuf::from(env!("OUT_DIR")).join("regexes.yaml");
+
+    let parser = UserAgentParser::builder()
+        .with_unicode_support(false)
+        .with_device(true)
+        .with_os(true)
+        .with_user_agent(false)
+        .build_from_yaml(regexes_path.as_os_str().to_str().unwrap())
+        .expect("Parser creation failed");
 
     let api_host = env::var("WEB_API_HOST").expect("WEB_API_HOST env variable is missing");
     let root = env::var("WEB_ROOT").unwrap_or("".to_string());
@@ -88,6 +99,7 @@ async fn main() -> Result<(), Error> {
             .app_data(web::Data::new(AppState {
                 api_host: api_host.clone(),
                 prefetched: prefetched.clone(),
+                ua_parser: parser.clone(),
             }))
             .service(fs::Files::new("/static", &static_path))
             .service(fs::Files::new("/public", &scripts_path))

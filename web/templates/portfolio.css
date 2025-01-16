@@ -1,162 +1,23 @@
-.portfolio__main {
-  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-2;
-  @apply px-5;
+.portfolio__wrapper {
+  @apply grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-2;
+  @apply px-3 md:px-5 lg:px-5;
+  @apply md:mt-10 lg:mt-10;
 }
 
-.portfolio__menu {
-  @apply col-span-1;
-  @apply pr-3;
+.portfolio__side-section {
+  @apply col-span-1 md:col-span-3 lg:col-span-3;
+  @apply md:pr-3 lg:pr-3;
+  @apply mt-4 md:mt-0 lg:mt-0;
 }
 
-.portfolio__menu h1 {
-  @apply text-2xl font-light font-serif;
+.portfolio__side-section h1 {
+  @apply text-xl md:text-2xl lg:text-2xl font-light font-serif;
 }
 
-.portfolio__menu p {
+.portfolio__side-section p {
   @apply mt-3;
 }
 
-.portfolio__photos-wrapper {
-  @apply col-span-1 md:col-span-3 lg:col-span-3;
-}
-
-.portfolio__photos-collection {
-  @apply grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4;
-}
-
-.portfolio__collections-menu {
-  @apply mt-10;
-}
-
-.portfolio__collection-item {
-  @apply py-2 px-2 -mx-2 cursor-pointer;
-  @apply border border-solid border-transparent;
-
-  text-transform: capitalize;
-}
-
-.portfolio__collection-item:hover {
-  @apply border-black;
-}
-
-.portfolio__collection-item--active {
-  @apply underline;
-}
-
-.portfolio__photo {
-  @apply cursor-pointer;
-}
-
-.open__photo .photo {
-  aspect-ratio: 3/2;
-}
-
-.photo-info__icon {
-  @apply bg-cover absolute bottom-8 right-8;
-
-  width: 18px;
-  height: 18px;
-  background-image: url("/public/icons/info-white.svg");
-}
-
-.photo-info__icon--black {
-  background-image: url("/public/icons/info-black.svg");
-}
-
-.photo-info__navigation {
-  @apply -mt-3 mb-3;
-}
-
-.photo-info__navigation ol {
-  @apply flex place-content-between;
-}
-
-.photo-info__navigation button {
-  @apply text-sm cursor-pointer;
-}
-
-.photo-info__left-arrow::before {
-  @apply bg-cover inline-block;
-
-  content: "";
-
-  vertical-align: text-bottom;
-  width: 15px;
-  height: 15px;
-  background-image: url("/public/icons/arrow-left.svg");
-}
-
-.photo-info__right-arrow::after {
-  @apply bg-cover inline-block;
-
-  content: "";
-
-  vertical-align: text-bottom;
-  width: 15px;
-  height: 15px;
-  background-image: url("/public/icons/arrow-right.svg");
-}
-
-.photo--visible {
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 150ms linear;
-}
-
-.photo--hidden {
-  visibility: hidden;
-  opacity: 0;
-  transition:
-    visibility 0s 2s,
-    opacity 150ms linear;
-}
-
-.photo-info__wrapper {
-  @apply top-0 left-0 m-3;
-  @apply grid grid-cols-12;
-
-  width: calc(100% - 1.5rem);
-  height: calc(100% - 1.5rem);
-  position: absolute !important;
-}
-
-.photo-info__data {
-  @apply px-3 -ml-3 mr-3;
-  @apply col-span-8;
-}
-
-.info_photo {
-  @apply mb-3 w-full;
-}
-
-.photo-info__wrapper h1 {
-  @apply font-serif italic text-2xl mb-4;
-}
-
-.photo-info__film-sim {
-  @apply border-l border-gray-500 border-dashed;
-  @apply p-3 -m-3;
-  @apply col-span-4;
-  @apply text-right;
-}
-
-.film-sim__icon {
-  @apply bg-cover right-8;
-
-  /* margin: 0 18px 0 auto; */
-  width: 136px;
-  height: 100px;
-}
-
-.film-sim__content {
-  @apply grid grid-cols-2 text-left;
-  @apply mt-4;
-}
-
-.film-sim__content h3 {
-  @apply font-semibold text-sm;
-}
-
-.film-sim__content p {
-  @apply font-light;
+.portfolio__photos-section {
+  @apply col-span-1 md:col-span-9 lg:col-span-9;
 }
