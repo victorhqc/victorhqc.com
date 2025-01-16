@@ -33,13 +33,10 @@
         <div class="open-photo__info-head">
           <div>
             <h1>{{ data.title }}</h1>
-            <p>
-              Shot on {{ exif.focalLength.eq35Mm}}mm {{
-              exif.cameraMaker }} {{ exif.cameraName }}
-            </p>
-            <p>
-              ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{
-              exif.shutterSpeed }} s
+            <h3>{{ exif.cameraMaker }} {{ exif.cameraName }}</h3>
+            <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+            <p class="open-photo__photo-values">
+              ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s
             </p>
           </div>
           {% if exif.cameraMaker == "FUJIFILM" %}
