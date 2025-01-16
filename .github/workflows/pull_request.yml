@@ -52,7 +52,7 @@ jobs:
                       web
                       core
                   cache-on-failure: true
-                  shared-by: "rust-cache"
+                  shared-key: "rust-cache"
 
             - name: Install SQLX
               uses: actions-rs/cargo@v1
