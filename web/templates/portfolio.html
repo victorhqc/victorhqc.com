@@ -13,7 +13,14 @@
 {% block tailwind_styles %}
   {% include "portfolio.css" %}
   {% include "_components/portfolio_menu.css" %}
+  {% include "_components/open_photo.css" %}
+
+  {% if is_mobile %}
+    {% include "_components/photo_info.css" %}
+  {% endif %}
+
   {% include "_ajax/portfolio_collection.css" %}
+  {% include "_ajax/one_photo.css" %}
   {% include "styles.css" %}
 {% endblock tailwind_styles %}
 
