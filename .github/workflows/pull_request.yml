@@ -51,15 +51,14 @@ jobs:
                       api
                       web
                       core
-
-            - name: Generate Cargo.lock
-              uses: actions-rs/cargo@v1
-              with:
-                  command: generate-lockfile
+                  cache-on-failure: true
+                  shared-by: "rust-cache"
 
             - name: Install SQLX
-              run: |
-                  cargo install sqlx-cli --no-default-features --features sqlite
+              uses: actions-rs/cargo@v1
+              with:
+                  command: install
+                  args: sqlx-cli --no-default-features --features sqlite --locked
 
             - name: Init DB
               run: |
