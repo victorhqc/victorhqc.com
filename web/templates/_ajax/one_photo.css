@@ -23,6 +23,10 @@
   @apply md:text-sm lg:text-sm cursor-pointer;
 }
 
+.one-photo__navigation button:hover {
+  @apply underline;
+}
+
 .one-photo__close::after {
   @apply bg-cover inline-block;
 
