@@ -9,6 +9,9 @@ on:
 env:
     DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/github.sqlite
     ROCKET_DATABASE_URL: sqlite://github.sqlite
+    CARGO_TERM_COLOR: always
+    RUSTC_WRAPPER: sccache
+    SCCACHE_CACHE_SIZE: 2G
 
 jobs:
     rust_check:
@@ -21,12 +24,28 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Install sccache
+              run: |
+                  curl -L https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+                  chmod +x sccache-*/sccache
+                  sudo mv sccache-*/sccache /usr/local/bin/sccache
+                  sccache --version
+
+            - name: Cache sccache
+              uses: actions/cache@v3
+              with:
+                  path: ~/.cache/sccache
+                  key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-sccache-
+
             - name: Install latest stable
               uses: actions-rs/toolchain@v1
               with:
                   toolchain: stable
                   override: true
                   components: rustfmt, clippy
+                  profile: minimal
 
             - uses: Swatinem/rust-cache@v2
               with:
@@ -34,13 +53,12 @@ jobs:
                       api
                       web
                       core
-
-            - name: Generate Cargo.lock
-              uses: actions-rs/cargo@v1
-              with:
-                  command: generate-lockfile
+                  cache-on-failure: true
+                  shared-key: "rust-cache"
 
             - name: Install SQLX
+              env:
+                  RUSTC_WRAPPER: "" # Temporarily disable sccache for this step
               run: |
                   cargo install sqlx-cli --no-default-features --features sqlite
 
@@ -51,14 +69,13 @@ jobs:
                   cargo sqlx prepare --workspace
                   cargo sqlx prepare --check --workspace
 
-            - name: Run cargo test
-              run: cargo test
+            - name: Check and Lint
+              run: |
+                  cargo fmt --all --check
+                  cargo clippy --all-targets --all-features -- -D warnings
+                  cargo check --all-targets --all-features
 
-            - name: Run cargo check
-              run: cargo check
-
-            - name: Run cargo fmt
-              run: cargo fmt --all --check
-
-            - name: Run cargo clippy
-              run: cargo clippy -- -D warnings
+            - name: Build and Test
+              run: |
+                  cargo test --no-run --all-features
+                  cargo test --all-features
