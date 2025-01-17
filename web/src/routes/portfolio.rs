@@ -1,10 +1,10 @@
+use super::analytics::get_client_id;
 use super::context::{render_content, RenderArgs, TemplateKind};
 use crate::{
     gql::get_portfolio::GetPortfolioPhotos, prefetch::PrefetchedCollection, state::AppState,
     Collection, COLLECTIONS,
 };
-use actix_quick_extract::headers::UserAgent;
-use actix_web::{error::ResponseError, get, web, HttpResponse, Responder, Result};
+use actix_web::{error::ResponseError, get, web, HttpRequest, HttpResponse, Responder, Result};
 use snafu::prelude::*;
 use std::str::FromStr;
 use tera::Context;
@@ -26,10 +26,9 @@ struct CollectionRoute {
 }
 
 #[get("/photography")]
-pub async fn photography(
-    data: web::Data<AppState>,
-    user_agent: UserAgent,
-) -> Result<impl Responder> {
+pub async fn photography(data: web::Data<AppState>, req: HttpRequest) -> Result<impl Responder> {
+    let (_, ua) = get_client_id(&req);
+
     let active_collection = Collection::Portfolio;
     let mut context = Context::new();
 
@@ -47,7 +46,7 @@ pub async fn photography(
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -58,8 +57,9 @@ pub async fn photography(
 pub async fn portfolio_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let (_, ua) = get_client_id(&req);
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
@@ -82,7 +82,7 @@ pub async fn portfolio_collection(
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -93,8 +93,9 @@ pub async fn portfolio_collection(
 pub async fn ajax_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let (_, ua) = get_client_id(&req);
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
@@ -116,7 +117,7 @@ pub async fn ajax_collection(
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -127,8 +128,9 @@ pub async fn ajax_collection(
 pub async fn ajax_one_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let (_, ua) = get_client_id(&req);
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
@@ -148,7 +150,7 @@ pub async fn ajax_one_photo(
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -159,8 +161,9 @@ pub async fn ajax_one_photo(
 pub async fn collection_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let (_, ua) = get_client_id(&req);
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
@@ -181,7 +184,7 @@ pub async fn collection_photo(
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 

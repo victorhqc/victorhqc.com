@@ -4,7 +4,12 @@ use actix_web::{middleware, web, App, HttpServer};
 use lazy_static::lazy_static;
 use log::info;
 use snafu::prelude::*;
-use std::{env, path::PathBuf};
+use std::{
+    collections::{HashMap, HashSet},
+    env,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 use strum_macros::{Display, EnumString};
 use tera::Tera;
 use uaparser::UserAgentParser;
@@ -93,14 +98,19 @@ async fn main() -> Result<(), Error> {
     let scripts_path = format!("./{}public", root);
     info!("Serving public files from {}", scripts_path);
 
+    let visitor_etags = Arc::new(Mutex::new(HashMap::new()));
+
+    let state = AppState {
+        api_host,
+        prefetched,
+        ua_parser: parser,
+        visitor_etags,
+    };
+
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Compress::default())
-            .app_data(web::Data::new(AppState {
-                api_host: api_host.clone(),
-                prefetched: prefetched.clone(),
-                ua_parser: parser.clone(),
-            }))
+            .app_data(web::Data::new(state.clone()))
             .service(fs::Files::new("/static", &static_path))
             .service(fs::Files::new("/public", &scripts_path))
             .service(routes::index::index)
