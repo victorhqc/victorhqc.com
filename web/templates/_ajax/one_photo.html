@@ -1,5 +1,10 @@
 {% import "_components/open_photo.html" as c %}
 {% import "_components/photo_info.html" as i %}
+<div
+  hx-trigger="load"
+  hx-get="/analytics?p=/photo/{{ photo.photo.id }}"
+  hx-headers='js:{"x-visitor-id": localStorage.getItem("client_id")}'>
+</div>
 <div class="one-photo__background"></div>
 <div class="one-photo__wrapper">
   <div class="prev-photo-ref" hx-push-url="/photography/{{ collection_route.name }}/{{ photo.prev_id }}"></div>

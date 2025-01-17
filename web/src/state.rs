@@ -1,7 +1,7 @@
 use crate::prefetch::PrefetchedCollection;
-use crate::routes::analytics::UniqueId;
+use crate::routes::analytics::{UniqueId, Visits};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     sync::{Arc, Mutex},
 };
 use uaparser::UserAgentParser;
@@ -11,5 +11,7 @@ pub struct AppState {
     pub api_host: String,
     pub prefetched: PrefetchedCollection,
     pub ua_parser: UserAgentParser,
-    pub visitor_etags: Arc<Mutex<HashMap<UniqueId, String>>>,
+    // pub visitor_etags: Arc<Mutex<HashMap<UniqueId, String>>>,
+    pub unique_sessions: Arc<Mutex<HashSet<UniqueId>>>,
+    pub visits: Arc<Mutex<Visits>>,
 }

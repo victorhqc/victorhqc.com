@@ -57,3 +57,11 @@ pub fn parse_film_simulation_name() -> impl Function {
         Ok(to_value(val).unwrap())
     })
 }
+
+pub fn uuid() -> impl Function {
+    Box::new(move |_: &HashMap<String, Value>| -> Result<Value> {
+        let uuid = uuid::Uuid::new_v4();
+
+        Ok(to_value(uuid.to_string()).unwrap())
+    })
+}

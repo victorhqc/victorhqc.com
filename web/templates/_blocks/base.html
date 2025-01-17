@@ -21,7 +21,7 @@
     {% endif %}
     <script src="/static/htmx.js"></script>
     <script>
-    let __IS_MOBILE__ = {{ is_mobile  }};
+    let __IS_MOBILE__ = {{ is_mobile }};
     let __LISTENERS__ = [];
 
     function CLEANUP_EXISTING_LISTENERS() {
@@ -37,8 +37,22 @@
       __LISTENERS__.push([listener, type, target]);
     }
     </script>
+    {% set client_id = uuid() %}
+    <script>
+      if (!localStorage.getItem("client_id")) {
+        localStorage.setItem("client_id", '{{ client_id }}');
+      }
+    </script>
   </head>
   <body>
+    {% if path %}
+    <div
+      hx-trigger="load"
+      hx-get="/analytics?p={{ path }}"
+      hx-headers='js:{"x-visitor-id": localStorage.getItem("client_id")}'>
+    </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
   </body>
   {% block scripts %}{% endblock %}

@@ -1,4 +1,8 @@
-use crate::{gql::get_portfolio::GetPortfolioPhotos, requests, Collection, COLLECTIONS};
+use crate::{
+    collections::{Collection, COLLECTIONS},
+    gql::get_portfolio::GetPortfolioPhotos,
+    requests,
+};
 use snafu::prelude::*;
 use std::collections::HashMap;
 

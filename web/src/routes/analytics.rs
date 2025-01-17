@@ -1,39 +1,134 @@
-use actix_web::{http::header, HttpRequest};
+use crate::{collections::Collection, AppState};
+use actix_web::{get, http::header, web, HttpRequest, HttpResponse, Responder, Result};
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, str::FromStr};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct UniqueId(String);
 
-#[derive(Debug)]
-pub struct UserAgent(String);
+impl FromStr for UniqueId {
+    type Err = uuid::Error;
 
-impl UserAgent {
-    pub fn get(&self) -> &str {
-        &self.0
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.to_string()))
     }
 }
 
-pub fn generate_unique_etag(client_id: &UniqueId) -> String {
-    format!("{}__{}", client_id.0, Uuid::new_v4())
+impl UniqueId {
+    pub fn new() -> Self {
+        Self(Uuid::new_v4().to_string())
+    }
 }
 
 pub fn generate_unique_session_id() -> UniqueId {
-    UniqueId(Uuid::new_v4().to_string())
+    UniqueId::new()
 }
 
-pub fn get_client_id(req: &HttpRequest) -> (UniqueId, UserAgent) {
-    let ip = req
-        .peer_addr()
-        .map(|addr| addr.ip().to_string())
-        .unwrap_or_else(|| "unknown".to_string());
-    let user_agent = req
+pub fn get_client_id(req: &HttpRequest) -> Option<UniqueId> {
+    let client_id = req
         .headers()
-        .get(header::USER_AGENT)
-        .and_then(|ua| ua.to_str().ok())
-        .unwrap_or("unknown");
+        .get(header::HeaderName::from_static("x-visitor-id"))
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| UniqueId::from_str(v).ok());
 
-    (
-        UniqueId(format!("{}__{}", ip, Uuid::new_v4())),
-        UserAgent(user_agent.to_string()),
-    )
+    println!("Client ID from header {:?}", client_id);
+
+    client_id
+}
+
+#[derive(Debug, Deserialize)]
+struct Info {
+    #[serde(rename(deserialize = "p"))]
+    pub path: String,
+}
+
+#[derive(Debug, Serialize, Hash, Eq, PartialEq)]
+pub enum Route {
+    Index,
+    Photography,
+    Collection(Collection),
+    Photo(String),
+}
+
+impl FromStr for Route {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.split("/").collect();
+
+        if parts.len() > 2 {
+            if let Some(id) = parts.get(2) {
+                return Ok(Route::Photo(id.to_string()));
+            }
+        }
+
+        println!("parts {:?}", parts);
+
+        match s {
+            "/" => Ok(Route::Index),
+            "/photography" => Ok(Route::Photography),
+            "/collection/portfolio" => Ok(Route::Collection(Collection::Portfolio)),
+            "/collection/berlin" => Ok(Route::Collection(Collection::Berlin)),
+            "/collection/japan" => Ok(Route::Collection(Collection::Japan)),
+            _ => Err(format!("Invalid route: {}", s)),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct Visits {
+    routes: HashMap<Route, u64>,
+}
+
+impl Visits {
+    pub fn new() -> Self {
+        Visits {
+            routes: HashMap::new(),
+        }
+    }
+
+    pub fn increment(&mut self, route: Route) {
+        if let Some(v) = self.routes.get_mut(&route) {
+            *v += 1;
+        } else {
+            self.routes.insert(route, 1);
+        }
+    }
+}
+
+#[get("/analytics")]
+pub async fn init_analytics(
+    data: web::Data<AppState>,
+    info: web::Query<Info>,
+    req: HttpRequest,
+) -> Result<impl Responder> {
+    println!("Info {:?}", info);
+    let route = Route::from_str(&info.path).ok();
+
+    if route.is_none() {
+        return Ok(HttpResponse::BadRequest().finish());
+    }
+    let route = route.unwrap();
+
+    let mut visits = data.visits.lock().unwrap();
+    visits.increment(route);
+
+    println!("{:?}", visits);
+
+    let client_id = get_client_id(&req);
+    let mut session_map = data.unique_sessions.lock().unwrap();
+
+    if let Some(client_id) = client_id {
+        session_map.get(&client_id).cloned().unwrap_or_else(|| {
+            let new_session_id = generate_unique_session_id();
+            session_map.insert(client_id.clone());
+
+            new_session_id
+        });
+
+        return Ok(HttpResponse::NotModified().finish());
+    }
+
+    Ok(HttpResponse::BadRequest().finish())
 }

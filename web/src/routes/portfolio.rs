@@ -1,8 +1,10 @@
-use super::analytics::get_client_id;
 use super::context::{render_content, RenderArgs, TemplateKind};
+use super::get_user_agent;
 use crate::{
-    gql::get_portfolio::GetPortfolioPhotos, prefetch::PrefetchedCollection, state::AppState,
-    Collection, COLLECTIONS,
+    collections::{Collection, COLLECTIONS},
+    gql::get_portfolio::GetPortfolioPhotos,
+    prefetch::PrefetchedCollection,
+    state::AppState,
 };
 use actix_web::{error::ResponseError, get, web, HttpRequest, HttpResponse, Responder, Result};
 use snafu::prelude::*;
@@ -27,7 +29,7 @@ struct CollectionRoute {
 
 #[get("/photography")]
 pub async fn photography(data: web::Data<AppState>, req: HttpRequest) -> Result<impl Responder> {
-    let (_, ua) = get_client_id(&req);
+    let ua = get_user_agent(&req);
 
     let active_collection = Collection::Portfolio;
     let mut context = Context::new();
@@ -40,6 +42,7 @@ pub async fn photography(data: web::Data<AppState>, req: HttpRequest) -> Result<
         &CollectionRoute::from(&active_collection),
     );
     context.insert("available_collections", &build_collection_routes());
+    context.insert("path", "/photography");
 
     let args = RenderArgs {
         route: "portfolio",
@@ -59,7 +62,7 @@ pub async fn portfolio_collection(
     data: web::Data<AppState>,
     req: HttpRequest,
 ) -> Result<impl Responder> {
-    let (_, ua) = get_client_id(&req);
+    let ua = get_user_agent(&req);
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
@@ -76,6 +79,7 @@ pub async fn portfolio_collection(
         &CollectionRoute::from(&active_collection),
     );
     context.insert("available_collections", &build_collection_routes());
+    context.insert("path", "/portfolio");
 
     let args = RenderArgs {
         route: "portfolio",
@@ -95,7 +99,7 @@ pub async fn ajax_collection(
     data: web::Data<AppState>,
     req: HttpRequest,
 ) -> Result<impl Responder> {
-    let (_, ua) = get_client_id(&req);
+    let ua = get_user_agent(&req);
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
@@ -130,7 +134,7 @@ pub async fn ajax_one_photo(
     data: web::Data<AppState>,
     req: HttpRequest,
 ) -> Result<impl Responder> {
-    let (_, ua) = get_client_id(&req);
+    let ua = get_user_agent(&req);
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
@@ -163,7 +167,7 @@ pub async fn collection_photo(
     data: web::Data<AppState>,
     req: HttpRequest,
 ) -> Result<impl Responder> {
-    let (_, ua) = get_client_id(&req);
+    let ua = get_user_agent(&req);
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
