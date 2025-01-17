@@ -58,8 +58,18 @@ impl FromStr for Route {
         let parts: Vec<&str> = s.split("/").collect();
 
         if parts.len() > 2 {
-            if let Some(id) = parts.get(2) {
-                return Ok(Route::Photo(id.to_string()));
+            if let (Some(part), Some(id)) = (parts.get(1), parts.get(2)) {
+                return match *part {
+                    "collection" => {
+                        if let Ok(c) = Collection::from_str(id) {
+                            Ok(Route::Collection(c))
+                        } else {
+                            Err(format!("Invalid route: {}", s))
+                        }
+                    }
+                    "photo" => Ok(Route::Photo(id.to_string())),
+                    _ => Err(format!("Invalid route: {}", s)),
+                };
             }
         }
 
@@ -68,9 +78,6 @@ impl FromStr for Route {
         match s {
             "/" => Ok(Route::Index),
             "/photography" => Ok(Route::Photography),
-            "/collection/portfolio" => Ok(Route::Collection(Collection::Portfolio)),
-            "/collection/berlin" => Ok(Route::Collection(Collection::Berlin)),
-            "/collection/japan" => Ok(Route::Collection(Collection::Japan)),
             _ => Err(format!("Invalid route: {}", s)),
         }
     }
