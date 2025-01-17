@@ -134,7 +134,7 @@ pub async fn init_analytics(
             new_session_id
         });
 
-        return Ok(HttpResponse::NotModified().finish());
+        return Ok(HttpResponse::Created().finish());
     }
 
     Ok(HttpResponse::BadRequest().finish())
