@@ -5,8 +5,8 @@ TAILWIND_URL="https://cdn.tailwindcss.com"
 HTMX_URL="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"
 
 OUTPUT_FOLDER="web/static"
-TAILWIND_FILE="$OUTPUT_FOLDER/tailwindcss.js.gz"
-HTMX_FILE="$OUTPUT_FOLDER/htmx.js.gz"
+TAILWIND_FILE="$OUTPUT_FOLDER/tailwindcss.js"
+HTMX_FILE="$OUTPUT_FOLDER/htmx.js"
 
 echo "Ensuring folder $OUTPUT_FOLDER exists..."
 mkdir -p "$OUTPUT_FOLDER"
@@ -31,7 +31,20 @@ else
     exit 1
 fi
 
-# TODO: Download from Github releases when available
+LIBS="$OUTPUT_FOLDER/victorhqc.com.libs"
 
-echo "Copying files from libs to $OUTPUT_FOLDER..."
-cp ../victorhqc.com.libs/dist/** $OUTPUT_FOLDER
+if [ ! -d "$LIBS" ]; then
+  git clone https://github.com/victorhqc/victorhqc.com.libs.git $LIBS
+fi
+
+cd $LIBS
+git pull
+
+deno run --allow-env --allow-read --allow-write --allow-run ./bundle.ts
+npx terser dist/photo-stack.js -o dist/photo-stack.min.js -c -m
+npx tailwindcss -i ./src/photo-stack/styles.css -o ./dist/photo-stack.min.css --minify
+
+cd - > /dev/null
+
+mv "$LIBS/dist/photo-stack.min.js" "$OUTPUT_FOLDER/photo-stack.min.js"
+mv "$LIBS/dist/photo-stack.min.css" "$OUTPUT_FOLDER/photo-stack.min.css"

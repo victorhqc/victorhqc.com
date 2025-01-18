@@ -99,7 +99,7 @@ async fn main() -> Result<(), Error> {
         App::new()
             .wrap(middleware::Compress::default())
             .app_data(web::Data::new(state.clone()))
-            .service(fs::Files::new("/static", &static_path).show_files_listing())
+            .service(fs::Files::new("/static", &static_path))
             .service(fs::Files::new("/public", &scripts_path))
             .service(routes::index::index)
             .service(routes::portfolio::photography)
