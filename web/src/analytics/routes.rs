@@ -17,7 +17,7 @@ pub async fn register_visit(
     let route = Route::from_str(&info.path).ok();
 
     if route.is_none() {
-        debug!("No route give, no analytics to register");
+        debug!("No route given, no analytics to register");
 
         return Ok(HttpResponse::BadRequest().finish());
     }
