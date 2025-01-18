@@ -24,20 +24,32 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Install sccache
-              run: |
-                  curl -L https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-unknown-linux-musl.tar.gz | tar xz
-                  chmod +x sccache-*/sccache
-                  sudo mv sccache-*/sccache /usr/local/bin/sccache
-                  sccache --version
+            - name: Cache dependencies
+              uses: Swatinem/rust-cache@v2
 
-            - name: Cache sccache
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cache/sccache
-                  key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-sccache-
+            - name: Configure sccache
+              run: |
+                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+                  echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+                  echo “RUSTFLAGS=’--cfg profile=ephemeral-build’” >> $GITHUB_ENV
+
+            - name: Run sccache-cache
+              uses: mozilla-actions/sccache-action@v0.0.2
+
+            # - name: Install sccache
+            #   run: |
+            #       curl -L https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+            #       chmod +x sccache-*/sccache
+            #       sudo mv sccache-*/sccache /usr/local/bin/sccache
+            #       sccache --version
+
+            # - name: Cache sccache
+            #   uses: actions/cache@v3
+            #   with:
+            #       path: ~/.cache/sccache
+            #       key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
+            #       restore-keys: |
+            #           ${{ runner.os }}-sccache-
 
             - name: Install latest stable
               uses: actions-rs/toolchain@v1
@@ -53,12 +65,13 @@ jobs:
                       api
                       web
                       core
+                      cli
                   cache-on-failure: true
                   shared-key: "rust-cache"
 
             - name: Install SQLX
-              env:
-                  RUSTC_WRAPPER: "" # Temporarily disable sccache for this step
+              # env:
+              #     RUSTC_WRAPPER: "" # Temporarily disable sccache for this step
               run: |
                   cargo install sqlx-cli --no-default-features --features sqlite
 
