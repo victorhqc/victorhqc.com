@@ -136,22 +136,10 @@ CDNs go down sometimes, and we want to avoid problems caused by 3rd parties as m
 ./scripts/unix/web-dependencies.sh
 ```
 
-Until Cargo is able to detect multiple configurations in a workspace, the only way to run the web frontend is to navigate
-to the `web` folder and doing it from there
-
-```sh
-cd web
-```
-
-```sh
-cp .env.example .env
-```
 
 Make sure the API is running and then run the following
 
 ```sh
-cargo run
-
 # With hot reload
 bacon web
 ```
@@ -208,7 +196,7 @@ cargo install drill
 Copy the script and benchmark file
 
 ```sh
-cp scripts/unix/api.example.sh scripts/unix/api.sh
+cp scripts/unix/run.api.example.sh scripts/unix/run.api.sh
 cp stress-tests/benchmark.example.yml stress-tests/benchmark.yml
 ```
 

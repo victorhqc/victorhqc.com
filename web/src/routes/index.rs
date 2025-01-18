@@ -5,6 +5,7 @@ use crate::{
     state::AppState,
 };
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
+use log::debug;
 use rand::seq::SliceRandom;
 use tera::Context;
 
@@ -33,8 +34,8 @@ pub async fn index(data: web::Data<AppState>, req: HttpRequest) -> Result<impl R
 
     let content = render_content(args)?;
 
-    println!("----");
-    println!(" ");
+    debug!("----");
+    debug!(" ");
 
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")

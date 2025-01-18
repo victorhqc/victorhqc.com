@@ -3,7 +3,7 @@
 /deps
 
 stress-tests/benchmark.yml
-scripts/unix/api.sh
+scripts/unix/run.api.sh
 
 .env
 
