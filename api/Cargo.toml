@@ -10,6 +10,7 @@ async-graphql-rocket = "7.0.10"
 core-victorhqc-com.workspace = true
 dotenvy.workspace = true
 log.workspace = true
+md5.workspace = true
 once_cell = "1.20.1"
 pretty_env_logger.workspace = true
 regex.workspace = true

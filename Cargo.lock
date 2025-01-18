@@ -367,6 +367,7 @@ dependencies = [
  "core-victorhqc-com",
  "dotenvy",
  "log",
+ "md5",
  "once_cell",
  "pretty_env_logger",
  "regex",
