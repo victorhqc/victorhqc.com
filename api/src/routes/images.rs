@@ -1,19 +1,17 @@
 use crate::cache::image_cache::Error as CacheError;
 use crate::AppState;
 use core_victorhqc_com::{
-    aws::{
-        image_size::{Error as ParseError, ImageSize},
-        photo::ByteStreamError,
-    },
+    aws::image_size::{Error as ParseError, ImageSize},
     models::photo::{db::Error as PhotoDbError, Photo},
     sqlx::Error as SqlxError,
 };
 use log::{debug, error};
 use rocket::{
-    http::{hyper::body::Bytes, ContentType, Status},
-    response::{stream::ByteStream, Responder},
+    http::{ContentType, Header, Status},
+    request::{FromRequest, Outcome},
+    response::Responder,
     serde::json::serde_json,
-    Response, State,
+    Request, Response, State,
 };
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
@@ -26,7 +24,8 @@ pub async fn get_image(
     size: &str,
     id: &str,
     state: &State<AppState>,
-) -> Result<(Status, (ContentType, ByteStream![Bytes])), Error> {
+    if_none_match: IfNoneMatch,
+) -> Result<ImageResponse, Error> {
     let pool = &state.db_pool;
     let cache = &state.img_cache;
     let mut conn = pool.acquire().await.context(ConnectionSnafu)?;
@@ -37,67 +36,75 @@ pub async fn get_image(
 
     debug!("id: {}", id);
 
+    if let Some(etag) = if_none_match.0 {
+        if cache.md5_exists(&etag).await {
+            debug!("Cache Hit");
+
+            return Err(Error::AlreadyCached);
+        }
+    };
+
+    debug!("Cache Miss");
+
     let photo = Photo::find_by_id(&mut conn, id).await.context(PhotoSnafu)?;
 
-    // TODO: Ideally, the `.get()` method would not clone what's in memory, and simply stream the
-    // image from memory to the response of the request.
-    // let mut stream = if let Some(bytes) = cache.get(&photo.id, &img_size) {
-    //     debug!("Fetching from cache");
+    let (etag, data) = cache.get(photo, &img_size).await.context(CacheSnafu)?;
 
-    //     AWSByteStream::from(bytes)
-    // } else {
-    //     debug!("Fetching from S3");
+    Ok(ImageResponse { data, etag })
+}
 
-    //     let response = cache
-    //         .s3
-    //         .download_from_aws_s3((&photo, &img_size))
-    //         .await
-    //         .context(GetAWSObjectSnafu)?;
+pub struct ImageResponse {
+    data: Vec<u8>,
+    etag: String,
+}
 
-    //     response.body
-    // };
-    //
+impl<'r> Responder<'r, 'static> for ImageResponse {
+    fn respond_to(self, _: &'r Request<'_>) -> Result<Response<'static>, Status> {
+        Response::build()
+            .header(Header::new("Content-Type", "image/jpeg"))
+            .header(Header::new("ETag", self.etag))
+            .header(Header::new("Cache-Control", "public, max-age=31536000"))
+            .sized_body(self.data.len(), Cursor::new(self.data))
+            .ok()
+    }
+}
 
-    let mut stream = cache.stream(photo, &img_size).await.context(CacheSnafu)?;
+pub struct IfNoneMatch(Option<String>);
 
-    Ok((
-        Status::Ok,
-        (
-            ContentType::JPEG,
-            ByteStream! {
-                while let Some(bytes) = stream.next().await {
-                    match bytes {
-                        Ok(chunk) => {
-                            yield chunk
-                        },
-                        Err(err) => {
-                            let error = Error::Stream { source: err };
-                            error!("Failed to read chunk: {}", error);
-                            break
-                        }
-                    }
-                }
-            },
-        ),
-    ))
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for IfNoneMatch {
+    type Error = ();
+
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let header_value = req.headers().get_one("If-None-Match");
+        Outcome::Success(IfNoneMatch(header_value.map(String::from)))
+    }
 }
 
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Invalid size '{}': {}", size, source))]
-    Size { size: String, source: ParseError },
+    Size {
+        size: String,
+        source: ParseError,
+    },
 
     #[snafu(display("Failed to get connection: {}", source))]
-    Connection { source: SqlxError },
+    Connection {
+        source: SqlxError,
+    },
 
     #[snafu(display("Failed to get photo by id: {}", source))]
-    Photo { source: PhotoDbError },
-
-    #[snafu(display("Failed to download photo: {}", source))]
-    Stream { source: ByteStreamError },
+    Photo {
+        source: PhotoDbError,
+    },
 
     #[snafu(display("Failed to get image from cache: {}", source))]
-    Cache { source: CacheError },
+    Cache {
+        source: CacheError,
+    },
+
+    AlreadyCached,
 }
 
 impl<'r> Responder<'r, 'static> for Error {
@@ -106,11 +113,11 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::Size { .. } => Status::InternalServerError,
             Error::Connection { .. } => Status::InternalServerError,
             Error::Photo { .. } => Status::InternalServerError,
-            Error::Stream { .. } => Status::InternalServerError,
             Error::Cache { source } => match source {
                 CacheError::GetAWSObject { .. } => Status::NotFound,
                 CacheError::Stream { .. } => Status::InternalServerError,
             },
+            Error::AlreadyCached => Status::NotModified,
         };
 
         let serialized = serde_json::to_string(&self).unwrap();
@@ -143,17 +150,15 @@ impl Serialize for Error {
                 state.serialize_field("kind", "Photo Error")?;
                 state.serialize_field("message", &self.to_string())?;
             }
-            Error::Stream { source } => {
-                state.serialize_field("kind", "Stream Error")?;
-                state.serialize_field("message", "")?;
-
-                error!("Failed to stream image: {}", source);
-            }
             Error::Cache { source } => {
                 state.serialize_field("kind", "Invalid Photo")?;
                 state.serialize_field("message", "")?;
 
                 error!("Failed to get AWS Object: {}", source);
+            }
+            Error::AlreadyCached => {
+                state.serialize_field("kind", "Already Cached")?;
+                state.serialize_field("message", "")?;
             }
         };
 
