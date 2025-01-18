@@ -3,7 +3,7 @@
   <div class="open-photo__container photo-wrapper">
     <img
       class="photo"
-      src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
+      src="{{ api_host }}/v1/images/{{ size }}/{{ data.id }}"
       alt="{{ data.title }}"
     />
   </div>
@@ -17,7 +17,7 @@
     <div class="open-photo__photo-wrapper photo--visible">
       <img
         class="photo"
-        src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
+        src="{{ api_host }}/v1/images/{{ size }}/{{ data.id }}"
         alt="{{ data.title }}"
       />
     </div>
@@ -25,7 +25,7 @@
       <div class="open-photo__info-photo-wrapper">
         <img
           class="open-photo__info_photo"
-          src="{{ api_host }}/v1/images/{{ data.id }}/{{ size }}"
+          src="{{ api_host }}/v1/images/{{ size }}/{{ data.id }}"
           alt="{{ data.title }}"
         />
       </div>

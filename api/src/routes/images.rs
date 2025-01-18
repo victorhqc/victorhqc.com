@@ -21,10 +21,10 @@ use snafu::prelude::*;
 use std::io::Cursor;
 use std::str::FromStr;
 
-#[get("/images/<id>/<size>")]
+#[get("/images/<size>/<id>")]
 pub async fn get_image(
-    id: &str,
     size: &str,
+    id: &str,
     state: &State<AppState>,
 ) -> Result<(Status, (ContentType, ByteStream![Bytes])), Error> {
     let pool = &state.db_pool;
