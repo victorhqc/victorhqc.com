@@ -43,7 +43,9 @@ jobs:
                   echo "RUSTFLAGS=--cfg profile=ephemeral-build" >> $GITHUB_ENV
 
             - name: Run sccache-cache
-              uses: mozilla-actions/sccache-action@v0.0.2
+              uses: mozilla-actions/sccache-action@v0.0.7
+              with:
+                  version: "v0.7.4"
 
             # - name: Install sccache
             #   run: |
