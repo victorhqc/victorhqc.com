@@ -31,5 +31,6 @@ tokio = "1.40.0"
 uuid = { version = "1.10.0", features = ["v4"] }
 
 [profile.ephemeral-build]
+inherits = "release"
 opt-level = 2
 codegen-units = 8
