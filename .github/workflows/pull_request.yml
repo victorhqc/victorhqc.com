@@ -24,6 +24,15 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Install latest stable
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+                  components: rustfmt, clippy
+                  profile: minimal
+                  target: x86_64-unknown-linux-musl
+
             - name: Cache dependencies
               uses: Swatinem/rust-cache@v2
 
@@ -50,14 +59,6 @@ jobs:
             #       key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
             #       restore-keys: |
             #           ${{ runner.os }}-sccache-
-
-            - name: Install latest stable
-              uses: actions-rs/toolchain@v1
-              with:
-                  toolchain: stable
-                  override: true
-                  components: rustfmt, clippy
-                  profile: minimal
 
             - uses: Swatinem/rust-cache@v2
               with:
