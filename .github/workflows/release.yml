@@ -1,0 +1,101 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "v*"
+        paths-ignore:
+            - "**/Cargo.toml"
+
+env:
+    CARGO_TERM_COLOR: always
+    RUSTC_WRAPPER: sccache
+    SCCACHE_CACHE_SIZE: 2G
+
+jobs:
+    build_and_release:
+        name: Build and Release
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                include:
+                    - os: ubuntu-latest
+                      target: x86_64-unknown-linux-musl
+                      api_artifact_name: linux_api_victorhqc_com
+                      cli_artifact_name: linux_cli_victorhqc_com
+                      web_artifact_name: linux_web_victorhqc_com
+
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Update crate versions
+              run: |
+                  VERSION=${GITHUB_REF#refs/tags/v}
+
+                  # Update version in each Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" api/Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" core/Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" cli/Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" web/Cargo.toml
+
+            - name: Commit version updates
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+                  git commit -am "chore: update versions to ${GITHUB_REF#refs/tags/v}"
+                  git push
+
+            - name: Install latest stable
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+                  target: ${{ matrix.target }}
+                  profile: minimal
+
+            - name: Cache dependencies
+              uses: Swatinem/rust-cache@v2
+
+            - name: Configure sccache
+              run: |
+                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+                  echo "RUSTFLAGS='--cfg profile=release-build'" >> $GITHUB_ENV
+
+            - name: Run sccache-cache
+              uses: mozilla-actions/sccache-action@v0.0.7
+              with:
+                  version: "v0.7.4"
+
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: |
+                      api
+                      web
+                      core
+                      cli
+                  cache-on-failure: true
+                  shared-key: "rust-cache"
+
+            - name: Build Release Binary
+              run: cargo build --release --target ${{ matrix.target }}
+
+            - name: Rename binaries
+              shell: bash
+              run: |
+                  mv target/${{ matrix.target }}/release/api_victorhqc_com ${{ matrix.api_artifact_name }}
+                  mv target/${{ matrix.target }}/release/cli_victorhqc_com ${{ matrix.cli_artifact_name }}
+                  mv target/${{ matrix.target }}/release/web_victorhqc_com ${{ matrix.web_artifact_name }}
+
+            - name: Create Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      ${{ matrix.api_artifact_name }}
+                      ${{ matrix.cli_artifact_name }}
+                      ${{ matrix.web_artifact_name }}
+                  generate_release_notes: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

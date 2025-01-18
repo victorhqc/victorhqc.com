@@ -47,21 +47,6 @@ jobs:
               with:
                   version: "v0.7.4"
 
-            # - name: Install sccache
-            #   run: |
-            #       curl -L https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-unknown-linux-musl.tar.gz | tar xz
-            #       chmod +x sccache-*/sccache
-            #       sudo mv sccache-*/sccache /usr/local/bin/sccache
-            #       sccache --version
-
-            # - name: Cache sccache
-            #   uses: actions/cache@v3
-            #   with:
-            #       path: ~/.cache/sccache
-            #       key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
-            #       restore-keys: |
-            #           ${{ runner.os }}-sccache-
-
             - uses: Swatinem/rust-cache@v2
               with:
                   workspaces: |
@@ -73,8 +58,6 @@ jobs:
                   shared-key: "rust-cache"
 
             - name: Install SQLX
-              # env:
-              #     RUSTC_WRAPPER: "" # Temporarily disable sccache for this step
               run: |
                   cargo install sqlx-cli --no-default-features --features sqlite
 
