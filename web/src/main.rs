@@ -1,4 +1,4 @@
-use crate::{routes::analytics::Visits, state::AppState};
+use crate::{analytics::visits::Visits, state::AppState};
 use actix_files as fs;
 use actix_web::{middleware, web, App, HttpServer};
 use lazy_static::lazy_static;
@@ -13,6 +13,7 @@ use std::{
 use tera::Tera;
 use uaparser::UserAgentParser;
 
+mod analytics;
 mod collections;
 mod gql;
 mod prefetch;
@@ -106,7 +107,7 @@ async fn main() -> Result<(), Error> {
             .service(routes::portfolio::collection_photo)
             .service(routes::portfolio::ajax_collection)
             .service(routes::portfolio::ajax_one_photo)
-            .service(routes::analytics::init_analytics)
+            .service(analytics::routes::register_visit)
     })
     .workers(4)
     .bind(("127.0.0.1", port))

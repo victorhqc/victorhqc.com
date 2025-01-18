@@ -1,6 +1,7 @@
 use super::context::{render_content, RenderArgs, TemplateKind};
 use super::get_user_agent;
 use crate::{
+    analytics,
     collections::{Collection, COLLECTIONS},
     gql::get_portfolio::GetPortfolioPhotos,
     prefetch::PrefetchedCollection,
@@ -42,10 +43,10 @@ pub async fn photography(data: web::Data<AppState>, req: HttpRequest) -> Result<
         &CollectionRoute::from(&active_collection),
     );
     context.insert("available_collections", &build_collection_routes());
-    context.insert("path", "/photography");
 
     let args = RenderArgs {
         route: "portfolio",
+        route_to_record: Some(analytics::routes::Route::Photography),
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
@@ -79,10 +80,10 @@ pub async fn portfolio_collection(
         &CollectionRoute::from(&active_collection),
     );
     context.insert("available_collections", &build_collection_routes());
-    context.insert("path", "/portfolio");
 
     let args = RenderArgs {
         route: "portfolio",
+        route_to_record: Some(analytics::routes::Route::Photography),
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
@@ -118,6 +119,7 @@ pub async fn ajax_collection(
 
     let args = RenderArgs {
         route: "_ajax/portfolio_collection",
+        route_to_record: None,
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
@@ -151,6 +153,7 @@ pub async fn ajax_one_photo(
 
     let args = RenderArgs {
         route: "_ajax/one_photo",
+        route_to_record: None,
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
@@ -185,6 +188,7 @@ pub async fn collection_photo(
 
     let args = RenderArgs {
         route: "photo",
+        route_to_record: None,
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,

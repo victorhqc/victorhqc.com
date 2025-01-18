@@ -1,7 +1,7 @@
 use crate::utils::device;
-use crate::{state::AppState, TEMPLATES};
+use crate::{analytics::routes::Route, state::AppState, TEMPLATES};
 use actix_web::{web, ResponseError, Result};
-use log::error;
+use log::{debug, error};
 use snafu::prelude::*;
 use strum_macros::Display;
 use tera::Context;
@@ -16,6 +16,7 @@ pub enum TemplateKind {
 
 pub struct RenderArgs<'a> {
     pub route: &'a str,
+    pub route_to_record: Option<Route>,
     pub kind: TemplateKind,
     pub ctx: &'a mut Context,
     pub data: &'a web::Data<AppState>,
@@ -27,8 +28,16 @@ pub fn render_content(args: RenderArgs) -> Result<String> {
     #[cfg(not(debug_assertions))]
     let is_production = true;
 
+    debug!("Serving file {}.{}", args.route, args.kind);
+
     let parsed = args.data.ua_parser.parse(args.user_agent);
     let is_mobile = device::is_mobile(&parsed.device, &parsed.os);
+
+    if let Some(path) = args.route_to_record {
+        debug!("Injecting analytics path: '{}'", path.to_string());
+
+        args.ctx.insert("path", &path.to_string())
+    };
 
     args.ctx.insert("api_host", &args.data.api_host);
     args.ctx.insert("is_production", &is_production);

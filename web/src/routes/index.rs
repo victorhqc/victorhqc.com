@@ -1,6 +1,9 @@
 use super::context::{render_content, RenderArgs, TemplateKind};
 use super::get_user_agent;
-use crate::{collections::Collection, gql::get_portfolio::GetPortfolioPhotos, state::AppState};
+use crate::{
+    analytics::routes, collections::Collection, gql::get_portfolio::GetPortfolioPhotos,
+    state::AppState,
+};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use rand::seq::SliceRandom;
 use tera::Context;
@@ -18,10 +21,10 @@ pub async fn index(data: web::Data<AppState>, req: HttpRequest) -> Result<impl R
         .collect();
 
     context.insert("photos", &random_photos);
-    context.insert("path", "/");
 
     let args = RenderArgs {
         route: "index",
+        route_to_record: Some(routes::Route::Index),
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
