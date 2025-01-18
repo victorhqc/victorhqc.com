@@ -15,7 +15,7 @@ log.workspace = true
 md5.workspace = true
 pretty_env_logger.workspace = true
 rand = { workspace = true, features = ["alloc"] }
-reqwest = { version = "0.12.9", features = ["json"] }
+reqwest = { version = "0.12.9", features = ["json", "native-tls-vendored"] }
 serde = { workspace = true, features = ["derive"] }
 snafu = { workspace = true, features = ["default", "backtrace"] }
 strum.workspace = true

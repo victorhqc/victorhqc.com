@@ -7,7 +7,7 @@ rampup: 3
 plan:
     - name: Fetch some images
       request:
-          url: /v1/images/{{ item }}/hd
+          url: /v1/images/Hd/{{ item }}
       with_items:
           - <ID>
           - <ID_2>
