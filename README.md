@@ -219,6 +219,7 @@ And replace the values in the script and benchmark file
 Make sure the API is running
 
 ```sh
+cargo build --release
 ./scripts/unix/api.sh
 ```
 

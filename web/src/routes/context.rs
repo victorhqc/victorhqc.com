@@ -24,6 +24,7 @@ pub struct RenderArgs<'a> {
 }
 
 pub fn render_content(args: RenderArgs) -> Result<String> {
+    #[cfg(debug_assertions)]
     let is_production = false;
     #[cfg(not(debug_assertions))]
     let is_production = true;
