@@ -1,14 +1,20 @@
-use crate::state::AppState;
+use crate::{analytics::visits::Visits, state::AppState};
 use actix_files as fs;
 use actix_web::{middleware, web, App, HttpServer};
 use lazy_static::lazy_static;
 use log::info;
 use snafu::prelude::*;
-use std::{env, path::PathBuf};
-use strum_macros::{Display, EnumString};
+use std::{
+    collections::HashSet,
+    env,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 use tera::Tera;
 use uaparser::UserAgentParser;
 
+mod analytics;
+mod collections;
 mod gql;
 mod prefetch;
 mod requests;
@@ -37,26 +43,11 @@ lazy_static! {
             "parse_film_simulation_name",
             tera_utils::functions::parse_film_simulation_name(),
         );
+        tera.register_function("uuid", tera_utils::functions::uuid());
 
         tera
     };
 }
-
-#[derive(Debug, Clone, Display, PartialEq, EnumString, serde::Serialize, Hash, Eq)]
-pub enum Collection {
-    #[strum(serialize = "portfolio")]
-    #[serde(rename(serialize = "portfolio"))]
-    Portfolio,
-    #[strum(serialize = "berlin")]
-    #[serde(rename(serialize = "berlin"))]
-    Berlin,
-    #[strum(serialize = "japan")]
-    #[serde(rename(serialize = "japan"))]
-    Japan,
-}
-
-pub static COLLECTIONS: &[Collection] =
-    &[Collection::Portfolio, Collection::Berlin, Collection::Japan];
 
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
@@ -93,15 +84,22 @@ async fn main() -> Result<(), Error> {
     let scripts_path = format!("./{}public", root);
     info!("Serving public files from {}", scripts_path);
 
+    let unique_sessions = Arc::new(Mutex::new(HashSet::new()));
+    let visits = Arc::new(Mutex::new(Visits::new()));
+
+    let state = AppState {
+        api_host,
+        prefetched,
+        ua_parser: parser,
+        unique_sessions,
+        visits,
+    };
+
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Compress::default())
-            .app_data(web::Data::new(AppState {
-                api_host: api_host.clone(),
-                prefetched: prefetched.clone(),
-                ua_parser: parser.clone(),
-            }))
-            .service(fs::Files::new("/static", &static_path))
+            .app_data(web::Data::new(state.clone()))
+            .service(fs::Files::new("/static", &static_path).show_files_listing())
             .service(fs::Files::new("/public", &scripts_path))
             .service(routes::index::index)
             .service(routes::portfolio::photography)
@@ -109,6 +107,7 @@ async fn main() -> Result<(), Error> {
             .service(routes::portfolio::collection_photo)
             .service(routes::portfolio::ajax_collection)
             .service(routes::portfolio::ajax_one_photo)
+            .service(analytics::routes::register_visit)
     })
     .workers(4)
     .bind(("127.0.0.1", port))

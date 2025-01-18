@@ -28,3 +28,9 @@ strum = "0.26.3"
 strum_macros = "0.26.4"
 time = "0.3.36"
 tokio = "1.40.0"
+uuid = { version = "1.10.0", features = ["v4"] }
+
+[profile.ephemeral-build]
+inherits = "release"
+opt-level = 2
+codegen-units = 8

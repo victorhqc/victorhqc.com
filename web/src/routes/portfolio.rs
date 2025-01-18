@@ -1,10 +1,13 @@
 use super::context::{render_content, RenderArgs, TemplateKind};
+use super::get_user_agent;
 use crate::{
-    gql::get_portfolio::GetPortfolioPhotos, prefetch::PrefetchedCollection, state::AppState,
-    Collection, COLLECTIONS,
+    analytics,
+    collections::{Collection, COLLECTIONS},
+    gql::get_portfolio::GetPortfolioPhotos,
+    prefetch::PrefetchedCollection,
+    state::AppState,
 };
-use actix_quick_extract::headers::UserAgent;
-use actix_web::{error::ResponseError, get, web, HttpResponse, Responder, Result};
+use actix_web::{error::ResponseError, get, web, HttpRequest, HttpResponse, Responder, Result};
 use snafu::prelude::*;
 use std::str::FromStr;
 use tera::Context;
@@ -26,10 +29,9 @@ struct CollectionRoute {
 }
 
 #[get("/photography")]
-pub async fn photography(
-    data: web::Data<AppState>,
-    user_agent: UserAgent,
-) -> Result<impl Responder> {
+pub async fn photography(data: web::Data<AppState>, req: HttpRequest) -> Result<impl Responder> {
+    let ua = get_user_agent(&req);
+
     let active_collection = Collection::Portfolio;
     let mut context = Context::new();
 
@@ -44,10 +46,11 @@ pub async fn photography(
 
     let args = RenderArgs {
         route: "portfolio",
+        route_to_record: Some(analytics::routes::Route::Photography),
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -58,8 +61,9 @@ pub async fn photography(
 pub async fn portfolio_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let ua = get_user_agent(&req);
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
@@ -79,10 +83,11 @@ pub async fn portfolio_collection(
 
     let args = RenderArgs {
         route: "portfolio",
+        route_to_record: Some(analytics::routes::Route::Photography),
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -93,8 +98,9 @@ pub async fn portfolio_collection(
 pub async fn ajax_collection(
     path: web::Path<String>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let ua = get_user_agent(&req);
     let collection_name = path.into_inner();
     let mut context = Context::new();
 
@@ -113,10 +119,11 @@ pub async fn ajax_collection(
 
     let args = RenderArgs {
         route: "_ajax/portfolio_collection",
+        route_to_record: None,
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -127,8 +134,9 @@ pub async fn ajax_collection(
 pub async fn ajax_one_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let ua = get_user_agent(&req);
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
@@ -145,10 +153,11 @@ pub async fn ajax_one_photo(
 
     let args = RenderArgs {
         route: "_ajax/one_photo",
+        route_to_record: None,
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 
@@ -159,8 +168,9 @@ pub async fn ajax_one_photo(
 pub async fn collection_photo(
     path: web::Path<(String, String)>,
     data: web::Data<AppState>,
-    user_agent: UserAgent,
+    req: HttpRequest,
 ) -> Result<impl Responder> {
+    let ua = get_user_agent(&req);
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
@@ -178,10 +188,11 @@ pub async fn collection_photo(
 
     let args = RenderArgs {
         route: "photo",
+        route_to_record: None,
         kind: TemplateKind::Html,
         ctx: &mut context,
         data: &data,
-        user_agent: user_agent.0.as_str(),
+        user_agent: ua.get(),
     };
     let content = render_content(args)?;
 

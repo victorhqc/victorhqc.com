@@ -200,6 +200,7 @@ async fn find_by_tag_ids(
     WHERE
         pt.tag_id IN ( { } )
         AND deleted = false
+    ORDER BY  p.created_at DESC
     LIMIT {}
     "#,
         params, limit

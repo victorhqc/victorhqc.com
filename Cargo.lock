@@ -41,7 +41,7 @@ dependencies = [
  "actix-web",
  "bitflags 2.5.0",
  "bytes",
- "derive_more 0.99.18",
+ "derive_more",
  "futures-core",
  "http-range",
  "log",
@@ -68,7 +68,7 @@ dependencies = [
  "brotli",
  "bytes",
  "bytestring",
- "derive_more 0.99.18",
+ "derive_more",
  "encoding_rs",
  "flate2",
  "futures-core",
@@ -99,19 +99,6 @@ checksum = "e01ed3140b2f8d422c68afa1ed2e85d996ea619c988ac834d255db32138655cb"
 dependencies = [
  "quote",
  "syn 2.0.61",
-]
-
-[[package]]
-name = "actix-quick-extract"
-version = "0.1.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaa19a0d13cceba38babd0a0df5b258e64016115dadde6fa8c037765d7b3c30a"
-dependencies = [
- "actix-web",
- "derive_more 1.0.0",
- "futures-util",
- "log",
- "thiserror",
 ]
 
 [[package]]
@@ -197,7 +184,7 @@ dependencies = [
  "bytestring",
  "cfg-if",
  "cookie 0.16.2",
- "derive_more 0.99.18",
+ "derive_more",
  "encoding_rs",
  "futures-core",
  "futures-util",
@@ -1586,27 +1573,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "derive_more"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a9b99b9cbbe49445b21764dc0625032a89b145a2642e67603e1c936f5458d05"
-dependencies = [
- "derive_more-impl",
-]
-
-[[package]]
-name = "derive_more-impl"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb7330aeadfbe296029522e6c40f315320aba36fc43a5b3632f3795348f3bd22"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.61",
- "unicode-xid",
-]
-
-[[package]]
 name = "deunicode"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2867,6 +2833,12 @@ dependencies = [
  "cfg-if",
  "digest",
 ]
+
+[[package]]
+name = "md5"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "memchr"
@@ -5072,7 +5044,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4c9e1c3f893758f154004195fc2d2c52fbda462df725220ceaef830ac29affa"
 dependencies = [
- "derive_more 0.99.18",
+ "derive_more",
  "lazy_static",
  "regex",
  "serde",
@@ -5404,13 +5376,13 @@ name = "web-victorhqc-com"
 version = "0.1.0"
 dependencies = [
  "actix-files",
- "actix-quick-extract",
  "actix-web",
  "core-victorhqc-com",
  "dotenvy",
  "graphql_client",
  "lazy_static",
  "log",
+ "md5",
  "pretty_env_logger",
  "rand",
  "reqwest 0.11.27",
@@ -5421,6 +5393,7 @@ dependencies = [
  "strum_macros",
  "tera",
  "uaparser",
+ "uuid",
 ]
 
 [[package]]
