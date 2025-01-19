@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() {
@@ -20,14 +20,16 @@ fn main() {
     }
 }
 
-fn build_api_db(
-    db_file: &PathBuf,
-    migrations_dir: &PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn build_api_db(db_file: &Path, migrations_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let db_url = format!("sqlite:{}", db_file.display());
 
     if !db_file.exists() {
-        std::fs::write(db_file, b"").unwrap();
+        Command::new("sqlx")
+            .arg("database")
+            .arg("create")
+            .spawn()
+            .unwrap()
+            .wait()?;
     }
 
     let exit_status = Command::new("sqlx")
