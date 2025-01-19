@@ -7,7 +7,7 @@ pub mod tag;
 
 #[derive(sqlx::Type, Debug, Clone)]
 #[sqlx(transparent)]
-pub struct Timestamp(i64);
+pub struct Timestamp(pub i64);
 
 impl From<OffsetDateTime> for Timestamp {
     fn from(dt: OffsetDateTime) -> Self {
