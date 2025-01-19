@@ -24,12 +24,18 @@ fn build_api_db(db_file: &Path, migrations_dir: &Path) -> Result<(), Box<dyn std
     let db_url = format!("sqlite:{}", db_file.display());
 
     if !db_file.exists() {
-        Command::new("sqlx")
+        let create_status = Command::new("sqlx")
             .arg("database")
             .arg("create")
+            .arg("--database-url")
+            .arg(&db_url)
             .spawn()
             .unwrap()
             .wait()?;
+
+        if !create_status.success() {
+            panic!("sqlx failed ({db_url}): {create_status}");
+        }
     }
 
     let exit_status = Command::new("sqlx")
@@ -44,7 +50,7 @@ fn build_api_db(db_file: &Path, migrations_dir: &Path) -> Result<(), Box<dyn std
         .wait()?;
 
     if !exit_status.success() {
-        panic!("sqlx failed: {exit_status}");
+        panic!("sqlx failed ({db_url}): {exit_status}");
     }
 
     println!("SQLite DB created at {}", db_file.display());
