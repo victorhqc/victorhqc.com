@@ -1,8 +1,13 @@
-use super::record::{generate_unique_session_id, get_client_id};
+use super::{
+    record::{get_client_id, get_referer},
+    session::Session,
+    visit::Visit,
+};
 use crate::collections::Collection;
+use crate::routes::get_user_agent;
 use crate::state::AppState;
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
-use log::{debug, trace};
+use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::str::FromStr;
@@ -14,7 +19,9 @@ pub async fn register_visit(
     info: web::Query<Info>,
     req: HttpRequest,
 ) -> Result<impl Responder> {
+    let tx = data.analytics_sender.clone();
     let route = Route::from_str(&info.path).ok();
+    let ua = get_user_agent(&req);
 
     if route.is_none() {
         debug!("No route given, no analytics to register");
@@ -22,25 +29,15 @@ pub async fn register_visit(
         return Ok(HttpResponse::BadRequest().finish());
     }
     let route = route.unwrap();
-    debug!("Registering visit: {:?}", route);
-
-    let mut visits = data.visits.lock().unwrap();
-    visits.increment(route);
-
-    trace!("Total Visits: {:?}", visits);
 
     let client_id = get_client_id(&req);
-    let mut session_map = data.unique_sessions.lock().unwrap();
+    let referer = get_referer(&req);
 
     if let Some(client_id) = client_id {
-        session_map.get(&client_id).cloned().unwrap_or_else(|| {
-            let new_session_id = generate_unique_session_id();
-            session_map.insert(client_id.clone());
+        let session = Session::new(client_id, Some(ua.get().to_string())).unwrap();
+        let visit = Visit::new(&session, route.to_string(), referer).unwrap();
 
-            new_session_id
-        });
-
-        trace!("Total Sessions: {:?}", session_map);
+        tx.send((session, visit)).await.unwrap();
 
         return Ok(HttpResponse::Created().finish());
     }
