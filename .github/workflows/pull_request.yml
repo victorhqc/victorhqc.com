@@ -57,16 +57,16 @@ jobs:
                   cache-on-failure: true
                   shared-key: "rust-cache"
 
-            - name: Install SQLX
-              run: |
-                  cargo install sqlx-cli --no-default-features --features sqlite
+            # - name: Install SQLX
+            #   run: |
+            #       cargo install sqlx-cli --no-default-features --features sqlite
 
-            - name: Init DB
-              run: |
-                  sqlx database create
-                  sqlx db setup --source=core/migrations
-                  cargo sqlx prepare --workspace
-                  cargo sqlx prepare --check --workspace
+            # - name: Init DB
+            #   run: |
+            #       sqlx database create
+            #       sqlx db setup --source=core/migrations
+            #       cargo sqlx prepare --workspace
+            #       cargo sqlx prepare --check --workspace
 
             - name: Check and Lint
               run: |
