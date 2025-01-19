@@ -4,13 +4,18 @@
 
 <img src="screenshots/architecture.png" height="400" />
 
-This website hosts my basic information as well as my photography portfolio.
-For this 1st iteration the website is pretty simple. It consists of a FE using
-Next.js and a BE using Rocket.rs
+This website hosts my basic information as well as my photography portfolio. It
+started as a simple idea and it evolved into a fairly complex application that
+is in the over-engineered side. However, it was very satisfying to build, I
+learned a few new things and I'm happy to see that is 90% Rust, although I had
+to move the photo stack js code into a different repository to keep it JS from
+taking over :)
+
+<img src="screenshots/index.png" height="400" />
 
 ## Deployment
 
-<img src="./screenshots/deployment.png" height="500" />
+(TODO)
 
 The deployment is initiated by a GitHub release. It will create the binary of
 the API, then the deployment script must be executed, as it takes care of:
