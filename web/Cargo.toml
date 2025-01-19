@@ -18,8 +18,17 @@ rand = { workspace = true, features = ["alloc"] }
 reqwest = { version = "0.12.9", features = ["json", "native-tls-vendored"] }
 serde = { workspace = true, features = ["derive"] }
 snafu = { workspace = true, features = ["default", "backtrace"] }
+sqlx = { workspace = true, features = [
+  "sqlite",
+  "runtime-tokio",
+  "macros",
+  "migrate",
+  "time",
+] }
 strum.workspace = true
 strum_macros.workspace = true
+time = { workspace = true, features = ["serde-human-readable", "formatting"] }
+tokio.workspace = true
 tera = "1.20.0"
 uaparser = "0.6.4"
 uuid = { workspace = true }

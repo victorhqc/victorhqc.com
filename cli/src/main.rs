@@ -16,6 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     pretty_env_logger::init();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL env variable is missing");
+    debug!("db_url {}", db_url);
+
     let bucket_name =
         std::env::var("AWS_BUCKET_NAME").expect("AWS_BUCKET_NAME env variable is missing");
 

@@ -1,16 +1,14 @@
-use crate::{analytics::visits::Visits, state::AppState};
+use crate::state::AppState;
 use actix_files as fs;
 use actix_web::{middleware, web, App, HttpServer};
+use analytics::{session::Session, visit::Visit};
 use lazy_static::lazy_static;
 use log::info;
 use snafu::prelude::*;
-use std::{
-    collections::HashSet,
-    env,
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use sqlx::SqlitePool;
+use std::{env, path::PathBuf};
 use tera::Tera;
+use tokio::sync::mpsc;
 use uaparser::UserAgentParser;
 
 mod analytics;
@@ -70,6 +68,9 @@ async fn main() -> Result<(), Error> {
         .parse::<u16>()
         .expect("WEB_PORT is not a valid integer");
 
+    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL env variable is missing");
+    let pool = SqlitePool::connect(&db_url).await.context(DBSnafu)?;
+
     if TEMPLATES.templates.is_empty() {
         return Err(Error::MissingTemplates);
     }
@@ -84,16 +85,16 @@ async fn main() -> Result<(), Error> {
     let scripts_path = format!("./{}public", root);
     info!("Serving public files from {}", scripts_path);
 
-    let unique_sessions = Arc::new(Mutex::new(HashSet::new()));
-    let visits = Arc::new(Mutex::new(Visits::new()));
+    let (tx, rx) = mpsc::channel::<(Session, Visit)>(100);
 
     let state = AppState {
         api_host,
         prefetched,
         ua_parser: parser,
-        unique_sessions,
-        visits,
+        analytics_sender: tx,
     };
+
+    tokio::spawn(async move { analytics::recorder::store(pool, rx).await });
 
     HttpServer::new(move || {
         App::new()
@@ -130,4 +131,7 @@ enum Error {
 
     #[snafu(display("Failed to prefetch photos: {:?}", source))]
     Prefetch { source: prefetch::Error },
+
+    #[snafu(display("Failed to connect to analytics db: {:?}", source))]
+    DB { source: sqlx::Error },
 }

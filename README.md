@@ -49,42 +49,7 @@ cp .env.example .env
 cp .cargo/config.toml.example .cargo/config.toml 
 ```
 
-The `.cargo/config.toml` requires an update, replace the `<ROOT_PATH>` with the
-current path you have the project saved in.
-
-```sh
-pwd
-```
-
-In unix systems it should like
-
-```
-DATABASE_URL = "sqlite:/users/user/victorhqc.com/development.db"
-```
-
-In Windows it should look like
-
-```
-DATABASE_URL = "sqlite:C:\\Users\\user\\victorhqc.com\\development.db"
-```
-
-Create the initial DB
-
-```sh
-./scripts/unix/db.sh
-```
-
-For Windows
-
-```bat
-scripts\windows\db.bat
-```
-
-Run the api with auto reload
-
-```sh
-bacon api
-```
+The `.cargo/config.toml` requires an update, replace the needed keys for AWS.
 
 ## CLI Backoffice
 
