@@ -98,7 +98,7 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Erro
         deleted = false
         AND id = ?
     ORDER BY
-        created_at DESC
+        created_at ASC
     "#,
     )
     .bind(id)
@@ -130,7 +130,7 @@ async fn find_by_filename(
         deleted = false
         AND filename = ?
     ORDER BY
-        created_at DESC
+        created_at ASC
     "#,
     )
     .bind(path.file_name().unwrap().to_str().unwrap())
@@ -162,7 +162,7 @@ async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
     WHERE
         deleted = false
     ORDER BY
-        created_at DESC
+        created_at ASC
     "#,
     )
     .fetch_all(conn)
@@ -200,7 +200,7 @@ async fn find_by_tag_ids(
     WHERE
         pt.tag_id IN ( { } )
         AND deleted = false
-    ORDER BY  p.created_at DESC
+    ORDER BY  p.created_at ASC
     LIMIT {}
     "#,
         params, limit
