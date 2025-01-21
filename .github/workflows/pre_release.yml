@@ -9,8 +9,6 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
-    RUSTC_WRAPPER: sccache
-    SCCACHE_CACHE_SIZE: 2G
 
 jobs:
     prepare-release:
