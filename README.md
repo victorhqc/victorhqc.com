@@ -168,6 +168,7 @@ Copy the script and benchmark file
 ```sh
 cp scripts/unix/run.api.example.sh scripts/unix/run.api.sh
 cp stress-tests/benchmark.example.yml stress-tests/benchmark.yml
+cp stress-tests/benchmark.web.example.yml stress-tests/benchmark.web.yml
 ```
 
 And replace the values in the script and benchmark file
@@ -178,11 +179,13 @@ Make sure the API is running
 
 ```sh
 cargo build --release
-./scripts/unix/api.sh
+./scripts/unix/run.api.sh
+./scripts/unix/run.web.sh
 ```
 
 Then run the stress tests
 
 ```sh
 drill --benchmark stress-tests/benchmark.yml --stats
+drill --benchmark stress-tests/benchmark.web.yml --stats
 ```
