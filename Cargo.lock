@@ -360,7 +360,7 @@ checksum = "86fdf8605db99b54d3cd748a44c6d04df638eb5dafb219b135d0149bd0db01f6"
 
 [[package]]
 name = "api-victorhqc-com"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "async-graphql",
  "async-graphql-rocket",
@@ -1248,7 +1248,7 @@ checksum = "1462739cb27611015575c0c11df5df7601141071f07518d56fcc1be504cbec97"
 
 [[package]]
 name = "cli-victorhqc-com"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "clap",
  "console",
@@ -1363,7 +1363,7 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "core-victorhqc-com"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aws-config",
  "aws-sdk-s3",
@@ -5384,7 +5384,7 @@ dependencies = [
 
 [[package]]
 name = "web-victorhqc-com"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "actix-files",
  "actix-web",
