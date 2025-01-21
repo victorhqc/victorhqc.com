@@ -35,7 +35,8 @@ fn index() -> &'static str {
 
 #[rocket::main]
 async fn main() -> Result<(), Error> {
-    dotenvy::dotenv().context(DotenvSnafu)?;
+    dotenvy::dotenv().ok();
+
     pretty_env_logger::init();
 
     let rocket = rocket::build();
@@ -118,9 +119,6 @@ struct AppState {
 
 #[derive(Debug, Snafu)]
 enum Error {
-    #[snafu(display("Failed to load configuration: {}", source))]
-    Dotenv { source: dotenvy::Error },
-
     #[cfg(debug_assertions)]
     #[snafu(display("{}", source))]
     Migration { source: DBError },
