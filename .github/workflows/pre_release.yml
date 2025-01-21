@@ -62,7 +62,7 @@ jobs:
                   sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" web/Cargo.toml
 
             - name: Build
-              run: cargo build
+              run: cargo build --workspace
 
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v7
