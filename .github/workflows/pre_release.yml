@@ -9,23 +9,48 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
+    RUSTC_WRAPPER: sccache
+    SCCACHE_CACHE_SIZE: 2G
 
 jobs:
     prepare-release:
-        runs-on: ubuntu-latest
+        name: Prepare Release
         if: github.ref == 'refs/heads/main'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest]
+                rust: [stable]
         steps:
             - uses: actions/checkout@v3
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install latest stable
               uses: actions-rs/toolchain@v1
               with:
                   toolchain: stable
                   override: true
+                  components: rustfmt, clippy
                   profile: minimal
                   target: x86_64-unknown-linux-musl
+
+            - name: Install musl tools
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y musl-tools
+
+            - name: Cache dependencies
+              uses: Swatinem/rust-cache@v2
+
+            - name: Configure sccache
+              run: |
+                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+                  echo “RUSTFLAGS=’--cfg profile=ephemeral-build’” >> $GITHUB_ENV
+
+            - name: Run sccache-cache
+              uses: mozilla-actions/sccache-action@v0.0.7
+              with:
+                  version: "v0.7.4"
 
             - uses: Swatinem/rust-cache@v2
               with:
@@ -37,10 +62,9 @@ jobs:
                   cache-on-failure: true
                   shared-key: "rust-cache"
 
-            - name: Install musl tools
+            - name: Install SQLX
               run: |
-                  sudo apt-get update
-                  sudo apt-get install -y musl-tools
+                  cargo install sqlx-cli --no-default-features --features sqlite
 
             - name: Update versions
               run: |
