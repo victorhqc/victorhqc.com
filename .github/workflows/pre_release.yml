@@ -7,6 +7,11 @@ on:
                 description: "Version number (without v prefix)"
                 required: true
 
+env:
+    CARGO_TERM_COLOR: always
+    RUSTC_WRAPPER: sccache
+    SCCACHE_CACHE_SIZE: 2G
+
 jobs:
     prepare-release:
         runs-on: ubuntu-latest
@@ -16,6 +21,38 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Install latest stable
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+                  profile: minimal
+                  target: x86_64-unknown-linux-musl
+
+            - name: Cache dependencies
+              uses: Swatinem/rust-cache@v2
+
+            - name: Configure sccache
+              run: |
+                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+                  echo "RUSTFLAGS='--cfg profile=release-build'" >> $GITHUB_ENV
+
+            - name: Run sccache-cache
+              uses: mozilla-actions/sccache-action@v0.0.7
+              with:
+                  version: "v0.7.4"
+
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: |
+                      api
+                      web
+                      core
+                      cli
+                  cache-on-failure: true
+                  shared-key: "rust-cache"
+
             - name: Update versions
               run: |
                   # Update version in each Cargo.toml
@@ -23,6 +60,9 @@ jobs:
                   sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" core/Cargo.toml
                   sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" cli/Cargo.toml
                   sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" web/Cargo.toml
+
+            - name: Build
+              run: cargo build
 
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v7
