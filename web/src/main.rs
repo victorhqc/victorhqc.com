@@ -49,7 +49,7 @@ lazy_static! {
 
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
-    dotenvy::dotenv().unwrap();
+    dotenvy::dotenv().ok();
     pretty_env_logger::init();
     let regexes_path = PathBuf::from(env!("OUT_DIR")).join("regexes.yaml");
 
