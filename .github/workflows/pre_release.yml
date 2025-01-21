@@ -16,10 +16,6 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Create release branch
-              run: |
-                  git checkout -b release/v${{ github.event.inputs.version }}
-
             - name: Update versions
               run: |
                   # Update version in each Cargo.toml
@@ -35,7 +31,7 @@ jobs:
                   title: "Release v${{ github.event.inputs.version }}"
                   body: "Preparing release v${{ github.event.inputs.version }}"
                   branch: release/v${{ github.event.inputs.version }}
-                  base: main
+                  delete-branch: true
 
             - name: Create tag
               run: |
