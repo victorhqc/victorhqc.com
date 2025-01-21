@@ -1,7 +1,7 @@
 ---
 concurrency: 4
 base: "http://localhost:9999"
-iterations: 2000
+iterations: 10000
 rampup: 3
 
 plan:

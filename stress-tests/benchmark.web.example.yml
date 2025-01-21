@@ -1,0 +1,32 @@
+---
+concurrency: 4
+base: "http://localhost:9998"
+iterations: 10000
+rampup: 3
+
+plan:
+    - name: Home
+      request:
+          url: /
+    - name: Photography
+      request:
+          url: /photography
+    - name: Collections
+      request:
+          url: /photography/{{ item }}
+      with_items:
+          - "street"
+          - "japan"
+          - "bikes"
+          - "postcards"
+          - "close-ups"
+    - name: Open Photos
+      request:
+          url: /photography/{{ item }}
+      wite_items:
+          - "bikes/<ID>"
+          - "street/<ID>"
+          - "japan/<ID>"
+          - "bikes/<ID>"
+          - "postcards/<ID>"
+          - "close-ups/<ID>"

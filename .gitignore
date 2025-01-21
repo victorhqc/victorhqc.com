@@ -5,6 +5,8 @@
 stress-tests/benchmark.yml
 scripts/unix/run.api.sh
 
+stress-tests/benchmark.web.yml
+
 .env
 
 .DS_Store
