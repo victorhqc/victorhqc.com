@@ -30,23 +30,6 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Update crate versions
-              run: |
-                  VERSION=${GITHUB_REF#refs/tags/v}
-
-                  # Update version in each Cargo.toml
-                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" api/Cargo.toml
-                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" core/Cargo.toml
-                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" cli/Cargo.toml
-                  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" web/Cargo.toml
-
-            - name: Commit version updates
-              run: |
-                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
-                  git config --local user.name "github-actions[bot]"
-                  git commit -am "chore: update versions to ${GITHUB_REF#refs/tags/v}"
-                  git push
-
             - name: Install latest stable
               uses: actions-rs/toolchain@v1
               with:

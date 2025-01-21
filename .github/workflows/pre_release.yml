@@ -1,0 +1,33 @@
+name: Prepare Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "Version number (without v prefix)"
+                required: true
+
+jobs:
+    prepare-release:
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Update versions
+              run: |
+                  # Update version in each Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" api/Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" core/Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" cli/Cargo.toml
+                  sed -i "s/^version = \".*\"/version = \"${{ github.event.inputs.version }}\"/" web/Cargo.toml
+
+            - name: Commit and tag
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+                  git commit -am "chore: release v${{ github.event.inputs.version }}"
+                  git tag "v${{ github.event.inputs.version }}"
+                  git push && git push --tags
