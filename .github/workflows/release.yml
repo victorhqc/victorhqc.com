@@ -9,8 +9,6 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
-    RUSTC_WRAPPER: sccache
-    SCCACHE_CACHE_SIZE: 2G
 
 jobs:
     build_and_release:
@@ -38,20 +36,6 @@ jobs:
                   target: ${{ matrix.target }}
                   profile: minimal
 
-            - name: Cache dependencies
-              uses: Swatinem/rust-cache@v2
-
-            - name: Configure sccache
-              run: |
-                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-                  echo "RUSTFLAGS='--cfg profile=release-build'" >> $GITHUB_ENV
-
-            - name: Run sccache-cache
-              uses: mozilla-actions/sccache-action@v0.0.7
-              with:
-                  version: "v0.7.4"
-
             - uses: Swatinem/rust-cache@v2
               with:
                   workspaces: |
@@ -61,6 +45,11 @@ jobs:
                       cli
                   cache-on-failure: true
                   shared-key: "rust-cache"
+
+            - name: Install musl tools
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y musl-tools
 
             - name: Build Release Binary
               run: cargo build --release --target ${{ matrix.target }}
