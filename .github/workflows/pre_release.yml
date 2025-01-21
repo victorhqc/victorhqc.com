@@ -29,20 +29,6 @@ jobs:
                   profile: minimal
                   target: x86_64-unknown-linux-musl
 
-            - name: Cache dependencies
-              uses: Swatinem/rust-cache@v2
-
-            - name: Configure sccache
-              run: |
-                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-                  echo "RUSTFLAGS='--cfg profile=release-build'" >> $GITHUB_ENV
-
-            - name: Run sccache-cache
-              uses: mozilla-actions/sccache-action@v0.0.7
-              with:
-                  version: "v0.7.4"
-
             - uses: Swatinem/rust-cache@v2
               with:
                   workspaces: |
