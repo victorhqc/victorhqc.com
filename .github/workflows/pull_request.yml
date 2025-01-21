@@ -5,6 +5,8 @@ on:
         branches:
             - main
     pull_request:
+        branches-ignore:
+            - "release/v*"
 
 env:
     DATABASE_URL: sqlite:/home/runner/work/victorhqc.com/victorhqc.com/github.sqlite
