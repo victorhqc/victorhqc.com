@@ -16,6 +16,10 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Create release branch
+              run: |
+                  git checkout -b release/v${{ github.event.inputs.version }}
+
             - name: Update versions
               run: |
                   # Update version in each Cargo.toml
@@ -31,3 +35,17 @@ jobs:
                   git commit -am "chore: release v${{ github.event.inputs.version }}"
                   git tag "v${{ github.event.inputs.version }}"
                   git push && git push --tags
+
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v7
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  title: "Release v${{ github.event.inputs.version }}"
+                  body: "Preparing release v${{ github.event.inputs.version }}"
+                  branch: release/v${{ github.event.inputs.version }}
+                  base: main
+
+            - name: Create tag
+              run: |
+                  git tag "v${{ github.event.inputs.version }}"
+                  git push origin "v${{ github.event.inputs.version }}"
