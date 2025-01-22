@@ -51,7 +51,16 @@ lazy_static! {
 async fn main() -> Result<(), Error> {
     dotenvy::dotenv().ok();
     pretty_env_logger::init();
-    let regexes_path = PathBuf::from(env!("OUT_DIR")).join("regexes.yaml");
+
+    let api_host = env::var("WEB_API_HOST").expect("WEB_API_HOST env variable is missing");
+    let root = env::var("WEB_ROOT").unwrap_or("".to_string());
+    let port = env::var("WEB_PORT").expect("WEB_PORT env variable is missing");
+    let port: u16 = port
+        .parse::<u16>()
+        .expect("WEB_PORT is not a valid integer");
+    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL env variable is missing");
+
+    let regexes_path = PathBuf::from(&root).join("regexes.yaml");
 
     let parser = UserAgentParser::builder()
         .with_unicode_support(false)
@@ -61,14 +70,6 @@ async fn main() -> Result<(), Error> {
         .build_from_yaml(regexes_path.as_os_str().to_str().unwrap())
         .expect("Parser creation failed");
 
-    let api_host = env::var("WEB_API_HOST").expect("WEB_API_HOST env variable is missing");
-    let root = env::var("WEB_ROOT").unwrap_or("".to_string());
-    let port = env::var("WEB_PORT").expect("WEB_PORT env variable is missing");
-    let port: u16 = port
-        .parse::<u16>()
-        .expect("WEB_PORT is not a valid integer");
-
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL env variable is missing");
     let pool = SqlitePool::connect(&db_url).await.context(DBSnafu)?;
 
     if TEMPLATES.templates.is_empty() {

@@ -4,11 +4,7 @@ use std::process::Command;
 use walkdir::WalkDir;
 
 fn main() {
-    // URL of the file to fetch
-    let url = "https://raw.githubusercontent.com/ua-parser/uap-core/refs/heads/master/regexes.yaml";
-
-    let out_dir = PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    let regex_target = Path::new(&out_dir).join("regexes.yaml");
+    let regex_target = Path::new("regexes.yaml");
 
     let crate_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
@@ -21,7 +17,7 @@ fn main() {
     println!("cargo:rerun-if-changed={}", templates_dir.display()); // Re-run if any files in templates change
     println!("cargo::rerun-if-changed={}", migrations_dir.display()); // Re-run if migrations change
 
-    if let Err(e) = fetch_file(url, &regex_target) {
+    if let Err(e) = fetch_file(regex_target) {
         eprintln!("Failed to fetch the file: {}", e);
         std::process::exit(1);
     }
@@ -37,8 +33,12 @@ fn main() {
     }
 }
 
-fn fetch_file(url: &str, dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+fn fetch_file(dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let url = "https://raw.githubusercontent.com/ua-parser/uap-core/refs/heads/master/regexes.yaml";
+
     let response = reqwest::blocking::get(url)?.text()?;
+
+    println!("Attempting to save file at {:?}", dest_path);
     fs::write(dest_path, response)?;
     Ok(())
 }
