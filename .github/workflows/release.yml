@@ -20,7 +20,6 @@ jobs:
                     - os: ubuntu-latest
                       target: x86_64-unknown-linux-musl
                       api_artifact_name: linux-api-victorhqc-com
-                      cli_artifact_name: linux-cli-victorhqc-com
                       web_artifact_name: linux-web-victorhqc-com
 
         steps:
@@ -56,13 +55,12 @@ jobs:
                   cargo install sqlx-cli --no-default-features --features sqlite
 
             - name: Build Release Binary
-              run: cargo build --release --target ${{ matrix.target }}
+              run: cargo build --workspace --exclude cli-victorhqc-com --release --target ${{ matrix.target }}
 
             - name: Rename binaries
               shell: bash
               run: |
                   mv target/${{ matrix.target }}/release/api-victorhqc-com ${{ matrix.api_artifact_name }}
-                  mv target/${{ matrix.target }}/release/cli-victorhqc-com ${{ matrix.cli_artifact_name }}
                   mv target/${{ matrix.target }}/release/web-victorhqc-com ${{ matrix.web_artifact_name }}
 
             - name: Create Release
@@ -70,7 +68,6 @@ jobs:
               with:
                   files: |
                       ${{ matrix.api_artifact_name }}
-                      ${{ matrix.cli_artifact_name }}
                       ${{ matrix.web_artifact_name }}
                   generate_release_notes: true
               env:
