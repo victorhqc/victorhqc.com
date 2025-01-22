@@ -32,10 +32,7 @@ else
 fi
 
 LIBS="$OUTPUT_FOLDER/victorhqc.com.libs"
-
-if [ ! -d "$LIBS" ]; then
-  git clone https://github.com/victorhqc/victorhqc.com.libs.git $LIBS
-fi
+git clone https://github.com/victorhqc/victorhqc.com.libs.git $LIBS
 
 cd $LIBS
 git pull
@@ -48,3 +45,4 @@ cd - > /dev/null
 
 mv "$LIBS/dist/photo-stack.min.js" "$OUTPUT_FOLDER/photo-stack.min.js"
 mv "$LIBS/dist/photo-stack.min.css" "$OUTPUT_FOLDER/photo-stack.min.css"
+rm -rf "$OUTPUT_FOLDER/victorhqc.com.libs"
