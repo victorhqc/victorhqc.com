@@ -62,6 +62,13 @@ async fn main() -> Result<(), Error> {
 
     let regexes_path = PathBuf::from(&root).join("regexes.yaml");
 
+    let file_exists = std::fs::exists(&regexes_path).context(ReadPathSnafu)?;
+    if !file_exists {
+        return Err(Error::MissingRegex {
+            path: regexes_path.as_os_str().to_str().unwrap().to_string(),
+        });
+    }
+
     let parser = UserAgentParser::builder()
         .with_unicode_support(false)
         .with_device(true)
@@ -129,6 +136,12 @@ enum Error {
 
     #[snafu(display("Failed to load Templates, maybe the path is incorrect"))]
     MissingTemplates,
+
+    #[snafu(display("regexes.yaml file not found at {}", path))]
+    MissingRegex { path: String },
+
+    #[snafu(display("Can't read path: {}", source))]
+    ReadPath { source: std::io::Error },
 
     #[snafu(display("Failed to prefetch photos: {:?}", source))]
     Prefetch { source: prefetch::Error },
