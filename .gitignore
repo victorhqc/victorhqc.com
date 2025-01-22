@@ -21,3 +21,4 @@ stress-tests/benchmark.web.yml
 
 web/static/
 web/regexes.yaml
+*.zip
