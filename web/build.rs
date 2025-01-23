@@ -3,6 +3,7 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+#[cfg(not(debug_assertions))]
 use walkdir::WalkDir;
 
 fn main() {
@@ -12,31 +13,35 @@ fn main() {
 
     let migrations_dir = crate_dir.join("migrations");
 
+    // Only run this for release builds.
     #[cfg(not(debug_assertions))]
-    let templates_dir = crate_dir.join("templates");
-    #[cfg(not(debug_assertions))]
-    let static_dir = crate_dir.join("static");
-    #[cfg(not(debug_assertions))]
-    let public_dir = crate_dir.join("public");
+    let include_in_zip: Vec<(String, PathBuf)> = {
+        let templates_dir = crate_dir.join("templates");
+        let static_dir = crate_dir.join("static");
+        let public_dir = crate_dir.join("public");
+
+        println!("cargo:rerun-if-changed={}", templates_dir.display()); // Re-run if any files in templates change
+        println!("cargo:rerun-if-changed={}", static_dir.display()); // Re-run if files in static change
+        println!("cargo:rerun-if-changed={}", public_dir.display()); // Re-run if files in public change
+
+        vec![
+            ("templates".to_string(), templates_dir),
+            ("static".to_string(), static_dir),
+            ("public".to_string(), public_dir),
+        ]
+    };
 
     let db_file = crate_dir.join("analytics.db");
 
     println!("cargo:rerun-if-changed=build.rs"); // Re-run build if build.rs changes
-    println!("cargo::rerun-if-changed={}", migrations_dir.display()); // Re-run if migrations change
-
-    // Only run this for release builds.
-    #[cfg(not(debug_assertions))]
-    {
-        println!("cargo:rerun-if-changed={}", templates_dir.display()); // Re-run if any files in templates change
-        println!("cargo::rerun-if-changed={}", static_dir.display()); // Re-run if files in static change
-        println!("cargo::rerun-if-changed={}", public_dir.display()); // Re-run if files in public change
-    }
+    println!("cargo:rerun-if-changed={}", migrations_dir.display()); // Re-run if migrations change
 
     if let Err(e) = fetch_file(regex_target) {
         eprintln!("Failed to fetch the file: {}", e);
         std::process::exit(1);
     }
 
+    #[cfg(not(debug_assertions))]
     if let Err(e) = compile_css_files() {
         eprintln!("Failed to compile CSS files: {}", e);
         std::process::exit(1);
@@ -49,18 +54,8 @@ fn main() {
 
     #[cfg(not(debug_assertions))]
     {
-        if let Err(e) = compress_static(&templates_dir, "templates") {
+        if let Err(e) = compress_web_files(include_in_zip) {
             eprintln!("Failed to compress templates: {}", e);
-            std::process::exit(1);
-        }
-
-        if let Err(e) = compress_static(&public_dir, "public") {
-            eprintln!("Failed to compress public: {}", e);
-            std::process::exit(1);
-        }
-
-        if let Err(e) = compress_static(&static_dir, "static") {
-            eprintln!("Failed to compress static: {}", e);
             std::process::exit(1);
         }
     }
@@ -71,11 +66,12 @@ fn fetch_file(dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
 
     let response = reqwest::blocking::get(url)?.text()?;
 
-    println!("Attempting to save file at {:?}", dest_path);
     fs::write(dest_path, response)?;
+    println!("Saved {:?}", dest_path);
     Ok(())
 }
 
+#[cfg(not(debug_assertions))]
 fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
     fs::create_dir_all("static")?;
 
@@ -87,7 +83,6 @@ fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension() == Some(ext))
     {
-        println!("cargo:rerun-if-changed={}", entry.path().display());
         let content = fs::read_to_string(entry.path())?;
         combined_css.push_str(&content);
         combined_css.push('\n');
@@ -98,7 +93,7 @@ fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
 
     let status = Command::new("npx")
         .args([
-            "tailwindcss",
+            "tailwindcss@v3",
             "-i",
             temp_input,
             "-o",
@@ -144,7 +139,7 @@ fn build_analytics_db(
     println!("SQLite DB created at {}", db_file.display());
     println!("DATABASE_URL={}", db_url);
 
-    println!("cargo::rustc-env=DATABASE_URL={}", db_url);
+    println!("cargo:rustc-env=DATABASE_URL={}", db_url);
 
     Ok(())
 }
@@ -154,8 +149,8 @@ This function compresses the files that are needed to deploy alongside the binar
 These are usually static files like templates or other things that the web server will, well, serve.
 */
 #[cfg(not(debug_assertions))]
-fn compress_static(dir: &PathBuf, file_name: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let file = std::fs::File::create(format!("{}.zip", file_name))?;
+fn compress_web_files(dirs: Vec<(String, PathBuf)>) -> Result<(), Box<dyn std::error::Error>> {
+    let file = std::fs::File::create("web_files.zip")?;
     let mut zip = zip::ZipWriter::new(file);
     let options: zip::write::FileOptions<'_, ()> = zip::write::FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
@@ -163,26 +158,38 @@ fn compress_static(dir: &PathBuf, file_name: &str) -> Result<(), Box<dyn std::er
 
     let mut buffer = Vec::new();
 
-    for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-        let path = entry.path();
-        let name = path.strip_prefix(dir)?.to_str().ok_or("Invalid path")?;
+    for (prefix, dir) in dirs.iter() {
+        zip.add_directory(prefix, options)?;
 
-        // No need to handle directories, as WalkDir is traversing this for us.
-        if path.is_dir() {
-            continue;
+        for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+            let path = entry.path();
+            // let name = path.strip_prefix(dir)?.to_str().ok_or("Invalid path")?;
+
+            // No need to handle directories, as WalkDir is traversing this for us.
+            if path.is_dir() {
+                continue;
+            }
+
+            let relative_path = path.strip_prefix(dir)?;
+
+            let zip_path = PathBuf::from(prefix)
+                .join(relative_path)
+                .to_str()
+                .ok_or("Invalid path")?
+                .to_string();
+
+            println!("Adding file to web_files.zip: {} ", zip_path);
+
+            zip.start_file(zip_path, options)?;
+            let mut f = std::fs::File::open(path)?;
+            buffer.clear();
+            std::io::Read::read_to_end(&mut f, &mut buffer)?;
+            zip.write_all(&buffer)?;
         }
-
-        println!("Adding file to {}.zip: {} ", file_name, name);
-
-        zip.start_file(name, options)?;
-        let mut f = std::fs::File::open(path)?;
-        buffer.clear();
-        std::io::Read::read_to_end(&mut f, &mut buffer)?;
-        zip.write_all(&buffer)?;
     }
 
     zip.finish()?;
-    println!("{}.zip is Done", file_name);
+    println!("web_files.zip is Done");
 
     Ok(())
 }
