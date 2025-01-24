@@ -13,21 +13,6 @@ taking over :)
 
 <img src="screenshots/index.png" height="400" />
 
-## Deployment
-
-(TODO)
-
-The deployment is initiated by a GitHub release. It will create the binary of
-the API, then the deployment script must be executed, as it takes care of:
-
-1. Send binaries and DB to the sever
-2. Restarts API in server
-3. Trigger Vercel deployment
-
-```sh
-./scripts/unix/deploy.sh --version=<VERSION> --db=<DB_PATH>
-```
-
 # Development
 
 ### Requirements
@@ -188,4 +173,120 @@ Then run the stress tests
 ```sh
 drill --benchmark stress-tests/benchmark.yml --stats
 drill --benchmark stress-tests/benchmark.web.yml --stats
+```
+
+# Deployment
+
+The current deployment is pretty spartan. It's a basic automation where the
+binaries and necessary files are shipped to the service through `scp` and then
+some commands are manually run using `ssh`.
+
+It requires that manual configuration is already in place. Meaning, having
+[Nginx configured](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-20-04#step-5-%E2%80%93-setting-up-server-blocks-(recommended))
+as well as having the `systemd` services ready. There's a small description
+on the configuration needed.
+
+Once that is ready then the deployment script can be executed
+
+```sh
+# Compiling for release is mandatory to run before
+cargo build --release --target x86_64-unknown-linux-musl
+
+./scripts/unix/release.sh -k ~/.ssh/your-ssh-key -h victorhqc.com -u username -p path_in_server
+
+# Or like this to install web dependencies
+./scripts/unix/release.sh -k ~/.ssh/your-ssh-key -h victorhqc.com -u username -p path_in_server --install
+```
+
+## Requirements
+
+- Nginx
+
+### Domain
+
+### Systemd
+
+The services use `systemd` to manage restarts and configuration. Benjamin
+Morel [has an excellent](https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6) 
+guide on how to set a service.
+
+Once the services configured with the configuration stated below, one can
+simply write
+
+```sh
+systemctl status api.victorhqc.com
+systemctl restart api.victorhqc.com
+
+systemctl status www.victorhqc.com
+systemctl restart www.victorhqc.com
+```
+
+### API Configuration
+
+The file for the API Service, I have it configured as
+
+`/etc/systemd/system/api.victorhqc.com.env`
+```
+DATABASE_URL="<PATH>"
+ROCKET_DATABASE_URL="<PATH>"
+ROCKET_CACHED_PHOTO_TAGS="<COMMA_SEPARATED_TAGS>"
+ROCKET_PORT=<PORT>
+
+RUST_LOG = "api_victorhqc_com=error,core_victorhqc_com=error,sqlx::query=error,rocket=error"
+
+AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY>
+AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+AWS_REGION=eu-central-1
+AWS_BUCKET_NAME=<BUCKET_NAME>
+```
+
+`/etc/systemd/system/api.victorhqc.com.service`
+```
+[Unit]
+Description=victorhqc.com API (api.victorhqc.com)
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=<USERNAME>
+ExecStart=<PATH>/linux-api-victorhqc-com
+EnvironmentFile=/etc/systemd/system/api.victorhqc.com.env
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### WEB Configuration
+
+The config file for the web service is
+
+
+`/etc/systemd/system/www.victorhqc.com.env`
+```
+WEB_PORT=<PORT>
+WEB_API_HOST=https://api.victorhqc.com
+WEB_ROOT=<PATH_TO_WEB_STATICS>/victorhqc.com/
+DATABASE_URL=<PATH_TO_BINARY>/analytics.db
+OUT_DIR=<PATH_TO_WEB_STATICS>/victorhqc.com/
+REGEX_PATH=<PATH_TO_WEB_STATICS>/victorhqc.com/
+```
+
+`/etc/systemd/system/www.victorhqc.com.service`
+```
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=<USERNAME>
+ExecStart=<PATH>/linux-web-victorhqc-com 
+EnvironmentFile=/etc/systemd/system/www.victorhqc.com.env
+
+[Install]
+WantedBy=multi-user.target
 ```

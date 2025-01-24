@@ -32,19 +32,17 @@ else
 fi
 
 LIBS="$OUTPUT_FOLDER/victorhqc.com.libs"
-
-if [ ! -d "$LIBS" ]; then
-  git clone https://github.com/victorhqc/victorhqc.com.libs.git $LIBS
-fi
+git clone https://github.com/victorhqc/victorhqc.com.libs.git $LIBS
 
 cd $LIBS
 git pull
 
 deno run --allow-env --allow-read --allow-write --allow-run ./bundle.ts
 npx terser dist/photo-stack.js -o dist/photo-stack.min.js -c -m
-npx tailwindcss -i ./src/photo-stack/styles.css -o ./dist/photo-stack.min.css --minify
+npx tailwindcss@v3 -i ./src/photo-stack/styles.css -o ./dist/photo-stack.min.css --minify
 
 cd - > /dev/null
 
 mv "$LIBS/dist/photo-stack.min.js" "$OUTPUT_FOLDER/photo-stack.min.js"
 mv "$LIBS/dist/photo-stack.min.css" "$OUTPUT_FOLDER/photo-stack.min.css"
+rm -rf "$OUTPUT_FOLDER/victorhqc.com.libs"
