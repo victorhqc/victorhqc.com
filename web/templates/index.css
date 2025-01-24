@@ -44,6 +44,8 @@
 
 #index__photos-stack {
   @apply block relative m-auto w-10/12;
+
+  aspect-ratio: 3/2;
 }
 
 @media (min-width: 768px) {

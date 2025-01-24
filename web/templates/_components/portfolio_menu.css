@@ -7,7 +7,7 @@
 }
 
 .portfolio-menu__item {
-  @apply py-2 px-2 -mx-2 cursor-pointer;
+  @apply py-2 px-2 md:-mx-2 lg:-mx-2 cursor-pointer;
   @apply border border-solid border-transparent;
 
   text-transform: capitalize;
