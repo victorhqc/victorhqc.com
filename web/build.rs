@@ -90,7 +90,6 @@ fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
         combined_css.push('\n');
     }
 
-    // let temp_input = "static/not_compiled.css";
     let temp_css = crate_dir.join("static").join("__tmp.css");
     let target_css = crate_dir.join("static").join("styles.min.css");
     fs::write(&temp_css, combined_css)?;
@@ -173,7 +172,6 @@ fn compress_web_files(dirs: Vec<(String, PathBuf)>) -> Result<(), Box<dyn std::e
 
         for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
             let path = entry.path();
-            // let name = path.strip_prefix(dir)?.to_str().ok_or("Invalid path")?;
 
             // No need to handle directories, as WalkDir is traversing this for us.
             if path.is_dir() || path.file_name().map_or(false, |name| name == ".DS_Store") {
