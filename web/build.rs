@@ -67,12 +67,14 @@ fn fetch_file(dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let response = reqwest::blocking::get(url)?.text()?;
 
     fs::write(dest_path, response)?;
-    println!("Saved {:?}", dest_path);
+    println!("Saved regex {:?}", dest_path);
     Ok(())
 }
 
 #[cfg(not(debug_assertions))]
 fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
+    let crate_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+
     fs::create_dir_all("static")?;
 
     let ext = std::ffi::OsStr::new("css");
@@ -88,21 +90,29 @@ fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
         combined_css.push('\n');
     }
 
-    let temp_input = "static/not_compiled.css";
-    fs::write(temp_input, combined_css)?;
+    // let temp_input = "static/not_compiled.css";
+    let temp_css = crate_dir.join("static").join("__tmp.css");
+    let target_css = crate_dir.join("static").join("styles.min.css");
+    fs::write(&temp_css, combined_css)?;
 
     let status = Command::new("npx")
         .args([
             "tailwindcss@v3",
             "-i",
-            temp_input,
+            temp_css
+                .as_os_str()
+                .to_str()
+                .expect("Failed to build __tmp.css path"),
             "-o",
-            "static/styles.min.css",
+            target_css
+                .as_os_str()
+                .to_str()
+                .expect("Failed to build styles.min.css path"),
             "--minify",
         ])
         .status()?;
 
-    fs::remove_file(temp_input)?;
+    fs::remove_file(temp_css)?;
 
     if !status.success() {
         return Err("tailwindcss compilation failed".into());
@@ -166,7 +176,7 @@ fn compress_web_files(dirs: Vec<(String, PathBuf)>) -> Result<(), Box<dyn std::e
             // let name = path.strip_prefix(dir)?.to_str().ok_or("Invalid path")?;
 
             // No need to handle directories, as WalkDir is traversing this for us.
-            if path.is_dir() {
+            if path.is_dir() || path.file_name().map_or(false, |name| name == ".DS_Store") {
                 continue;
             }
 
