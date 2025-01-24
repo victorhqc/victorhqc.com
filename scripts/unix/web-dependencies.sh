@@ -39,7 +39,7 @@ git pull
 
 deno run --allow-env --allow-read --allow-write --allow-run ./bundle.ts
 npx terser dist/photo-stack.js -o dist/photo-stack.min.js -c -m
-npx tailwindcss -i ./src/photo-stack/styles.css -o ./dist/photo-stack.min.css --minify
+npx tailwindcss@v3 -i ./src/photo-stack/styles.css -o ./dist/photo-stack.min.css --minify
 
 cd - > /dev/null
 
