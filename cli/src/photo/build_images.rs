@@ -64,7 +64,12 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let tx_hd = tx.clone();
         let handle_hd: BuildHandle = thread::spawn(move || {
             trace!("Building HD Image");
+
             let img_hd = resize(img_hd, 0.4);
+
+            // let hd = image::load_from_memory(&img_hd).context(FromMemorySnafu)?;
+            convert_to_webp(&img_hd, "hd", 80f32).unwrap();
+
             let img_hd = compress(img_hd, 80)?;
             trace!("HD Image Processing completed");
 
@@ -78,6 +83,8 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let handle_md: BuildHandle = thread::spawn(move || {
             trace!("Building MD Image");
             let img_md = resize(img_md, 0.25);
+            convert_to_webp(&img_md, "md", 75f32).unwrap();
+
             let img_md = compress(img_md, 75)?;
             trace!("MD Image Processing completed");
 
@@ -90,8 +97,12 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let handle_sm: BuildHandle = thread::spawn(move || {
             trace!("Building SM Image");
             let img_sm = resize(img_sm, 0.15);
+            convert_to_webp(&img_sm, "sm", 70f32).unwrap();
+
             let img_sm = compress(img_sm, 70)?;
             trace!("SM Image Processing completed");
+
+            // let sm = image::load_from_memory(&img_sm).context(FromMemorySnafu)?;
 
             tx.send(ImageProcess::Processed((ImageSize::Sm, img_sm)))
                 .context(ThreadSendSnafu)
@@ -213,6 +224,18 @@ fn compress(img: DynamicImage, quality: u8) -> Result<Vec<u8>, Error> {
     Ok(buffer)
 }
 
+fn convert_to_webp(img: &DynamicImage, name: &str, quality: f32) -> Result<(), Error> {
+    img.save(Path::new(name).with_extension("jpg")).unwrap();
+
+    let encoder = webp::Encoder::from_image(img).unwrap();
+    let webp: webp::WebPMemory = encoder.encode(quality);
+    // Define and write the WebP-encoded file to a given path
+    let output_path = Path::new(name).with_extension("webp");
+    std::fs::write(&output_path, &*webp).unwrap();
+
+    Ok(())
+}
+
 fn build_loader(
     m: &MultiProgress,
     spinner_style: &ProgressStyle,
@@ -233,13 +256,16 @@ pub enum Error {
     #[snafu(display("Invalid file, wrong extension: {}", path))]
     Extension { path: String },
 
-    #[snafu(display("Unable to open file: {:?}", source))]
+    #[snafu(display("Unable to open file: {}", source))]
     Open { source: ImageError },
 
-    #[snafu(display("Failed to encode JPEG: {:?}", source))]
+    #[snafu(display("Failed to encode JPEG: {}", source))]
     Jpeg { source: ImageError },
 
-    #[snafu(display("Failed to send data through TX: {:?}", source))]
+    #[snafu(display("Failed to load buffer: {}", source))]
+    FromMemory { source: ImageError },
+
+    #[snafu(display("Failed to send data through TX: {}", source))]
     ThreadSend { source: SendError<ImageProcess> },
 
     #[snafu(display("Something went wrong while making images"))]
