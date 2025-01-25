@@ -8,8 +8,8 @@ This website hosts my basic information as well as my photography portfolio. It
 started as a simple idea and it evolved into a fairly complex application that
 is in the over-engineered side. However, it was very satisfying to build, I
 learned a few new things and I'm happy to see that is 90% Rust, although I had
-to move the photo stack js code into a different repository to keep it JS from
-taking over :)
+to move the [photo stack js](https://github.com/victorhqc/victorhqc.com.libs)
+code into a different repository to keep it JS from taking over :)
 
 <img src="screenshots/index.png" height="400" />
 
