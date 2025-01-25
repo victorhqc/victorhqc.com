@@ -1,4 +1,4 @@
-use super::image_size::ImageSize;
+use super::image_size::{ImageSize, ImageType};
 use super::S3;
 use crate::models::photo::Photo;
 use aws_sdk_s3::{
@@ -15,7 +15,7 @@ pub use aws_sdk_s3::primitives::{ByteStream, ByteStreamError};
 impl S3 {
     pub async fn upload_to_aws_s3(
         &self,
-        data: (&Photo, &ImageSize),
+        data: (&Photo, &ImageSize, Option<&ImageType>),
         buffer: Vec<u8>,
     ) -> Result<PutObjectOutput, Error> {
         let body = ByteStream::from(buffer);
@@ -32,7 +32,7 @@ impl S3 {
 
     pub async fn download_from_aws_s3(
         &self,
-        data: (&Photo, &ImageSize),
+        data: (&Photo, &ImageSize, Option<&ImageType>),
     ) -> Result<GetObjectOutput, Error> {
         self.client
             .get_object()
@@ -44,7 +44,13 @@ impl S3 {
     }
 }
 
-fn key((photo, size): (&Photo, &ImageSize)) -> String {
+fn key((photo, size, photo_type): (&Photo, &ImageSize, Option<&ImageType>)) -> String {
+    if let Some(t) = photo_type {
+        if t == &ImageType::Webp {
+            return format!("{}_{}_{}", photo.id, t, size);
+        }
+    }
+
     format!("{}_{}", photo.id, size)
 }
 

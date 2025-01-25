@@ -18,9 +18,14 @@ use std::{
 };
 
 pub struct ImageBuffers {
-    pub hd: Vec<u8>,
-    pub md: Vec<u8>,
-    pub sm: Vec<u8>,
+    pub hd: ImageBuffer,
+    pub md: ImageBuffer,
+    pub sm: ImageBuffer,
+}
+
+pub struct ImageBuffer {
+    pub jpeg: Vec<u8>,
+    pub webp: Vec<u8>,
 }
 
 pub enum ImageProcess {
@@ -28,7 +33,10 @@ pub enum ImageProcess {
     Processed(ImgData),
 }
 
-pub type ImgData = (ImageSize, Vec<u8>);
+pub struct ImgData {
+    size: ImageSize,
+    buffer: ImageBuffer,
+}
 
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
 pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle), Error>>;
@@ -44,9 +52,9 @@ static DRAWER: Emoji<'_, '_> = Emoji("🗃️  ", "");
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
-/// - HD: 40% of the original image with JPEG quality of 80
-/// - MD: 25% of the original image with JPEG quality of 75
-/// - SM: 10% of the original image with JPEG quality of 30
+/// - HD: 40% of the original image with JPEG quality of 80 and a WEBP (lossy) with 80% quality
+/// - MD: 25% of the original image with JPEG quality of 75 and a WEBP (lossy) with 75% quality
+/// - SM: 15% of the original image with JPEG quality of 70 and a WEBP (lossy) with 30% quality
 pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, Error> {
     if !is_valid_extension(path) {
         return Err(Error::Extension {
@@ -67,14 +75,19 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
 
             let img_hd = resize(img_hd, 0.4);
 
-            // let hd = image::load_from_memory(&img_hd).context(FromMemorySnafu)?;
-            convert_to_webp(&img_hd, "hd", 80f32).unwrap();
-
+            let webp_hd = convert_to_webp(&img_hd, 80f32)?;
             let img_hd = compress(img_hd, 80)?;
+
             trace!("HD Image Processing completed");
 
             tx_hd
-                .send(ImageProcess::Processed((ImageSize::Hd, img_hd)))
+                .send(ImageProcess::Processed(ImgData {
+                    size: ImageSize::Hd,
+                    buffer: ImageBuffer {
+                        jpeg: img_hd,
+                        webp: webp_hd,
+                    },
+                }))
                 .context(ThreadSendSnafu)
         });
 
@@ -83,13 +96,20 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let handle_md: BuildHandle = thread::spawn(move || {
             trace!("Building MD Image");
             let img_md = resize(img_md, 0.25);
-            convert_to_webp(&img_md, "md", 75f32).unwrap();
 
+            let webp_md = convert_to_webp(&img_md, 75f32)?;
             let img_md = compress(img_md, 75)?;
+
             trace!("MD Image Processing completed");
 
             tx_md
-                .send(ImageProcess::Processed((ImageSize::Md, img_md)))
+                .send(ImageProcess::Processed(ImgData {
+                    size: ImageSize::Md,
+                    buffer: ImageBuffer {
+                        jpeg: img_md,
+                        webp: webp_md,
+                    },
+                }))
                 .context(ThreadSendSnafu)
         });
 
@@ -97,15 +117,20 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let handle_sm: BuildHandle = thread::spawn(move || {
             trace!("Building SM Image");
             let img_sm = resize(img_sm, 0.15);
-            convert_to_webp(&img_sm, "sm", 70f32).unwrap();
 
+            let webp_sm = convert_to_webp(&img_sm, 70f32)?;
             let img_sm = compress(img_sm, 70)?;
+
             trace!("SM Image Processing completed");
 
-            // let sm = image::load_from_memory(&img_sm).context(FromMemorySnafu)?;
-
-            tx.send(ImageProcess::Processed((ImageSize::Sm, img_sm)))
-                .context(ThreadSendSnafu)
+            tx.send(ImageProcess::Processed(ImgData {
+                size: ImageSize::Sm,
+                buffer: ImageBuffer {
+                    jpeg: img_sm,
+                    webp: webp_sm,
+                },
+            }))
+            .context(ThreadSendSnafu)
         });
 
         Ok((handle_hd, handle_md, handle_sm))
@@ -118,9 +143,9 @@ pub fn finish_build(
     rx: Receiver<ImageProcess>,
     main_handle: MainHandle,
 ) -> Result<ImageBuffers, Error> {
-    let mut hd: Option<Vec<u8>> = None;
-    let mut md: Option<Vec<u8>> = None;
-    let mut sm: Option<Vec<u8>> = None;
+    let mut hd: Option<ImageBuffer> = None;
+    let mut md: Option<ImageBuffer> = None;
+    let mut sm: Option<ImageBuffer> = None;
 
     let m = MultiProgress::new();
     let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
@@ -140,8 +165,8 @@ pub fn finish_build(
                 opened_pb.set_prefix("[1/4] ✓");
                 opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
             }
-            ImageProcess::Processed((size, img)) => {
-                match size {
+            ImageProcess::Processed(data) => {
+                match data.size {
                     ImageSize::Hd => {
                         hd_pb.set_style(s_done.clone());
                         hd_pb.set_prefix("[4/4] ✓");
@@ -149,7 +174,7 @@ pub fn finish_build(
                             "{} HD Image Processing Finished",
                             PACKAGE
                         ));
-                        hd = Some(img)
+                        hd = Some(data.buffer)
                     }
                     ImageSize::Md => {
                         md_pb.set_style(s_done.clone());
@@ -158,7 +183,7 @@ pub fn finish_build(
                             "{} MD Image Processing Finished",
                             PACKAGE
                         ));
-                        md = Some(img)
+                        md = Some(data.buffer)
                     }
                     ImageSize::Sm => {
                         sm_pb.set_style(s_done.clone());
@@ -167,7 +192,7 @@ pub fn finish_build(
                             "{} SM Image Processing Finished",
                             PACKAGE
                         ));
-                        sm = Some(img)
+                        sm = Some(data.buffer)
                     }
                 };
             }
@@ -224,16 +249,13 @@ fn compress(img: DynamicImage, quality: u8) -> Result<Vec<u8>, Error> {
     Ok(buffer)
 }
 
-fn convert_to_webp(img: &DynamicImage, name: &str, quality: f32) -> Result<(), Error> {
-    img.save(Path::new(name).with_extension("jpg")).unwrap();
-
-    let encoder = webp::Encoder::from_image(img).unwrap();
+fn convert_to_webp(img: &DynamicImage, quality: f32) -> Result<Vec<u8>, Error> {
+    let encoder = webp::Encoder::from_image(img).map_err(|e| Error::Webp {
+        error: e.to_string(),
+    })?;
     let webp: webp::WebPMemory = encoder.encode(quality);
-    // Define and write the WebP-encoded file to a given path
-    let output_path = Path::new(name).with_extension("webp");
-    std::fs::write(&output_path, &*webp).unwrap();
 
-    Ok(())
+    Ok(webp.to_vec())
 }
 
 fn build_loader(
@@ -262,8 +284,8 @@ pub enum Error {
     #[snafu(display("Failed to encode JPEG: {}", source))]
     Jpeg { source: ImageError },
 
-    #[snafu(display("Failed to load buffer: {}", source))]
-    FromMemory { source: ImageError },
+    #[snafu(display("Failed to encode WEBP: {}", error))]
+    Webp { error: String },
 
     #[snafu(display("Failed to send data through TX: {}", source))]
     ThreadSend { source: SendError<ImageProcess> },

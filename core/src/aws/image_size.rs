@@ -13,13 +13,29 @@ impl FromStr for ImageSize {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Hd" => Ok(ImageSize::Hd),
+        match s.to_lowercase().as_str() {
             "hd" => Ok(ImageSize::Hd),
-            "Md" => Ok(ImageSize::Md),
             "md" => Ok(ImageSize::Md),
-            "Sm" => Ok(ImageSize::Sm),
             "sm" => Ok(ImageSize::Sm),
+            _ => Err(Error::Invalid),
+        }
+    }
+}
+
+#[derive(Debug, Display, Clone, PartialEq)]
+pub enum ImageType {
+    Jpeg,
+    Webp,
+}
+
+impl FromStr for ImageType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "jpeg" => Ok(ImageType::Jpeg),
+            "jpg" => Ok(ImageType::Jpeg),
+            "webp" => Ok(ImageType::Webp),
             _ => Err(Error::Invalid),
         }
     }
