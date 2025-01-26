@@ -1,16 +1,13 @@
+use super::process::{Error as ProcessPhotoError, ProcessedBuffers, ProcessedPhoto};
 use crate::utils::is_valid_extension;
 use console::Emoji;
 use core_victorhqc_com::aws::image_size::ImageSize;
-use image::{
-    codecs::jpeg::JpegEncoder, error::ImageError, imageops::FilterType::Lanczos3, DynamicImage,
-    GenericImageView,
-};
+use image::error::ImageError;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::trace;
 use snafu::prelude::*;
 use std::{
     any::Any,
-    io::Cursor,
     path::Path,
     sync::mpsc::{Receiver, SendError, Sender},
     thread::{self, JoinHandle},
@@ -18,24 +15,14 @@ use std::{
 };
 
 pub struct ImageBuffers {
-    pub hd: ImageBuffer,
-    pub md: ImageBuffer,
-    pub sm: ImageBuffer,
-}
-
-pub struct ImageBuffer {
-    pub jpeg: Vec<u8>,
-    pub webp: Vec<u8>,
+    pub hd: ProcessedBuffers,
+    pub md: ProcessedBuffers,
+    pub sm: ProcessedBuffers,
 }
 
 pub enum ImageProcess {
     Opened,
-    Processed(ImgData),
-}
-
-pub struct ImgData {
-    size: ImageSize,
-    buffer: ImageBuffer,
+    Processed(ProcessedPhoto),
 }
 
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
@@ -73,21 +60,12 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let handle_hd: BuildHandle = thread::spawn(move || {
             trace!("Building HD Image");
 
-            let img_hd = resize(img_hd, 0.4);
-
-            let webp_hd = convert_to_webp(&img_hd, 80f32)?;
-            let img_hd = compress(img_hd, 80)?;
+            let processed = ProcessedPhoto::build_hd(&img_hd).context(ProcessSnafu)?;
 
             trace!("HD Image Processing completed");
 
             tx_hd
-                .send(ImageProcess::Processed(ImgData {
-                    size: ImageSize::Hd,
-                    buffer: ImageBuffer {
-                        jpeg: img_hd,
-                        webp: webp_hd,
-                    },
-                }))
+                .send(ImageProcess::Processed(processed))
                 .context(ThreadSendSnafu)
         });
 
@@ -95,42 +73,25 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         let tx_md = tx.clone();
         let handle_md: BuildHandle = thread::spawn(move || {
             trace!("Building MD Image");
-            let img_md = resize(img_md, 0.25);
 
-            let webp_md = convert_to_webp(&img_md, 75f32)?;
-            let img_md = compress(img_md, 75)?;
+            let processed = ProcessedPhoto::build_md(&img_md).context(ProcessSnafu)?;
 
             trace!("MD Image Processing completed");
 
             tx_md
-                .send(ImageProcess::Processed(ImgData {
-                    size: ImageSize::Md,
-                    buffer: ImageBuffer {
-                        jpeg: img_md,
-                        webp: webp_md,
-                    },
-                }))
+                .send(ImageProcess::Processed(processed))
                 .context(ThreadSendSnafu)
         });
 
         let img_sm = img.clone();
         let handle_sm: BuildHandle = thread::spawn(move || {
             trace!("Building SM Image");
-            let img_sm = resize(img_sm, 0.15);
-
-            let webp_sm = convert_to_webp(&img_sm, 70f32)?;
-            let img_sm = compress(img_sm, 70)?;
+            let processed = ProcessedPhoto::build_sm(&img_sm).context(ProcessSnafu)?;
 
             trace!("SM Image Processing completed");
 
-            tx.send(ImageProcess::Processed(ImgData {
-                size: ImageSize::Sm,
-                buffer: ImageBuffer {
-                    jpeg: img_sm,
-                    webp: webp_sm,
-                },
-            }))
-            .context(ThreadSendSnafu)
+            tx.send(ImageProcess::Processed(processed))
+                .context(ThreadSendSnafu)
         });
 
         Ok((handle_hd, handle_md, handle_sm))
@@ -143,9 +104,9 @@ pub fn finish_build(
     rx: Receiver<ImageProcess>,
     main_handle: MainHandle,
 ) -> Result<ImageBuffers, Error> {
-    let mut hd: Option<ImageBuffer> = None;
-    let mut md: Option<ImageBuffer> = None;
-    let mut sm: Option<ImageBuffer> = None;
+    let mut hd: Option<ProcessedBuffers> = None;
+    let mut md: Option<ProcessedBuffers> = None;
+    let mut sm: Option<ProcessedBuffers> = None;
 
     let m = MultiProgress::new();
     let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
@@ -174,7 +135,7 @@ pub fn finish_build(
                             "{} HD Image Processing Finished",
                             PACKAGE
                         ));
-                        hd = Some(data.buffer)
+                        hd = Some(data.buffers)
                     }
                     ImageSize::Md => {
                         md_pb.set_style(s_done.clone());
@@ -183,7 +144,7 @@ pub fn finish_build(
                             "{} MD Image Processing Finished",
                             PACKAGE
                         ));
-                        md = Some(data.buffer)
+                        md = Some(data.buffers)
                     }
                     ImageSize::Sm => {
                         sm_pb.set_style(s_done.clone());
@@ -192,7 +153,7 @@ pub fn finish_build(
                             "{} SM Image Processing Finished",
                             PACKAGE
                         ));
-                        sm = Some(data.buffer)
+                        sm = Some(data.buffers)
                     }
                 };
             }
@@ -230,34 +191,6 @@ pub fn finish_build(
     }
 }
 
-fn resize(img: DynamicImage, percentage: f32) -> DynamicImage {
-    let (width, height) = img.dimensions();
-
-    let width = (width as f32 * percentage).round() as u32;
-    let height = (height as f32 * percentage).round() as u32;
-
-    img.resize_exact(width, height, Lanczos3)
-}
-
-fn compress(img: DynamicImage, quality: u8) -> Result<Vec<u8>, Error> {
-    let mut buffer: Vec<u8> = Vec::new();
-    let mut cursor = Cursor::new(&mut buffer);
-
-    let encoder = JpegEncoder::new_with_quality(&mut cursor, quality);
-    img.write_with_encoder(encoder).context(JpegSnafu)?;
-
-    Ok(buffer)
-}
-
-fn convert_to_webp(img: &DynamicImage, quality: f32) -> Result<Vec<u8>, Error> {
-    let encoder = webp::Encoder::from_image(img).map_err(|e| Error::Webp {
-        error: e.to_string(),
-    })?;
-    let webp: webp::WebPMemory = encoder.encode(quality);
-
-    Ok(webp.to_vec())
-}
-
 fn build_loader(
     m: &MultiProgress,
     spinner_style: &ProgressStyle,
@@ -281,11 +214,8 @@ pub enum Error {
     #[snafu(display("Unable to open file: {}", source))]
     Open { source: ImageError },
 
-    #[snafu(display("Failed to encode JPEG: {}", source))]
-    Jpeg { source: ImageError },
-
-    #[snafu(display("Failed to encode WEBP: {}", error))]
-    Webp { error: String },
+    #[snafu(display("Failed to process photo: {}", source))]
+    Process { source: ProcessPhotoError },
 
     #[snafu(display("Failed to send data through TX: {}", source))]
     ThreadSend { source: SendError<ImageProcess> },

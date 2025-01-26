@@ -1,7 +1,7 @@
 use crate::cache::image_cache::Error as CacheError;
 use crate::AppState;
 use core_victorhqc_com::{
-    aws::image_size::{Error as ParseError, ImageSize},
+    aws::image_size::{Error as ParseError, ImageSize, ImageType},
     models::photo::{db::Error as PhotoDbError, Photo},
     sqlx::Error as SqlxError,
 };
@@ -55,6 +55,7 @@ pub async fn get_image(
 
 pub struct ImageResponse {
     data: Vec<u8>,
+    kind: ImageType,
     etag: String,
 }
 

@@ -10,7 +10,7 @@ use core_victorhqc_com::{
 use snafu::prelude::*;
 
 pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(), Error> {
-    let (result_hd, result_hd_webp, result_md, result_md_webp, result_sm, result_sm_webp) = futures::join!(
+    let hd_pairs = futures::join!(
         s3.upload_to_aws_s3(
             (photo, &ImageSize::Hd, Some(&ImageType::Jpeg)),
             buffers.hd.jpeg
@@ -18,7 +18,10 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
         s3.upload_to_aws_s3(
             (photo, &ImageSize::Hd, Some(&ImageType::Webp)),
             buffers.hd.webp
-        ),
+        )
+    );
+
+    let md_pairs = futures::join!(
         s3.upload_to_aws_s3(
             (photo, &ImageSize::Md, Some(&ImageType::Jpeg)),
             buffers.md.jpeg
@@ -26,7 +29,10 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
         s3.upload_to_aws_s3(
             (photo, &ImageSize::Md, Some(&ImageType::Webp)),
             buffers.md.webp
-        ),
+        )
+    );
+
+    let sm_pairs = futures::join!(
         s3.upload_to_aws_s3(
             (photo, &ImageSize::Sm, Some(&ImageType::Jpeg)),
             buffers.sm.jpeg
@@ -37,32 +43,32 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
         ),
     );
 
-    result_hd.context(UploadSnafu {
+    hd_pairs.0.context(UploadSnafu {
         size: ImageSize::Hd,
         kind: ImageType::Jpeg,
     })?;
 
-    result_hd_webp.context(UploadSnafu {
+    hd_pairs.1.context(UploadSnafu {
         size: ImageSize::Hd,
         kind: ImageType::Webp,
     })?;
 
-    result_md.context(UploadSnafu {
+    md_pairs.0.context(UploadSnafu {
         size: ImageSize::Md,
         kind: ImageType::Jpeg,
     })?;
 
-    result_md_webp.context(UploadSnafu {
+    md_pairs.1.context(UploadSnafu {
         size: ImageSize::Md,
         kind: ImageType::Webp,
     })?;
 
-    result_sm.context(UploadSnafu {
+    sm_pairs.0.context(UploadSnafu {
         size: ImageSize::Sm,
         kind: ImageType::Jpeg,
     })?;
 
-    result_sm_webp.context(UploadSnafu {
+    sm_pairs.1.context(UploadSnafu {
         size: ImageSize::Sm,
         kind: ImageType::Webp,
     })?;
