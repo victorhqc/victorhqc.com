@@ -202,8 +202,6 @@ cargo build --release --target x86_64-unknown-linux-musl
 
 - Nginx
 
-### Domain
-
 ### Systemd
 
 The services use `systemd` to manage restarts and configuration. Benjamin
@@ -233,11 +231,6 @@ ROCKET_CACHED_PHOTO_TAGS="<COMMA_SEPARATED_TAGS>"
 ROCKET_PORT=<PORT>
 
 RUST_LOG = "api_victorhqc_com=error,core_victorhqc_com=error,sqlx::query=error,rocket=error"
-
-AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY>
-AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-AWS_REGION=eu-central-1
-AWS_BUCKET_NAME=<BUCKET_NAME>
 ```
 
 `/etc/systemd/system/api.victorhqc.com.service`
