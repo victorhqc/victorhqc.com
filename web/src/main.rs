@@ -108,8 +108,16 @@ async fn main() -> Result<(), Error> {
         App::new()
             .wrap(middleware::Compress::default())
             .app_data(web::Data::new(state.clone()))
-            .service(fs::Files::new("/static", &static_path))
-            .service(fs::Files::new("/public", &scripts_path))
+            .service(
+                fs::Files::new("/static", &static_path)
+                    .use_etag(true)
+                    .use_last_modified(true),
+            )
+            .service(
+                fs::Files::new("/public", &scripts_path)
+                    .use_etag(true)
+                    .use_last_modified(true),
+            )
             .service(routes::index::index)
             .service(routes::portfolio::photography)
             .service(routes::portfolio::portfolio_collection)
