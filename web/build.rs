@@ -1,8 +1,13 @@
-use std::fs;
 #[cfg(not(debug_assertions))]
-use std::io::Write;
+use flate2::{write::GzEncoder, Compression};
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+#[cfg(not(debug_assertions))]
+use std::{
+    fs::File,
+    io::{copy, BufReader, Write},
+};
 #[cfg(not(debug_assertions))]
 use walkdir::WalkDir;
 
@@ -47,6 +52,12 @@ fn main() {
         std::process::exit(1);
     }
 
+    #[cfg(not(debug_assertions))]
+    if let Err(e) = gzip_statics() {
+        eprintln!("Failed to compress gzip files: {}", e);
+        std::process::exit(1);
+    }
+
     if let Err(e) = build_analytics_db(&db_file, &migrations_dir) {
         eprintln!("Failed to build DB: {}", e);
         std::process::exit(1);
@@ -75,12 +86,17 @@ fn fetch_file(dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
 fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
     let crate_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
-    fs::create_dir_all("static")?;
+    let static_path = crate_dir.join("static");
+    if !fs::exists(&static_path)? {
+        fs::create_dir_all(&static_path)?;
+    }
 
     let ext = std::ffi::OsStr::new("css");
 
     let mut combined_css = String::new();
-    for entry in WalkDir::new("templates")
+
+    let templates_dir = crate_dir.join("templates");
+    for entry in WalkDir::new(&templates_dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension() == Some(ext))
@@ -149,6 +165,36 @@ fn build_analytics_db(
     println!("DATABASE_URL={}", db_url);
 
     println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+
+    Ok(())
+}
+
+#[cfg(not(debug_assertions))]
+fn gzip_statics() -> Result<(), Box<dyn std::error::Error>> {
+    let css = std::ffi::OsStr::new("css");
+    let js = std::ffi::OsStr::new("js");
+
+    let crate_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+
+    let static_path = crate_dir.join("static");
+
+    for entry in WalkDir::new(&static_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().extension() == Some(css) || e.path().extension() == Some(js))
+    {
+        let file = File::open(entry.path())?;
+        let mut buffer = BufReader::new(file);
+
+        let new_extension = format!("{}.gz", entry.path().extension().unwrap().to_str().unwrap());
+        let name = Path::new(entry.file_name()).with_extension(new_extension);
+        eprintln!("filename output {:?}", name);
+        let compressed = File::create(static_path.join(name))?;
+
+        let mut encoder = GzEncoder::new(compressed, Compression::default());
+        copy(&mut buffer, &mut encoder)?;
+        encoder.finish()?;
+    }
 
     Ok(())
 }
