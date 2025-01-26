@@ -24,11 +24,11 @@ impl ProcessedPhoto {
     }
 
     pub fn build_md(img: &DynamicImage) -> Result<Self, Error> {
-        Self::build(img, ImageSize::Md, 760, 75f32)
+        Self::build(img, ImageSize::Md, 720, 75f32)
     }
 
     pub fn build_sm(img: &DynamicImage) -> Result<Self, Error> {
-        Self::build(img, ImageSize::Sm, 420, 70f32)
+        Self::build(img, ImageSize::Sm, 480, 70f32)
     }
 
     fn build(

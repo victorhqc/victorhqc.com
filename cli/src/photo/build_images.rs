@@ -39,9 +39,9 @@ static DRAWER: Emoji<'_, '_> = Emoji("🗃️  ", "");
 
 /// Creates buffers based on a path with a valid JPG image.
 /// These buffers do not have exif metadata and have the following sizes:
-/// - HD: 40% of the original image with JPEG quality of 80 and a WEBP (lossy) with 80% quality
-/// - MD: 25% of the original image with JPEG quality of 75 and a WEBP (lossy) with 75% quality
-/// - SM: 15% of the original image with JPEG quality of 70 and a WEBP (lossy) with 30% quality
+/// - HD: 1080px image JPEG quality of 80 and a WEBP (lossy) with 75% quality
+/// - MD: 720px image JPEG quality of 80 and a WEBP (lossy) with 75% quality
+/// - SM: 480px image JPEG quality of 80 and a WEBP (lossy) with 70% quality
 pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, Error> {
     if !is_valid_extension(path) {
         return Err(Error::Extension {
