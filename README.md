@@ -202,8 +202,6 @@ cargo build --release --target x86_64-unknown-linux-musl
 
 - Nginx
 
-### Domain
-
 ### Systemd
 
 The services use `systemd` to manage restarts and configuration. Benjamin
