@@ -34,6 +34,7 @@ uaparser = "0.6.4"
 uuid = { workspace = true }
 
 [build-dependencies]
+flate2 = "1.0.35"
 reqwest = { version = "0.11", features = ["blocking"] }
 walkdir = "2.5.0"
 zip = "2.2.2"
