@@ -23,5 +23,7 @@ web/static/
 web/regexes.yaml
 *.zip
 
+__debug_compression__
+*.jpg
 *.jpg
 *.webp
