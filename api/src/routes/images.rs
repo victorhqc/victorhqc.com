@@ -19,10 +19,11 @@ use snafu::prelude::*;
 use std::io::Cursor;
 use std::str::FromStr;
 
-#[get("/images/<size>/<id>")]
+#[get("/images/<size>/<id>?<kind>")]
 pub async fn get_image(
     size: &str,
     id: &str,
+    kind: Option<&str>,
     state: &State<AppState>,
     if_none_match: IfNoneMatch,
 ) -> Result<ImageResponse, Error> {
@@ -32,6 +33,11 @@ pub async fn get_image(
 
     let img_size: ImageSize = ImageSize::from_str(size).context(SizeSnafu {
         size: size.to_string(),
+    })?;
+
+    let kind = kind.map_or("webp", |k| k);
+    let img_kind: ImageType = ImageType::from_str(kind).context(KindSnafu {
+        kind: kind.to_string(),
     })?;
 
     debug!("id: {}", id);
@@ -48,9 +54,16 @@ pub async fn get_image(
 
     let photo = Photo::find_by_id(&mut conn, id).await.context(PhotoSnafu)?;
 
-    let (etag, data) = cache.get(photo, &img_size).await.context(CacheSnafu)?;
+    let (etag, data) = cache
+        .get(photo, &img_kind, &img_size)
+        .await
+        .context(CacheSnafu)?;
 
-    Ok(ImageResponse { data, etag })
+    Ok(ImageResponse {
+        data,
+        etag,
+        kind: img_kind,
+    })
 }
 
 pub struct ImageResponse {
@@ -61,8 +74,13 @@ pub struct ImageResponse {
 
 impl<'r> Responder<'r, 'static> for ImageResponse {
     fn respond_to(self, _: &'r Request<'_>) -> Result<Response<'static>, Status> {
+        let content_type = match self.kind {
+            ImageType::Jpeg => "image/jpeg",
+            ImageType::Webp => "image/webp",
+        };
+
         Response::build()
-            .header(Header::new("Content-Type", "image/jpeg"))
+            .header(Header::new("Content-Type", content_type))
             .header(Header::new("ETag", self.etag))
             .header(Header::new("Cache-Control", "public, max-age=31536000"))
             .sized_body(self.data.len(), Cursor::new(self.data))
@@ -90,6 +108,12 @@ pub enum Error {
         source: ParseError,
     },
 
+    #[snafu(display("Invalid type '{}': {}", kind, source))]
+    Kind {
+        kind: String,
+        source: ParseError,
+    },
+
     #[snafu(display("Failed to get connection: {}", source))]
     Connection {
         source: SqlxError,
@@ -112,6 +136,7 @@ impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, _: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
         let status: Status = match &self {
             Error::Size { .. } => Status::InternalServerError,
+            Error::Kind { .. } => Status::BadRequest,
             Error::Connection { .. } => Status::InternalServerError,
             Error::Photo { .. } => Status::InternalServerError,
             Error::Cache { source } => match source {
@@ -141,6 +166,10 @@ impl Serialize for Error {
         match self {
             Error::Size { size, .. } => {
                 state.serialize_field("kind", &format!("Invalid Size: {}", size))?;
+                state.serialize_field("message", &self.to_string())?;
+            }
+            Error::Kind { kind, .. } => {
+                state.serialize_field("kind", &format!("Invalid type: {}", kind))?;
                 state.serialize_field("message", &self.to_string())?;
             }
             Error::Connection { .. } => {
