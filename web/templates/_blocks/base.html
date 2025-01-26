@@ -19,7 +19,7 @@
       {# Things that can appear in the HEAD only in development #}
       {% block dev_head %}{% endblock %}
     {% endif %}
-    <script defer src="/static/htmx.js"></script>
+    <script src="/static/htmx.js"></script>
     <script>
     let __IS_MOBILE__ = {{ is_mobile }};
     let __LISTENERS__ = [];

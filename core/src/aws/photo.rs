@@ -4,6 +4,7 @@ use crate::models::photo::Photo;
 use aws_sdk_s3::{
     error::SdkError,
     operation::{
+        delete_object::{DeleteObjectError, DeleteObjectOutput},
         get_object::{GetObjectError, GetObjectOutput},
         put_object::{PutObjectError, PutObjectOutput},
     },
@@ -42,6 +43,19 @@ impl S3 {
             .await
             .context(DownloadSnafu)
     }
+
+    pub async fn remove_from_aws_s3(
+        &self,
+        data: (&Photo, &ImageSize, &ImageType),
+    ) -> Result<DeleteObjectOutput, Error> {
+        self.client
+            .delete_object()
+            .bucket(&self.bucket_name)
+            .key(key(data))
+            .send()
+            .await
+            .context(RemoveSnafu)
+    }
 }
 
 fn key((photo, size, photo_type): (&Photo, &ImageSize, &ImageType)) -> String {
@@ -54,9 +68,12 @@ fn key((photo, size, photo_type): (&Photo, &ImageSize, &ImageType)) -> String {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("Failed to upload file: {:?}", source))]
+    #[snafu(display("Failed to upload file: {}", source))]
     Upload { source: SdkError<PutObjectError> },
 
-    #[snafu(display("Failed to download file: {:?}", source))]
+    #[snafu(display("Failed to download file: {}", source))]
     Download { source: SdkError<GetObjectError> },
+
+    #[snafu(display("Failed to remove file: {}", source))]
+    Remove { source: SdkError<DeleteObjectError> },
 }

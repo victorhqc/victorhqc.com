@@ -1,8 +1,8 @@
 use crate::{
     exiftool,
     photo::{
+        aws::{upload, Error as AWSError},
         build_images::{finish_build, start_build, Error as BuildImagesError, ImageProcess},
-        upload::{upload, Error as UploadError},
     },
     utils::capture,
 };
@@ -181,7 +181,7 @@ pub enum Error {
     NewPhoto { source: PhotoError },
 
     #[snafu(display("Failed to upload the images: {}", source))]
-    Upload { source: UploadError },
+    Upload { source: AWSError },
 
     #[snafu(display("Failed to save the photo: {}", source))]
     SavePhoto { source: PhotoDbError },

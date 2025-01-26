@@ -32,10 +32,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Create { source } => {
             let src = Path::new(&source);
 
-            commands::create(&pool, src, &s3)
+            commands::create::create(&pool, src, &s3)
                 .await
                 .map_err(|e| {
                     error!("Failed to create Image: {}", e);
+
+                    e
+                })
+                .unwrap();
+        }
+        Commands::ReUpload { source } => {
+            let src = Path::new(&source);
+
+            commands::re_upload::re_upload(&pool, src, &s3)
+                .await
+                .map_err(|e| {
+                    error!("Failed to re-upload Image: {}", e);
 
                     e
                 })
@@ -45,7 +57,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::DebugCompression { source } => {
             let src = Path::new(&source);
 
-            commands::debug_compression(src).await.unwrap();
+            commands::debug_compression::debug_compression(src)
+                .await
+                .unwrap();
         }
     }
 
@@ -62,6 +76,11 @@ struct Cli {
 enum Commands {
     #[command(arg_required_else_help = true)]
     Create {
+        #[arg(short, long)]
+        source: String,
+    },
+    #[command(arg_required_else_help = true)]
+    ReUpload {
         #[arg(short, long)]
         source: String,
     },
