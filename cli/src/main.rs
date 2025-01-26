@@ -40,16 +40,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     e
                 })
                 .unwrap();
-        },
+        }
         Commands::ReUpload { source } => {
             let src = Path::new(&source);
 
-            commands::re_upload::re_upload(&pool, src, &s3).await.map_err(|e| {
-                error!("Failed to re-upload Image: {}", e);
+            commands::re_upload::re_upload(&pool, src, &s3)
+                .await
+                .map_err(|e| {
+                    error!("Failed to re-upload Image: {}", e);
 
-                e
-            }).unwrap();
-        },
+                    e
+                })
+                .unwrap();
+        }
         #[cfg(debug_assertions)]
         Commands::DebugCompression { source } => {
             let src = Path::new(&source);
