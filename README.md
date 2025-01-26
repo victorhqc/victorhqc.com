@@ -227,6 +227,8 @@ The file for the API Service, I have it configured as
 
 `/etc/systemd/system/api.victorhqc.com.env`
 ```
+DATABASE_URL="<PATH>"
+ROCKET_DATABASE_URL="<PATH>"
 ROCKET_CACHED_PHOTO_TAGS="<COMMA_SEPARATED_TAGS>"
 ROCKET_PORT=<PORT>
 
@@ -262,6 +264,7 @@ The config file for the web service is
 WEB_PORT=<PORT>
 WEB_API_HOST=https://api.victorhqc.com
 WEB_ROOT=<PATH_TO_WEB_STATICS>/victorhqc.com/
+DATABASE_URL=<PATH_TO_BINARY>/analytics.db
 OUT_DIR=<PATH_TO_WEB_STATICS>/victorhqc.com/
 REGEX_PATH=<PATH_TO_WEB_STATICS>/victorhqc.com/
 ```
