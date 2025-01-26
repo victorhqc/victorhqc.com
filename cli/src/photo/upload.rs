@@ -11,36 +11,18 @@ use snafu::prelude::*;
 
 pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(), Error> {
     let hd_pairs = futures::join!(
-        s3.upload_to_aws_s3(
-            (photo, &ImageSize::Hd, Some(&ImageType::Jpeg)),
-            buffers.hd.jpeg
-        ),
-        s3.upload_to_aws_s3(
-            (photo, &ImageSize::Hd, Some(&ImageType::Webp)),
-            buffers.hd.webp
-        )
+        s3.upload_to_aws_s3((photo, &ImageSize::Hd, &ImageType::Jpeg), buffers.hd.jpeg),
+        s3.upload_to_aws_s3((photo, &ImageSize::Hd, &ImageType::Webp), buffers.hd.webp)
     );
 
     let md_pairs = futures::join!(
-        s3.upload_to_aws_s3(
-            (photo, &ImageSize::Md, Some(&ImageType::Jpeg)),
-            buffers.md.jpeg
-        ),
-        s3.upload_to_aws_s3(
-            (photo, &ImageSize::Md, Some(&ImageType::Webp)),
-            buffers.md.webp
-        )
+        s3.upload_to_aws_s3((photo, &ImageSize::Md, &ImageType::Jpeg), buffers.md.jpeg),
+        s3.upload_to_aws_s3((photo, &ImageSize::Md, &ImageType::Webp), buffers.md.webp)
     );
 
     let sm_pairs = futures::join!(
-        s3.upload_to_aws_s3(
-            (photo, &ImageSize::Sm, Some(&ImageType::Jpeg)),
-            buffers.sm.jpeg
-        ),
-        s3.upload_to_aws_s3(
-            (photo, &ImageSize::Sm, Some(&ImageType::Webp)),
-            buffers.sm.webp
-        ),
+        s3.upload_to_aws_s3((photo, &ImageSize::Sm, &ImageType::Jpeg), buffers.sm.jpeg),
+        s3.upload_to_aws_s3((photo, &ImageSize::Sm, &ImageType::Webp), buffers.sm.webp),
     );
 
     hd_pairs.0.context(UploadSnafu {

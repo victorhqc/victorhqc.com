@@ -15,7 +15,7 @@ pub use aws_sdk_s3::primitives::{ByteStream, ByteStreamError};
 impl S3 {
     pub async fn upload_to_aws_s3(
         &self,
-        data: (&Photo, &ImageSize, Option<&ImageType>),
+        data: (&Photo, &ImageSize, &ImageType),
         buffer: Vec<u8>,
     ) -> Result<PutObjectOutput, Error> {
         let body = ByteStream::from(buffer);
@@ -32,7 +32,7 @@ impl S3 {
 
     pub async fn download_from_aws_s3(
         &self,
-        data: (&Photo, &ImageSize, Option<&ImageType>),
+        data: (&Photo, &ImageSize, &ImageType),
     ) -> Result<GetObjectOutput, Error> {
         self.client
             .get_object()
@@ -44,11 +44,9 @@ impl S3 {
     }
 }
 
-fn key((photo, size, photo_type): (&Photo, &ImageSize, Option<&ImageType>)) -> String {
-    if let Some(t) = photo_type {
-        if t == &ImageType::Webp {
-            return format!("{}_{}_{}", photo.id, t, size);
-        }
+fn key((photo, size, photo_type): (&Photo, &ImageSize, &ImageType)) -> String {
+    if photo_type == &ImageType::Webp {
+        return format!("{}_{}_{}", photo.id, photo_type, size);
     }
 
     format!("{}_{}", photo.id, size)
