@@ -283,31 +283,29 @@ async fn attach_tag(conn: &mut SqliteConnection, photo: &Photo, tag: &Tag) -> Re
 impl TryFrom<DBPhoto> for Photo {
     type Error = Error;
 
-    fn try_from(photo: DBPhoto) -> Result<Self, Error> {
-        let filetype = FileType::from_str(&photo.filetype).context(FileTypeSnafu)?;
+    fn try_from(value: DBPhoto) -> Result<Self, Error> {
+        let filetype = FileType::from_str(&value.filetype).context(FileTypeSnafu)?;
 
         let created_at = {
-            // Time is in milliseconds
-            let timestamp = photo.created_at.0 / 1000;
+            let timestamp = value.created_at.0 / 1000;
 
             OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
         };
 
         let updated_at = {
-            // Time is in milliseconds
-            let timestamp = photo.updated_at.0 / 1000;
+            let timestamp = value.updated_at.0 / 1000;
 
             OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
         };
 
         Ok(Photo {
-            id: photo.id,
-            title: photo.title,
-            filename: photo.filename,
+            id: value.id,
+            title: value.title,
+            filename: value.filename,
             filetype,
             created_at,
             updated_at,
-            deleted: photo.deleted,
+            deleted: value.deleted,
         })
     }
 }

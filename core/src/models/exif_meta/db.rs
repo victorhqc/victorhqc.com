@@ -2,19 +2,18 @@ use super::{
     str::maker::Error as MakerError, Aperture, CameraMaker, City, DateTaken, ExifMeta,
     ExposureCompensation, FocalLength, Iso, LensMaker, PhotographyDetails, Rating, ShutterSpeed,
 };
-use crate::models::Timestamp;
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqliteConnection};
 use std::str::FromStr;
-use time::{error::ComponentRange, OffsetDateTime};
+use time::{error::ComponentRange, Date};
 
-#[derive(Debug, FromRow)]
+#[derive(FromRow)]
 struct DBExifMeta {
     pub id: String,
     pub rating: i64,
     pub city: Option<String>,
-    pub date_taken: Option<Timestamp>,
+    pub date_taken: Option<Date>,
     pub iso: i64,
     pub aperture: f64,
     pub shutter_speed: String,
@@ -48,8 +47,8 @@ impl ExifMeta {
 }
 
 async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<ExifMeta, Error> {
-    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
-    let exif = sqlx::query_as::<_, DBExifMeta>(
+    let exif = sqlx::query_as!(
+        DBExifMeta,
         r#"
     SELECT
         id,
@@ -73,8 +72,8 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<ExifMeta, E
     WHERE
         id = ?
     "#,
+        id
     )
-    .bind(id)
     .fetch_one(conn)
     .await
     .context(SqlxSnafu)?;
@@ -130,7 +129,7 @@ async fn find_by_photo_ids(
 async fn insert(conn: &mut SqliteConnection, exif: DBExifMeta) -> Result<String, Error> {
     let id = exif.id.clone();
 
-    sqlx::query(
+    sqlx::query!(
         r#"
     INSERT INTO exif_metas(
         id,
@@ -152,23 +151,23 @@ async fn insert(conn: &mut SqliteConnection, exif: DBExifMeta) -> Result<String,
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     "#,
+        exif.id,
+        exif.rating,
+        exif.city,
+        exif.date_taken,
+        exif.iso,
+        exif.aperture,
+        exif.shutter_speed,
+        exif.focal_length,
+        exif.exposure_compensation,
+        exif.camera_maker,
+        exif.camera_name,
+        exif.lens_maker,
+        exif.lens_name,
+        exif.crop_factor,
+        exif.photo_id,
+        exif.fuji_recipe_id,
     )
-    .bind(exif.id)
-    .bind(exif.rating)
-    .bind(exif.city)
-    .bind(exif.date_taken)
-    .bind(exif.iso)
-    .bind(exif.aperture)
-    .bind(exif.shutter_speed)
-    .bind(exif.focal_length)
-    .bind(exif.exposure_compensation)
-    .bind(exif.camera_maker)
-    .bind(exif.camera_name)
-    .bind(exif.lens_maker)
-    .bind(exif.lens_name)
-    .bind(exif.crop_factor)
-    .bind(exif.photo_id)
-    .bind(exif.fuji_recipe_id)
     .execute(conn)
     .await
     .context(SqlxSnafu)?;
@@ -183,18 +182,7 @@ impl TryFrom<DBExifMeta> for ExifMeta {
         let camera_maker = CameraMaker::from_str(&value.camera_maker).context(CameraMakerSnafu)?;
         let lens_maker = LensMaker::from_str(&value.lens_maker).context(LensMakerSnafu)?;
         let city = value.city.map(City);
-        let date_taken = match value.date_taken {
-            Some(d) => {
-                let d = d.0 / 1000;
-                let date = match OffsetDateTime::from_unix_timestamp(d) {
-                    Ok(d) => d,
-                    Err(err) => return Err(Error::Time { source: err }),
-                };
-
-                Some(DateTaken(date))
-            }
-            None => None,
-        };
+        let date_taken = value.date_taken.map(DateTaken);
 
         Ok(ExifMeta {
             id: value.id,
@@ -225,7 +213,7 @@ impl TryFrom<DBExifMeta> for ExifMeta {
 impl From<&ExifMeta> for DBExifMeta {
     fn from(exif: &ExifMeta) -> Self {
         let city: Option<String> = exif.details.city.clone().map(|c| c.0);
-        let date_taken: Option<Timestamp> = exif.details.date_taken.clone().map(|d| d.0.into());
+        let date_taken: Option<Date> = exif.details.date_taken.clone().map(|d| d.0);
 
         DBExifMeta {
             id: exif.id.clone(),
