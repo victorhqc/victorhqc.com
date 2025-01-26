@@ -41,6 +41,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .unwrap();
         }
+        #[cfg(debug_assertions)]
+        Commands::DebugCompression { source } => {
+            let src = Path::new(&source);
+
+            commands::debug_compression(src).await.unwrap();
+        }
     }
 
     Ok(())
@@ -56,6 +62,11 @@ struct Cli {
 enum Commands {
     #[command(arg_required_else_help = true)]
     Create {
+        #[arg(short, long)]
+        source: String,
+    },
+    #[cfg(debug_assertions)]
+    DebugCompression {
         #[arg(short, long)]
         source: String,
     },

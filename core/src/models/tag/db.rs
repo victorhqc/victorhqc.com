@@ -206,17 +206,17 @@ async fn find_by_photo_ids(
 async fn insert(conn: &mut SqliteConnection, tag: &DBTag) -> Result<String, Error> {
     let id = tag.id.clone();
 
-    sqlx::query(
+    sqlx::query!(
         r#"
     INSERT INTO tags(id, name, created_at, updated_at, deleted)
     VALUES (?, ?, ?, ?, ?)
     "#,
+        tag.id,
+        tag.name,
+        tag.created_at,
+        tag.updated_at,
+        tag.deleted
     )
-    .bind(&tag.id)
-    .bind(&tag.name)
-    .bind(&tag.created_at)
-    .bind(&tag.updated_at)
-    .bind(tag.deleted)
     .execute(conn)
     .await
     .context(SqlxSnafu)?;

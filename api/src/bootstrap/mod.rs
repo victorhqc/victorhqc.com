@@ -1,5 +1,5 @@
 use crate::AppState;
-use core_victorhqc_com::aws::image_size::ImageSize;
+use core_victorhqc_com::aws::image_size::{ImageSize, ImageType};
 use core_victorhqc_com::models::{photo::Photo, tag::Tag};
 use log::{debug, info};
 use rocket::futures::future::join_all;
@@ -31,6 +31,8 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
         // Removes repeated photos.
         let photos_set: HashSet<Photo> = HashSet::from_iter(photos);
 
+        let kind = &ImageType::Webp;
+
         let download_futures = photos_set
             .iter()
             .flat_map(|photo| {
@@ -42,7 +44,7 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
                         let response = state
                             .img_cache
                             .s3
-                            .download_from_aws_s3((&photo, img_size))
+                            .download_from_aws_s3((&photo, img_size, kind))
                             .await
                             .unwrap();
 
@@ -51,7 +53,7 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
 
                         state
                             .img_cache
-                            .save(&photo.id, img_size, bytes.clone())
+                            .save(&photo.id, kind, img_size, bytes.clone())
                             .await;
 
                         debug!("Cached photo {} in {}", &photo.id, img_size);

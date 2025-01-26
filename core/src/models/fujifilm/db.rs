@@ -96,8 +96,8 @@ async fn find_by_film_simulation(
     conn: &mut SqliteConnection,
     name: &str,
 ) -> Result<Vec<FujifilmRecipe>, Error> {
-    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
-    let recipes = sqlx::query_as::<_, DBFujifilmRecipe>(
+    let recipes = sqlx::query_as!(
+        DBFujifilmRecipe,
         r#"
     SELECT
         id,
@@ -126,8 +126,8 @@ async fn find_by_film_simulation(
     WHERE
         film_simulation = ?
     "#,
+        name,
     )
-    .bind(name)
     .fetch_all(conn)
     .await
     .context(SqlxSnafu)?;
@@ -225,8 +225,39 @@ async fn find_by_recipe_details(
     conn: &mut SqliteConnection,
     details: &FujifilmRecipeDetails,
 ) -> Result<Option<FujifilmRecipe>, Error> {
-    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
-    let mut query = sqlx::query_as::<_, DBFujifilmRecipe>(
+    let (
+        white_balance,
+        dynamic_range,
+        d_range_priority,
+        tone,
+        color,
+        sharpness,
+        clarity,
+        high_iso_nr,
+        grain_effect,
+        color_chrome_effect,
+        color_chrome_fx_blue,
+        monochromatic_color,
+    ) = details.settings.get_values();
+
+    let shift = white_balance.get_shift().to_string();
+    let wb_no_shift = white_balance.to_string_no_shift();
+
+    let film_simulation = details.film_simulation.to_string();
+    let sensor = details.sensor.to_string();
+    let dynamic_range = dynamic_range.to_string();
+    let d_range_priority = d_range_priority.map(|d| d.to_string());
+    let clarity = clarity.map(|c| c.value);
+    let grain_strength = grain_effect
+        .as_ref()
+        .and_then(|g| g.grain_strength_to_string());
+    let grain_size = grain_effect.as_ref().and_then(|g| g.grain_size_to_string());
+    let color_chrome_effect = color_chrome_effect.map(|c| c.to_string());
+    let color_chrome_fx_blue = color_chrome_fx_blue.map(|c| c.to_string());
+    let monochromatic_color = monochromatic_color.map(|c| c.to_string());
+
+    let query = sqlx::query_as!(
+        DBFujifilmRecipe,
         r#"
     SELECT
         id,
@@ -271,43 +302,24 @@ async fn find_by_recipe_details(
         AND color_chrome_fx_blue = ?
         AND monochromatic_color = ?
     "#,
-    );
-
-    let (
-        white_balance,
+        film_simulation,
+        sensor,
+        wb_no_shift,
+        shift,
         dynamic_range,
         d_range_priority,
-        tone,
-        color,
-        sharpness,
+        tone.highlights,
+        tone.shadows,
+        color.value,
+        sharpness.value,
         clarity,
-        high_iso_nr,
-        grain_effect,
+        high_iso_nr.value,
+        grain_strength,
+        grain_size,
         color_chrome_effect,
         color_chrome_fx_blue,
         monochromatic_color,
-    ) = details.settings.get_values();
-
-    let shift = white_balance.get_shift();
-
-    query = query
-        .bind(details.film_simulation.to_string())
-        .bind(details.sensor.to_string())
-        .bind(white_balance.to_string_no_shift())
-        .bind(shift.to_string())
-        .bind(dynamic_range.to_string())
-        .bind(d_range_priority.map(|d| d.to_string()))
-        .bind(tone.highlights)
-        .bind(tone.shadows)
-        .bind(color.value)
-        .bind(sharpness.value)
-        .bind(clarity.map(|c| c.value))
-        .bind(high_iso_nr.value)
-        .bind(grain_effect.as_ref().map(|g| g.grain_strength_to_string()))
-        .bind(grain_effect.as_ref().map(|g| g.grain_size_to_string()))
-        .bind(color_chrome_effect.map(|c| c.to_string()))
-        .bind(color_chrome_fx_blue.map(|c| c.to_string()))
-        .bind(monochromatic_color.map(|c| c.to_string()));
+    );
 
     let recipe = query.fetch_optional(conn).await.context(SqlxSnafu)?;
 
@@ -323,7 +335,7 @@ async fn find_by_recipe_details(
 async fn insert(conn: &mut SqliteConnection, recipe: DBFujifilmRecipe) -> Result<String, Error> {
     let id = recipe.id.clone();
 
-    sqlx::query(
+    sqlx::query!(
         r#"
     INSERT INTO fuji_recipes(
     id,
@@ -350,28 +362,28 @@ async fn insert(conn: &mut SqliteConnection, recipe: DBFujifilmRecipe) -> Result
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     "#,
+        recipe.id,
+        recipe.name,
+        recipe.author,
+        recipe.sensor,
+        recipe.src,
+        recipe.film_simulation,
+        recipe.white_balance,
+        recipe.white_balance_shift,
+        recipe.dynamic_range,
+        recipe.d_range_priority,
+        recipe.highlight_tone,
+        recipe.shadow_tone,
+        recipe.color,
+        recipe.sharpness,
+        recipe.clarity,
+        recipe.high_iso_noise_reduction,
+        recipe.grain_strength,
+        recipe.grain_size,
+        recipe.color_chrome_effect,
+        recipe.color_chrome_fx_blue,
+        recipe.monochromatic_color,
     )
-    .bind(recipe.id)
-    .bind(recipe.name)
-    .bind(recipe.author)
-    .bind(recipe.sensor)
-    .bind(recipe.src)
-    .bind(recipe.film_simulation)
-    .bind(recipe.white_balance)
-    .bind(recipe.white_balance_shift)
-    .bind(recipe.dynamic_range)
-    .bind(recipe.d_range_priority)
-    .bind(recipe.highlight_tone)
-    .bind(recipe.shadow_tone)
-    .bind(recipe.color)
-    .bind(recipe.sharpness)
-    .bind(recipe.clarity)
-    .bind(recipe.high_iso_noise_reduction)
-    .bind(recipe.grain_strength)
-    .bind(recipe.grain_size)
-    .bind(recipe.color_chrome_effect)
-    .bind(recipe.color_chrome_fx_blue)
-    .bind(recipe.monochromatic_color)
     .execute(conn)
     .await
     .context(SqlxSnafu)?;

@@ -81,8 +81,8 @@ impl Photo {
 }
 
 async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Error> {
-    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
-    let photo = sqlx::query_as::<_, DBPhoto>(
+    let photo = sqlx::query_as!(
+        DBPhoto,
         r#"
     SELECT
         id,
@@ -100,8 +100,8 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Erro
     ORDER BY
         created_at ASC
     "#,
+        id
     )
-    .bind(id)
     .fetch_one(conn)
     .await
     .context(SqlxSnafu)?;
@@ -113,8 +113,10 @@ async fn find_by_filename(
     conn: &mut SqliteConnection,
     path: &Path,
 ) -> Result<Option<Photo>, Error> {
-    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
-    let photo = sqlx::query_as::<_, DBPhoto>(
+    let filename = path.file_name().unwrap().to_str().unwrap();
+
+    let photo = sqlx::query_as!(
+        DBPhoto,
         r#"
     SELECT
         id,
@@ -132,8 +134,8 @@ async fn find_by_filename(
     ORDER BY
         created_at ASC
     "#,
+        filename
     )
-    .bind(path.file_name().unwrap().to_str().unwrap())
     .fetch_optional(conn)
     .await
     .context(SqlxSnafu)?;
@@ -146,8 +148,8 @@ async fn find_by_filename(
 }
 
 async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
-    // TODO: Move back to macro. Fails to compile in IDE because fails to find DB
-    let photos = sqlx::query_as::<_, DBPhoto>(
+    let photos = sqlx::query_as!(
+        DBPhoto,
         r#"
     SELECT
         id,
@@ -239,19 +241,19 @@ async fn find_by_tag_ids(
 async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, Error> {
     let id = photo.id.clone();
 
-    sqlx::query(
+    sqlx::query!(
         r#"
     INSERT INTO photos (id, title, filename, filetype, created_at, updated_at, deleted)
     VALUES (?, ?, ?, ?, ?, ?, ?)
     "#,
+        photo.id,
+        photo.title,
+        photo.filename,
+        photo.filetype,
+        photo.created_at,
+        photo.updated_at,
+        photo.deleted
     )
-    .bind(&photo.id)
-    .bind(&photo.title)
-    .bind(&photo.filename)
-    .bind(&photo.filetype)
-    .bind(&photo.created_at)
-    .bind(&photo.updated_at)
-    .bind(photo.deleted)
     .execute(conn)
     .await
     .context(SqlxSnafu)?;
@@ -262,15 +264,15 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
 async fn attach_tag(conn: &mut SqliteConnection, photo: &Photo, tag: &Tag) -> Result<(), Error> {
     let id = Uuid::new_v4().to_string();
 
-    sqlx::query(
+    sqlx::query!(
         r#"
     INSERT INTO photo_tags (id, photo_id, tag_id)
     VALUES (?, ?, ?)
     "#,
+        id,
+        photo.id,
+        tag.id
     )
-    .bind(id)
-    .bind(&photo.id)
-    .bind(&tag.id)
     .execute(conn)
     .await
     .context(SqlxSnafu)?;
@@ -281,31 +283,29 @@ async fn attach_tag(conn: &mut SqliteConnection, photo: &Photo, tag: &Tag) -> Re
 impl TryFrom<DBPhoto> for Photo {
     type Error = Error;
 
-    fn try_from(photo: DBPhoto) -> Result<Self, Error> {
-        let filetype = FileType::from_str(&photo.filetype).context(FileTypeSnafu)?;
+    fn try_from(value: DBPhoto) -> Result<Self, Error> {
+        let filetype = FileType::from_str(&value.filetype).context(FileTypeSnafu)?;
 
         let created_at = {
-            // Time is in milliseconds
-            let timestamp = photo.created_at.0 / 1000;
+            let timestamp = value.created_at.0 / 1000;
 
             OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
         };
 
         let updated_at = {
-            // Time is in milliseconds
-            let timestamp = photo.updated_at.0 / 1000;
+            let timestamp = value.updated_at.0 / 1000;
 
             OffsetDateTime::from_unix_timestamp(timestamp).context(TimestampSnafu)?
         };
 
         Ok(Photo {
-            id: photo.id,
-            title: photo.title,
-            filename: photo.filename,
+            id: value.id,
+            title: value.title,
+            filename: value.filename,
             filetype,
             created_at,
             updated_at,
-            deleted: photo.deleted,
+            deleted: value.deleted,
         })
     }
 }

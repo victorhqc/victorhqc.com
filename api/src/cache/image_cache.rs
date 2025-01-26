@@ -1,5 +1,5 @@
 use core_victorhqc_com::aws::{
-    image_size::ImageSize,
+    image_size::{ImageSize, ImageType},
     photo::{ByteStreamError, Error as AWSError},
     S3,
 };
@@ -11,17 +11,19 @@ use std::sync::Arc;
 
 pub struct CachedImage {
     id: PhotoId,
+    kind: ImageType,
     size: ImageSize,
     bytes: Vec<u8>,
     md5_hash: String,
 }
 
 impl CachedImage {
-    pub fn new(id: PhotoId, size: ImageSize, bytes: Vec<u8>) -> Self {
+    pub fn new(id: PhotoId, size: ImageSize, kind: ImageType, bytes: Vec<u8>) -> Self {
         let md5_hash = format!("{:x}", md5::compute(&bytes));
 
         Self {
             id,
+            kind,
             size,
             bytes,
             md5_hash,
@@ -59,11 +61,16 @@ impl ImageCache {
         images.iter().any(|p| p.md5_hash == value)
     }
 
-    pub async fn get(&self, photo: Photo, size: &ImageSize) -> Result<(String, Vec<u8>), Error> {
+    pub async fn get(
+        &self,
+        photo: Photo,
+        kind: &ImageType,
+        size: &ImageSize,
+    ) -> Result<(String, Vec<u8>), Error> {
         let mut images = self.images.lock().await;
         let index = images
             .iter()
-            .position(|p| p.id == photo.id && &p.size == size);
+            .position(|p| p.id == photo.id && &p.size == size && &p.kind == kind);
 
         match index {
             None => {
@@ -71,14 +78,14 @@ impl ImageCache {
 
                 let response = self
                     .s3
-                    .download_from_aws_s3((&photo, size))
+                    .download_from_aws_s3((&photo, size, kind))
                     .await
                     .context(GetAWSObjectSnafu)?;
 
                 let data = response.body.collect().await.context(StreamSnafu)?;
                 let bytes = data.into_bytes().to_vec();
 
-                let hash = self.inner_save(&photo.id, size, bytes.clone(), &mut images);
+                let hash = self.inner_save(&photo.id, kind, size, bytes.clone(), &mut images);
                 Ok((hash, bytes))
             }
             Some(i) => {
@@ -93,15 +100,16 @@ impl ImageCache {
         }
     }
 
-    pub async fn save(&self, id: &PhotoId, size: &ImageSize, data: Vec<u8>) {
+    pub async fn save(&self, id: &PhotoId, kind: &ImageType, size: &ImageSize, data: Vec<u8>) {
         let mut images = self.images.lock().await;
 
-        self.inner_save(id, size, data, &mut images);
+        self.inner_save(id, kind, size, data, &mut images);
     }
 
     fn inner_save(
         &self,
         id: &PhotoId,
+        kind: &ImageType,
         size: &ImageSize,
         data: Vec<u8>,
         images: &mut MutexGuard<'_, Vec<CachedImage>>,
@@ -114,7 +122,7 @@ impl ImageCache {
                 images[i].get_md5()
             }
             None => {
-                let cached = CachedImage::new(id.clone(), size.clone(), data);
+                let cached = CachedImage::new(id.clone(), size.clone(), kind.clone(), data);
                 let hash = cached.get_md5();
 
                 images.push(cached);

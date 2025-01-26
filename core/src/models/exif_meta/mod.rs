@@ -6,7 +6,7 @@ use crate::models::fujifilm::FujifilmRecipe;
 use crate::models::photo::Photo;
 use serde::{Deserialize, Serialize};
 use strum_macros::Display as EnumDisplay;
-use time::OffsetDateTime;
+use time::Date;
 use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -55,7 +55,7 @@ pub struct PhotographyDetails {
 pub struct Rating(pub i8);
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct DateTaken(pub OffsetDateTime);
+pub struct DateTaken(pub Date);
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct City(pub String);
