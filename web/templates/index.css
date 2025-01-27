@@ -17,6 +17,20 @@
   }
 }
 
+.index__name-wrapper {
+  @apply flex gap-2 mb-6;
+}
+
+.index__name {
+  align-content: center;
+}
+
+.index__gravatar {
+  @apply rounded-full border border-solid border-black;
+  height: 80px;
+  width: 80px;
+}
+
 #index__main-section h1 {
   @apply text-2xl font-medium font-serif;
 }

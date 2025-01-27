@@ -42,8 +42,13 @@
   {{ a::main_menu(show_title=False) }}
   <div class="index__sections-wrapper">
     <section id="index__main-section">
-      <h1>Victor Quiroz Castro</h1>
-      <h2>Software Engineer</h2>
+      <div class="index__name-wrapper">
+        <div class="index__name">
+          <h1>Victor Quiroz Castro</h1>
+          <h2>Software Engineer</h2>
+        </div>
+        <img class="index__gravatar" src="{{ gravatar(size=160) }}" alt="Profile Picture" />
+      </div>
       <p>
         I'm a Software Engineer specialized in Web Technologies like
         JavaScript, Rust, PostgreSQL, AWS, etc. My professional
