@@ -19,6 +19,10 @@
 <noscript><link rel="stylesheet" href="/static/styles.min.css"></noscript>
 {% endblock head %}
 
+{% block static_head %}
+<script src="/static/photo-stack.min.js"></script>
+{% endblock static_head %}
+
 {% block tailwind_styles %}
   {% include "index.css" %}
   {% include "styles.css" %}
