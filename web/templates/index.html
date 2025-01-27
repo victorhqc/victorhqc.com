@@ -15,13 +15,9 @@
 <meta property="og:url" content="https://victorhqc.com">
 <meta property="og:type" content="website">
 
-<link rel="stylesheet" href="/static/photo-stack.min.css" />
+<link rel="preload" href="/static/styles.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/static/styles.min.css"></noscript>
 {% endblock head %}
-
-{% block static_head %}
-<script src="/static/photo-stack.min.js"></script>
-<link rel="stylesheet" href="/static/styles.min.css" />
-{% endblock static_head %}
 
 {% block tailwind_styles %}
   {% include "index.css" %}
