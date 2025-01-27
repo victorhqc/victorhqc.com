@@ -5,6 +5,16 @@
 {% block title %}Home{% endblock title %}
 
 {% block head %}
+<meta
+  name="description"
+  content="Victor Quiroz. Software Engineer based in Berlin. Specialized in Web Technologies">
+
+<meta property="og:title" content="victorhqc.com - Home">
+<meta property="og:description" content="Victor Quiroz. Software Engineer based in Berlin. Specialized in Web Technologies">
+<meta property="og:image" content="{{ gravatar(size=320) }}">
+<meta property="og:url" content="https://victorhqc.com">
+<meta property="og:type" content="website">
+
 <link rel="stylesheet" href="/static/photo-stack.min.css" />
 {% endblock head %}
 
