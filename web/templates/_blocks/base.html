@@ -8,12 +8,7 @@
     {% block head %}{% endblock %}
     {# Things that can appear in the HEAD only in production #}
     {% if is_production %}
-      <link
-        rel="preload"
-        href="/static/styles.min.css"
-        as="style"
-        onload="this.onload=null;this.rel='stylesheet'">
-      <noscript><link rel="stylesheet" href="/static/styles.min.css"></noscript>
+      <link rel="stylesheet" href="/static/styles.min.css">
       {% block static_head %}{% endblock %}
     {% else %}
       <script src="/static/tailwindcss.js"></script>
