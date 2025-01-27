@@ -1,6 +1,34 @@
 use core_victorhqc_com::models::fujifilm::{FilmSimulation, MonochromaticFilter};
+use log::debug;
+use sha2::{Digest, Sha256};
 use std::{collections::HashMap, str::FromStr};
 use tera::{from_value, to_value, Function, Result, Value};
+use url::Url;
+
+pub fn get_gravatar() -> impl Function {
+    let email = std::env::var("WEB_EMAIL").expect("Failed to get WEB_EMAIL ENV Variable");
+    debug!("Email {}", email);
+
+    let email = email.trim().to_lowercase();
+    let mut hasher = Sha256::new();
+    hasher.update(email.as_bytes());
+
+    let hash = format!("{:x}", hasher.finalize());
+
+    Box::new(move |args: &HashMap<String, Value>| -> Result<Value> {
+        let mut url = Url::parse("https://gravatar.com/avatar").expect("Failed to build URL");
+
+        url.path_segments_mut().unwrap().push(&hash.clone());
+
+        let size = args.get("size").unwrap();
+
+        url.query_pairs_mut().append_pair("s", &size.to_string());
+
+        let gravatar_link = url.to_string();
+
+        Ok(to_value(gravatar_link.clone()).unwrap())
+    })
+}
 
 pub fn get_film_simulation_image() -> impl Function {
     Box::new(move |args: &HashMap<String, Value>| -> Result<Value> {
