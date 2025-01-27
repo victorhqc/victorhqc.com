@@ -128,7 +128,8 @@ ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$SSH_KEY_FILE" "$REMOTE
     mv release/web-victorhqc-com linux-web-victorhqc-com
 
     echo "Moving DB"
-    cp api_victorhqc_com.db api_victorhqc_com.db_bkp_$(date +%Y%m%d_%H%M%S)
+    cp api_victorhqc_com.db api_victorhqc_com_bkp_$(date +%Y%m%d_%H%M%S).db
+    rm api_victorhqc_com.db*
     mv release/api_victorhqc_com.db api_victorhqc_com.db
     chmod 775 api_victorhqc_com.db
 
