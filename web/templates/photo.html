@@ -6,9 +6,15 @@
 
 {% block title %}{{ photo.photo.title }}{% endblock title %}
 
-{% block static_head %}
-<link rel="stylesheet" href="/static/styles.min.css" />
-{% endblock static_head %}
+{% block head%}
+<meta name="description" content="Victor Quiroz's Photography Portfolio.">
+
+<meta property="og:title" content="{{ photo.photo.title }}">
+<meta property="og:description" content="Victor Quiroz's Photograph: {{ photo.photo.title }}">
+<meta property="og:image" content="{{ api_host }}/v1/images/Sm/{{ photo.photo.id }}?kind=jpeg">
+<meta property="og:url" content="https://victorhqc.com/photography/{{ collection_route.name }}/{{ photo.photo.id}}">
+<meta property="og:type" content="website">
+{% endblock head %}
 
 {% block tailwind_styles %}
   {% include "portfolio.css" %}

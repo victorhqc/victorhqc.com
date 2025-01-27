@@ -10,7 +10,7 @@ pub async fn get_photos_from_tag(name: &str) -> Result<Vec<PortfolioPhotos>, Err
 
     let variables = get_portfolio::Variables {
         tag: name.to_string(),
-        max: Some(12),
+        max: Some(20),
     };
 
     let request_body = GetPortfolio::build_query(variables);

@@ -42,6 +42,7 @@ lazy_static! {
             tera_utils::functions::parse_film_simulation_name(),
         );
         tera.register_function("uuid", tera_utils::functions::uuid());
+        tera.register_function("gravatar", tera_utils::functions::get_gravatar());
 
         tera
     };

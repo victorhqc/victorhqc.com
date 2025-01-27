@@ -5,12 +5,22 @@
 {% block title %}Home{% endblock title %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/photo-stack.min.css" />
+<meta
+  name="description"
+  content="Victor Quiroz. Software Engineer based in Berlin. Specialized in Web Technologies">
+
+<meta property="og:title" content="victorhqc.com - Home">
+<meta property="og:description" content="Victor Quiroz. Software Engineer based in Berlin. Specialized in Web Technologies">
+<meta property="og:image" content="{{ gravatar(size=320) }}">
+<meta property="og:url" content="https://victorhqc.com">
+<meta property="og:type" content="website">
+
+<link rel="preload" href="/static/styles.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/static/styles.min.css"></noscript>
 {% endblock head %}
 
 {% block static_head %}
 <script src="/static/photo-stack.min.js"></script>
-<link rel="stylesheet" href="/static/styles.min.css" />
 {% endblock static_head %}
 
 {% block tailwind_styles %}
@@ -42,13 +52,19 @@
   {{ a::main_menu(show_title=False) }}
   <div class="index__sections-wrapper">
     <section id="index__main-section">
-      <h1>Victor Quiroz Castro</h1>
-      <h2>Software Engineer</h2>
+      <div class="index__name-wrapper">
+        <div class="index__name">
+          <h1>Victor Quiroz Castro</h1>
+          <h2>Software Engineer</h2>
+        </div>
+        <img class="index__gravatar" src="{{ gravatar(size=160) }}" alt="Profile Picture" />
+      </div>
       <p>
         I'm a Software Engineer specialized in Web Technologies like
         JavaScript, Rust, PostgreSQL, AWS, etc. My professional
         career has consisted in building web applications of different
         shapes and forms. If it's web related, I can probably build it.
+        I'm from Mexico, living in Berlin since 2016.
       </p>
       <p>
         I recently found a passion for photography. I've always liked to
