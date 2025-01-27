@@ -43,6 +43,10 @@
   @apply mt-3;
 }
 
+#index__main-section a {
+  @apply underline;
+}
+
 #index__photos-section {
   @apply col-span-1 relative my-16 w-full text-center;
   @apply md:col-span-5 md:my-0;
