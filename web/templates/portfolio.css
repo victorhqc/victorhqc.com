@@ -21,3 +21,7 @@
 .portfolio__photos-section {
   @apply col-span-1 md:col-span-9 lg:col-span-9;
 }
+
+.portfolio-collection__photo {
+  aspect-ratio: 3/2;
+}
