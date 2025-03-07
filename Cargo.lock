@@ -1943,7 +1943,9 @@ dependencies = [
 
 [[package]]
 name = "fuji"
-version = "0.1.0"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e8695238ac2bea099cd6b7d86c6fc5a6595796242b1b5abb10cdb109b71e83e"
 dependencies = [
  "log",
  "once_cell",
