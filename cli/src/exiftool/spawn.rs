@@ -1,5 +1,5 @@
 use crate::utils::is_valid_extension;
-use core_victorhqc_com::exif::{
+use fuji::exif::{
     json::{Error as JsonError, JsonValue},
     ExifData,
 };

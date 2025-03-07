@@ -1,11 +1,13 @@
 use crate::models::fujifilm::{
-    builder::SettingsBuilder,
     from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
-    str::Error as RecipeError,
-    Clarity, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
-    FilmSimulation, FujifilmRecipe, FujifilmRecipeDetails, GrainEffect, GrainSize, GrainStrength,
-    HighISONoiseReduction, MonochromaticColor, SettingStrength, Sharpness, ToneCurve, TransSensor,
-    WBShift, WhiteBalance,
+    FujifilmRecipe,
+};
+use fuji::recipe::{
+    builder::SettingsBuilder, str::Error as RecipeError, Clarity, Color, ColorChromeEffect,
+    ColorChromeEffectFxBlue, DRangePriority, DynamicRange, FilmSimulation,
+    FujifilmRecipe as _FujifilmRecipe, FujifilmRecipeDetails, GrainEffect, GrainSize,
+    GrainStrength, HighISONoiseReduction, MonochromaticColor, SettingStrength, Sharpness,
+    ToneCurve, TransSensor, WBShift, WhiteBalance,
 };
 use snafu::prelude::*;
 use sqlx::{error::Error as SqlxError, FromRow, SqliteConnection};
@@ -506,17 +508,19 @@ impl TryFrom<DBFujifilmRecipe> for FujifilmRecipe {
 
         let settings = trans_sensor.settings(builder);
 
-        Ok(FujifilmRecipe {
-            id: value.id,
-            name: value.name,
-            author: value.author,
-            src: value.src,
-            details: FujifilmRecipeDetails {
-                sensor: trans_sensor,
-                film_simulation,
-                settings,
+        Ok(FujifilmRecipe::from_db(
+            value.id,
+            value.name,
+            value.author,
+            value.src,
+            _FujifilmRecipe {
+                details: FujifilmRecipeDetails {
+                    sensor: trans_sensor,
+                    film_simulation,
+                    settings,
+                },
             },
-        })
+        ))
     }
 }
 
@@ -535,15 +539,15 @@ impl From<&FujifilmRecipe> for DBFujifilmRecipe {
             color_chrome_effect,
             color_chrome_fx_blue,
             monochromatic_color,
-        ) = value.details.settings.get_values();
+        ) = value.details().settings.get_values();
 
         DBFujifilmRecipe {
             id: value.id.clone(),
             name: value.name.clone(),
             author: value.author.clone(),
             src: value.src.clone(),
-            sensor: value.details.sensor.to_string(),
-            film_simulation: value.details.film_simulation.to_string(),
+            sensor: value.details().sensor.to_string(),
+            film_simulation: value.details().film_simulation.to_string(),
             white_balance: white_balance.to_string_no_shift(),
             white_balance_shift: white_balance.get_shift().to_string(),
             dynamic_range: dynamic_range.to_string(),

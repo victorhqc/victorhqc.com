@@ -1,4 +1,4 @@
-use core_victorhqc_com::models::fujifilm::{FilmSimulation, MonochromaticFilter};
+use fuji::recipe::{FilmSimulation, MonochromaticFilter};
 use log::debug;
 use sha2::{Digest, Sha256};
 use std::{collections::HashMap, str::FromStr};

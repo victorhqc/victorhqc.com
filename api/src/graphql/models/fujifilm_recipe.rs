@@ -2,6 +2,7 @@ use async_graphql::{SimpleObject, Union, ID};
 use core_victorhqc_com::models::fujifilm::{
     FujifilmRecipe as FujifilmRecipeModel, Settings as SettingsModel,
 };
+use fuji::recipe::Settings;
 
 #[derive(SimpleObject, Clone)]
 pub struct FujifilmRecipe {
@@ -88,31 +89,31 @@ pub struct FujifilmRecipeTransVSettings {
 
 impl From<FujifilmRecipeModel> for FujifilmRecipe {
     fn from(model: FujifilmRecipeModel) -> Self {
+        let settings = SettingsModel(model.details().settings.clone());
+
         FujifilmRecipe {
-            id: model.id.into(),
-            name: model.name,
-            src: model.src,
-            film_simulation: model.details.film_simulation.to_string(),
-            sensor: model.details.sensor.to_string(),
-            settings: model.details.settings.into(),
+            id: model.id.clone().into(),
+            name: model.name.clone(),
+            src: model.src.clone(),
+            film_simulation: model.details().film_simulation.to_string(),
+            sensor: model.details().sensor.to_string(),
+            settings: settings.into(),
         }
     }
 }
 
 impl From<SettingsModel> for FujifilmRecipeSettings {
     fn from(value: SettingsModel) -> Self {
-        match value {
-            SettingsModel::TransI(s) => {
-                FujifilmRecipeSettings::TransI(FujifilmRecipeTransISettings {
-                    white_balance: s.white_balance.to_string(),
-                    dynamic_range: s.dynamic_range.to_string(),
-                    tone_curve: s.tone_curve.to_string(),
-                    color: s.color.to_string(),
-                    sharpness: s.sharpness.to_string(),
-                    high_iso_noise_reduction: s.high_iso_noise_reduction.to_string(),
-                })
-            }
-            SettingsModel::TransII(s) => {
+        match value.0 {
+            Settings::TransI(s) => FujifilmRecipeSettings::TransI(FujifilmRecipeTransISettings {
+                white_balance: s.white_balance.to_string(),
+                dynamic_range: s.dynamic_range.to_string(),
+                tone_curve: s.tone_curve.to_string(),
+                color: s.color.to_string(),
+                sharpness: s.sharpness.to_string(),
+                high_iso_noise_reduction: s.high_iso_noise_reduction.to_string(),
+            }),
+            Settings::TransII(s) => {
                 FujifilmRecipeSettings::TransII(FujifilmRecipeTransIISettings {
                     white_balance: s.white_balance.to_string(),
                     dynamic_range: s.dynamic_range.to_string(),
@@ -122,7 +123,7 @@ impl From<SettingsModel> for FujifilmRecipeSettings {
                     high_iso_noise_reduction: s.high_iso_noise_reduction.to_string(),
                 })
             }
-            SettingsModel::TransIII(s) => {
+            Settings::TransIII(s) => {
                 FujifilmRecipeSettings::TransIII(FujifilmRecipeTransIIISettings {
                     white_balance: s.white_balance.to_string(),
                     dynamic_range: s.dynamic_range.to_string(),
@@ -134,7 +135,7 @@ impl From<SettingsModel> for FujifilmRecipeSettings {
                     high_iso_noise_reduction: s.high_iso_noise_reduction.to_string(),
                 })
             }
-            SettingsModel::TransIV(s) => {
+            Settings::TransIV(s) => {
                 FujifilmRecipeSettings::TransIV(FujifilmRecipeTransIVSettings {
                     white_balance: s.white_balance.to_string(),
                     dynamic_range: s.dynamic_range.to_string(),
@@ -150,22 +151,20 @@ impl From<SettingsModel> for FujifilmRecipeSettings {
                     clarity: s.clarity.to_string(),
                 })
             }
-            SettingsModel::TransV(s) => {
-                FujifilmRecipeSettings::TransV(FujifilmRecipeTransVSettings {
-                    white_balance: s.white_balance.to_string(),
-                    dynamic_range: s.dynamic_range.to_string(),
-                    d_range_priority: s.d_range_priority.to_string(),
-                    grain_effect: s.grain_effect.to_string(),
-                    color_chrome_effect: s.color_chrome_effect.to_string(),
-                    color_chrome_fx_blue: s.color_chrome_fx_blue.to_string(),
-                    tone_curve: s.tone_curve.to_string(),
-                    color: s.color.to_string(),
-                    monochromatic_color: s.monochromatic_color.to_string(),
-                    sharpness: s.sharpness.to_string(),
-                    high_iso_noise_reduction: s.high_iso_noise_reduction.to_string(),
-                    clarity: s.clarity.to_string(),
-                })
-            }
+            Settings::TransV(s) => FujifilmRecipeSettings::TransV(FujifilmRecipeTransVSettings {
+                white_balance: s.white_balance.to_string(),
+                dynamic_range: s.dynamic_range.to_string(),
+                d_range_priority: s.d_range_priority.to_string(),
+                grain_effect: s.grain_effect.to_string(),
+                color_chrome_effect: s.color_chrome_effect.to_string(),
+                color_chrome_fx_blue: s.color_chrome_fx_blue.to_string(),
+                tone_curve: s.tone_curve.to_string(),
+                color: s.color.to_string(),
+                monochromatic_color: s.monochromatic_color.to_string(),
+                sharpness: s.sharpness.to_string(),
+                high_iso_noise_reduction: s.high_iso_noise_reduction.to_string(),
+                clarity: s.clarity.to_string(),
+            }),
         }
     }
 }
