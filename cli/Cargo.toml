@@ -9,6 +9,7 @@ clap = { version = "4.5.20", features = ["derive"] }
 console = "0.15.8"
 core-victorhqc-com.workspace = true
 dotenvy.workspace = true
+fuji.workspace = true
 futures = "0.3.31"
 image = "0.25.3"
 indicatif = "0.17.8"

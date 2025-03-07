@@ -125,7 +125,8 @@ fn compile_css_files() -> Result<(), Box<dyn std::error::Error>> {
                 .expect("Failed to build styles.min.css path"),
             "--minify",
         ])
-        .status()?;
+        .status()
+        .expect("Failed to execute tailwind.css");
 
     fs::remove_file(temp_css)?;
 

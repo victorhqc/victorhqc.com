@@ -1,5 +1,5 @@
 use crate::models::fujifilm::from_tuple::FromTuple;
-use crate::models::fujifilm::{GrainEffect, GrainSize, GrainStrength};
+use fuji::recipe::{GrainEffect, GrainSize, GrainStrength};
 use snafu::prelude::*;
 
 impl FromTuple<Option<GrainStrength>, Option<GrainSize>> for GrainEffect {

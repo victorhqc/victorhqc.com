@@ -1,8 +1,8 @@
-use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::{
     Aperture, CameraMaker, City, DateTaken, ExposureCompensation, FocalLength, Iso, LensMaker,
     PhotographyDetails, Rating, ShutterSpeed,
 };
+use fuji::exif::{ExifData, FindExifData, FromExifData};
 use log::trace;
 
 impl FromExifData for PhotographyDetails {

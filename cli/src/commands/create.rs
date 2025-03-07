@@ -9,21 +9,17 @@ use crate::{
 use console::Emoji;
 use core_victorhqc_com::{
     aws::S3,
-    exif::ExifData,
     models::{
         exif_meta::{db::Error as ExifMetaDbError, ExifMeta},
+        exif_meta::{CameraMaker, PhotographyDetails},
         fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
         photo::{db::Error as PhotoDbError, Error as PhotoError, Photo},
     },
-    sqlx::{Sqlite, SqlitePool, Transaction},
+    sqlx::{error::Error as SqlxError, Sqlite, SqlitePool, Transaction},
 };
-use core_victorhqc_com::{
-    exif::FromExifData,
-    models::{
-        exif_meta::{CameraMaker, PhotographyDetails},
-        fujifilm::FujifilmRecipeDetails,
-    },
-    sqlx::error::Error as SqlxError,
+use fuji::{
+    exif::{ExifData, FromExifData},
+    recipe::{FujifilmRecipe as _FujifilmRecipe, FujifilmRecipeDetails},
 };
 use itertools::Itertools;
 use log::{debug, trace};
@@ -134,7 +130,7 @@ async fn get_some_fujifilm_recipe<'a>(
             ));
             debug!("Recipe Name: {}", recipe_name);
 
-            let r = FujifilmRecipe::new(recipe_name, recipe_details);
+            let r = FujifilmRecipe::new(recipe_name, _FujifilmRecipe::new(recipe_details));
 
             r.save(conn).await.context(FujifilmSaveRecipeSnafu)?;
 

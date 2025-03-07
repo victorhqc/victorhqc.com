@@ -1,5 +1,5 @@
-use crate::exif::{ExifData, FindExifData, FromExifData};
 use crate::models::exif_meta::DateTaken;
+use fuji::exif::{ExifData, FindExifData, FromExifData};
 use log::trace;
 use once_cell::sync::Lazy;
 use regex::Regex;
