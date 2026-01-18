@@ -1,7 +1,6 @@
 pub mod db;
 mod str;
 
-use log::debug;
 use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
 use std::hash::{Hash, Hasher};

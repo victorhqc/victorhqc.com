@@ -1,6 +1,5 @@
 use crate::models::exif_meta::ExposureCompensation;
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 
 impl FromExifData for ExposureCompensation {
     fn from_exif(data: &[ExifData]) -> Option<Self> {

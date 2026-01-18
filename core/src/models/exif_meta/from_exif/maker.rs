@@ -1,6 +1,5 @@
 use crate::models::exif_meta::{CameraMaker, LensMaker};
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 use std::str::FromStr;
 
 impl FromExifData for CameraMaker {

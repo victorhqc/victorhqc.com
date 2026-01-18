@@ -3,7 +3,6 @@ use crate::models::exif_meta::{
     PhotographyDetails, Rating, ShutterSpeed,
 };
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 
 impl FromExifData for PhotographyDetails {
     fn from_exif(data: &[ExifData]) -> Option<Self> {
