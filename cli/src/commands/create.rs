@@ -118,26 +118,28 @@ async fn get_some_fujifilm_recipe<'a>(
 
     let mut recipe: Option<FujifilmRecipe> = None;
     if maker == CameraMaker::Fujifilm {
-        let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice())
-            .context(FujifilmRecipeDetailsSnafu)?;
+        let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice());
         debug!("{:?}", recipe_details);
 
-        recipe = FujifilmRecipe::find_by_details(conn, &recipe_details)
-            .await
-            .context(FujifilmFindRecipeSnafu)?;
+        // Recipes are optional, not all the photos will have. Only SoC will.
+        if let Some(recipe_details) = recipe_details {
+            recipe = FujifilmRecipe::find_by_details(conn, &recipe_details)
+                .await
+                .context(FujifilmFindRecipeSnafu)?;
 
-        if recipe.is_none() {
-            let recipe_name = capture(&format!(
-                "{} Please, specify the name of the recipe used: ",
-                FILM
-            ));
-            debug!("Recipe Name: {}", recipe_name);
+            if recipe.is_none() {
+                let recipe_name = capture(&format!(
+                    "{} Please, specify the name of the recipe used: ",
+                    FILM
+                ));
+                debug!("Recipe Name: {}", recipe_name);
 
-            let r = FujifilmRecipe::new(recipe_name, _FujifilmRecipe::new(recipe_details));
+                let r = FujifilmRecipe::new(recipe_name, _FujifilmRecipe::new(recipe_details));
 
-            r.save(conn).await.context(FujifilmSaveRecipeSnafu)?;
+                r.save(conn).await.context(FujifilmSaveRecipeSnafu)?;
 
-            recipe = Some(r);
+                recipe = Some(r);
+            }
         }
     }
 
@@ -154,9 +156,6 @@ pub enum Error {
 
     #[snafu(display("Could not find the PhotographyDetails from EXIF"))]
     PhotographyDetails,
-
-    #[snafu(display("Could not find Fujifilm Recipe details from EXIF"))]
-    FujifilmRecipeDetails,
 
     #[snafu(display("Failed to build images: {}", source))]
     BuildImages { source: BuildImagesError },
