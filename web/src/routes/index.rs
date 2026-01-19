@@ -1,10 +1,11 @@
-use super::context::{render_content, RenderArgs, TemplateKind};
+use super::context::{RenderArgs, TemplateKind, render_content};
 use super::get_user_agent;
+use crate::gql::get_portfolio::Orientation;
 use crate::{
     analytics::routes, collections::Collection, gql::get_portfolio::GetPortfolioPhotos,
     state::AppState,
 };
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{HttpRequest, HttpResponse, Responder, Result, get, web};
 use log::debug;
 use rand::seq::SliceRandom;
 use tera::Context;
@@ -17,8 +18,15 @@ pub async fn index(data: web::Data<AppState>, req: HttpRequest) -> Result<impl R
     let prefetched = &data.prefetched;
     let portfolio_photos = prefetched.get(&Collection::Portfolio).unwrap();
 
-    let random_photos: Vec<&GetPortfolioPhotos> = portfolio_photos
+    // Only landscape photos for the main stack
+    let filtered_photos: Vec<&GetPortfolioPhotos> = portfolio_photos
+        .iter()
+        .filter(|photo| photo.orientation == Orientation::LANDSCAPE)
+        .collect();
+
+    let random_photos: Vec<&GetPortfolioPhotos> = filtered_photos
         .choose_multiple(&mut rand::thread_rng(), 3)
+        .copied()
         .collect();
 
     context.insert("photos", &random_photos);

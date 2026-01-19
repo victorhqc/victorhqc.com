@@ -6,6 +6,6 @@ use graphql_client::GraphQLQuery;
 #[graphql(
     schema_path = "../api/schema.gql",
     query_path = "src/gql/queries/get-portfolio.graphql",
-    response_derives = "Debug, Clone, Serialize"
+    response_derives = "Debug, Clone, Serialize, PartialEq"
 )]
 pub struct GetPortfolio;
