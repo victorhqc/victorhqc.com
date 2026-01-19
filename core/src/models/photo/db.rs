@@ -1,7 +1,8 @@
 use super::{FileType, Photo};
 use crate::models::{
-    tag::{db::Error as TagDbError, Tag},
     Timestamp,
+    photo::Orientation,
+    tag::{Tag, db::Error as TagDbError},
 };
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
@@ -17,6 +18,7 @@ struct DBPhoto {
     title: String,
     filename: String,
     filetype: String,
+    orientation: String,
     created_at: Timestamp,
     updated_at: Timestamp,
     deleted: bool,
@@ -29,6 +31,7 @@ struct DBTagPhoto {
     title: String,
     filename: String,
     filetype: String,
+    orientation: String,
     created_at: Timestamp,
     updated_at: Timestamp,
     deleted: bool,
@@ -89,6 +92,7 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Erro
         title,
         filename,
         filetype,
+        orientation,
         created_at,
         updated_at,
         deleted
@@ -123,6 +127,7 @@ async fn find_by_filename(
         title,
         filename,
         filetype,
+        orientation,
         created_at,
         updated_at,
         deleted
@@ -156,6 +161,7 @@ async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
         title,
         filename,
         filetype,
+        orientation,
         created_at,
         updated_at,
         deleted
@@ -192,6 +198,7 @@ async fn find_by_tag_ids(
         title,
         filename,
         filetype,
+        orientation,
         p.created_at,
         p.updated_at,
         p.deleted
@@ -226,6 +233,7 @@ async fn find_by_tag_ids(
                     title: p.title,
                     filename: p.filename,
                     filetype: p.filetype,
+                    orientation: p.orientation,
                     created_at: p.created_at,
                     updated_at: p.updated_at,
                     deleted: p.deleted,
@@ -243,13 +251,14 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
 
     sqlx::query!(
         r#"
-    INSERT INTO photos (id, title, filename, filetype, created_at, updated_at, deleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO photos (id, title, filename, filetype, orientation, created_at, updated_at, deleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     "#,
         photo.id,
         photo.title,
         photo.filename,
         photo.filetype,
+        photo.orientation,
         photo.created_at,
         photo.updated_at,
         photo.deleted
@@ -286,6 +295,8 @@ impl TryFrom<DBPhoto> for Photo {
     fn try_from(value: DBPhoto) -> Result<Self, Error> {
         let filetype = FileType::from_str(&value.filetype).context(FileTypeSnafu)?;
 
+        let orientation = Orientation::from_str(&value.orientation).context(OrientationSnafu)?;
+
         let created_at = {
             let timestamp = value.created_at.0 / 1000;
 
@@ -303,6 +314,7 @@ impl TryFrom<DBPhoto> for Photo {
             title: value.title,
             filename: value.filename,
             filetype,
+            orientation,
             created_at,
             updated_at,
             deleted: value.deleted,
@@ -317,6 +329,7 @@ impl From<&Photo> for DBPhoto {
             title: photo.title.clone(),
             filename: photo.filename.clone(),
             filetype: photo.filetype.to_string(),
+            orientation: photo.orientation.to_string(),
             created_at: photo.created_at.into(),
             updated_at: photo.created_at.into(),
             deleted: photo.deleted,
@@ -333,6 +346,9 @@ pub enum Error {
     FileType {
         source: crate::models::photo::str::filetype::Error,
     },
+
+    #[snafu(display("Failed to parse Orientation {}", source))]
+    Orientation { source: strum::ParseError },
 
     #[snafu(display("Failed to parse timestamp: {}", source))]
     Timestamp { source: time::error::ComponentRange },

@@ -7,7 +7,7 @@ use std::hash::{Hash, Hasher};
 use std::path::Path;
 use std::str::FromStr;
 use str::filetype::Error as FiletypeError;
-use strum_macros::Display as EnumDisplay;
+use strum_macros::{Display as EnumDisplay, EnumString};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
@@ -15,16 +15,16 @@ use uuid::Uuid;
 pub struct Photo {
     pub id: String,
     pub title: String,
-    // pub src: String,
     pub filename: String,
     pub filetype: FileType,
+    pub orientation: Orientation,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
     pub deleted: bool,
 }
 
 impl Photo {
-    pub fn new(title: String, path: &Path) -> Result<Photo, Error> {
+    pub fn new(title: String, path: &Path, orientation: Orientation) -> Result<Photo, Error> {
         let id = Uuid::new_v4().to_string();
 
         debug!("PATH {:?}", path);
@@ -42,6 +42,7 @@ impl Photo {
             title: title.to_string(),
             filetype,
             filename: filename.to_string(),
+            orientation,
             created_at,
             updated_at,
             deleted: false,
@@ -67,6 +68,16 @@ impl Hash for Photo {
 pub enum FileType {
     #[strum(serialize = "JPEG")]
     Jpeg,
+}
+
+#[derive(
+    Clone, Copy, Debug, Deserialize, Serialize, EnumString, EnumDisplay, sqlx::Type, Eq, PartialEq,
+)]
+pub enum Orientation {
+    #[strum(serialize = "landscape")]
+    Landscape,
+    #[strum(serialize = "portrait")]
+    Portrait,
 }
 
 #[derive(Debug, Snafu)]

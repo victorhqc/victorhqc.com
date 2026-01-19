@@ -1,8 +1,9 @@
 use crate::{
     exiftool,
     photo::{
-        aws::{upload, Error as AWSError},
-        build_images::{finish_build, start_build, Error as BuildImagesError, ImageProcess},
+        aws::{Error as AWSError, upload},
+        build_images::{Error as BuildImagesError, ImageProcess, finish_build, start_build},
+        orientation::{self, OrientationError},
     },
     utils::capture,
 };
@@ -10,12 +11,12 @@ use console::Emoji;
 use core_victorhqc_com::{
     aws::S3,
     models::{
-        exif_meta::{db::Error as ExifMetaDbError, ExifMeta},
         exif_meta::{CameraMaker, PhotographyDetails},
-        fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
-        photo::{db::Error as PhotoDbError, Error as PhotoError, Photo},
+        exif_meta::{ExifMeta, db::Error as ExifMetaDbError},
+        fujifilm::{FujifilmRecipe, db::Error as FujifilmDbError},
+        photo::{Error as PhotoError, Photo, db::Error as PhotoDbError},
     },
-    sqlx::{error::Error as SqlxError, Sqlite, SqlitePool, Transaction},
+    sqlx::{Sqlite, SqlitePool, Transaction, error::Error as SqlxError},
 };
 use fuji::{
     exif::{ExifData, FromExifData},
@@ -55,6 +56,8 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
 
+    let orientation = orientation::get_orientation(src).context(OrientationSnafu)?;
+
     let (tx, rx) = mpsc::channel::<ImageProcess>();
 
     debug!("Building Images to upload");
@@ -79,7 +82,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     let recipe = get_some_fujifilm_recipe(&data, &mut conn).await?;
     debug!("{:?}", recipe);
 
-    let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
+    let photo = Photo::new(title, src, orientation).context(NewPhotoSnafu)?;
     photo.save(&mut conn).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
 
@@ -187,4 +190,7 @@ pub enum Error {
 
     #[snafu(display("Failed to save the EXIF data: {}", source))]
     SaveExif { source: ExifMetaDbError },
+
+    #[snafu(display("Failed to get orientation: {}", source))]
+    Orientation { source: OrientationError },
 }
