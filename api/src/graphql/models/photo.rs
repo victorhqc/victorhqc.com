@@ -1,9 +1,11 @@
 use super::{ExifMeta, Tag};
-use crate::graphql::loaders::{exif_meta::ExifMetaByPhotoId, tag::TagByPhotoId, AppLoader};
+use crate::graphql::loaders::{AppLoader, exif_meta::ExifMetaByPhotoId, tag::TagByPhotoId};
 use async_graphql::{
-    dataloader::DataLoader, ComplexObject, Context, Enum, Result, SimpleObject, ID,
+    ComplexObject, Context, Enum, ID, Result, SimpleObject, dataloader::DataLoader,
 };
-use core_victorhqc_com::models::photo::{FileType as CoreFileType, Photo as CorePhoto};
+use core_victorhqc_com::models::photo::{
+    FileType as CoreFileType, Orientation as CoreOrientation, Photo as CorePhoto,
+};
 
 #[derive(Enum, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FileType {
@@ -18,6 +20,30 @@ impl From<CoreFileType> for FileType {
     }
 }
 
+#[derive(Enum, Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Orientation {
+    Landscape,
+    Portrait,
+}
+
+impl From<CoreOrientation> for Orientation {
+    fn from(value: CoreOrientation) -> Self {
+        match value {
+            CoreOrientation::Landscape => Orientation::Landscape,
+            CoreOrientation::Portrait => Orientation::Portrait,
+        }
+    }
+}
+
+impl From<Orientation> for CoreOrientation {
+    fn from(value: Orientation) -> Self {
+        match value {
+            Orientation::Landscape => CoreOrientation::Landscape,
+            Orientation::Portrait => CoreOrientation::Portrait,
+        }
+    }
+}
+
 #[derive(SimpleObject, Clone)]
 #[graphql(complex)]
 pub struct Photo {
@@ -26,6 +52,7 @@ pub struct Photo {
     pub src: String,
     pub filename: String,
     pub filetype: FileType,
+    pub orientation: Orientation,
     pub created_at: String,
     pub updated_at: String,
     pub deleted: bool,
@@ -62,6 +89,7 @@ impl From<CorePhoto> for Photo {
             src: "TODO".to_string(),
             filename: photo.filename,
             filetype: photo.filetype.into(),
+            orientation: photo.orientation.into(),
             created_at: format!("{}", photo.created_at),
             updated_at: format!("{}", photo.updated_at),
             deleted: photo.deleted,

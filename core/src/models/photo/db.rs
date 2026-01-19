@@ -53,12 +53,19 @@ impl Photo {
         conn: &mut SqliteConnection,
         ids: &Vec<String>,
         max_results: Option<i32>,
+        orientation: Option<Orientation>,
     ) -> Result<Vec<(String, Photo)>, Error> {
-        find_by_tag_ids(conn, ids, max_results).await
+        match orientation {
+            Some(o) => find_by_tag_ids_and_orientation(conn, ids, &o, max_results).await,
+            None => find_by_tag_ids(conn, ids, max_results).await,
+        }
     }
 
-    pub async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
-        find_all(conn).await
+    pub async fn find_all(
+        conn: &mut SqliteConnection,
+        orientation: Option<Orientation>,
+    ) -> Result<Vec<Photo>, Error> {
+        find_all(conn, &orientation).await
     }
 
     pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
@@ -152,30 +159,42 @@ async fn find_by_filename(
     }
 }
 
-async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
-    let photos = sqlx::query_as!(
-        DBPhoto,
-        r#"
-    SELECT
-        id,
-        title,
-        filename,
-        filetype,
-        orientation,
-        created_at,
-        updated_at,
-        deleted
-    FROM
-        photos AS p
-    WHERE
-        deleted = false
-    ORDER BY
-        created_at ASC
-    "#,
-    )
-    .fetch_all(conn)
-    .await
-    .context(SqlxSnafu)?;
+async fn find_all(
+    conn: &mut SqliteConnection,
+    orientation: &Option<Orientation>,
+) -> Result<Vec<Photo>, Error> {
+    let photos = match orientation {
+        Some(o) => {
+            let orientation_str = o.to_string();
+            sqlx::query_as!(
+                DBPhoto,
+                r#"
+                SELECT id, title, filename, filetype, orientation,
+                       created_at, updated_at, deleted
+                FROM photos AS p
+                WHERE deleted = false AND orientation = ?
+                ORDER BY created_at ASC
+                "#,
+                orientation_str
+            )
+            .fetch_all(conn)
+            .await
+            .context(SqlxSnafu)?
+        }
+        None => sqlx::query_as!(
+            DBPhoto,
+            r#"
+                SELECT id, title, filename, filetype, orientation,
+                       created_at, updated_at, deleted
+                FROM photos AS p
+                WHERE deleted = false
+                ORDER BY created_at ASC
+                "#,
+        )
+        .fetch_all(conn)
+        .await
+        .context(SqlxSnafu)?,
+    };
 
     let photos: Vec<Photo> = photos.into_iter().map(|p| p.try_into().unwrap()).collect();
 
@@ -213,6 +232,72 @@ async fn find_by_tag_ids(
     LIMIT {}
     "#,
         params, limit
+    );
+
+    let mut query = sqlx::query_as::<_, DBTagPhoto>(&query);
+
+    for id in ids {
+        query = query.bind(id);
+    }
+
+    let photos = query.fetch_all(conn).await.context(SqlxSnafu)?;
+
+    let photos: Vec<(String, Photo)> = photos
+        .into_iter()
+        .map(|p| {
+            (
+                p.tag_id,
+                DBPhoto {
+                    id: p.id,
+                    title: p.title,
+                    filename: p.filename,
+                    filetype: p.filetype,
+                    orientation: p.orientation,
+                    created_at: p.created_at,
+                    updated_at: p.updated_at,
+                    deleted: p.deleted,
+                },
+            )
+        })
+        .map(|(id, t)| (id, t.try_into().unwrap()))
+        .collect();
+
+    Ok(photos)
+}
+
+async fn find_by_tag_ids_and_orientation(
+    conn: &mut SqliteConnection,
+    ids: &[String],
+    orientation: &Orientation,
+    max_results: Option<i32>,
+) -> Result<Vec<(String, Photo)>, Error> {
+    let limit = max_results.unwrap_or(-1);
+    let params = format!("?{}", ", ?".repeat(ids.len() - 1));
+
+    let query = format!(
+        r#"
+    SELECT
+        tag_id,
+        p.id,
+        title,
+        filename,
+        filetype,
+        orientation,
+        p.created_at,
+        p.updated_at,
+        p.deleted
+    FROM
+        photos as p
+    JOIN
+        photo_tags as pt ON pt.photo_id = p.id
+    WHERE
+        orientation = {}
+        pt.tag_id IN ( { } )
+        AND deleted = false
+    ORDER BY  p.created_at ASC
+    LIMIT {}
+    "#,
+        orientation, params, limit
     );
 
     let mut query = sqlx::query_as::<_, DBTagPhoto>(&query);

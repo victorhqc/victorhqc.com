@@ -1,5 +1,8 @@
-use crate::graphql::{context::get_conn, models::Photo as GqlPhoto};
-use async_graphql::{Context, InputObject, Object, Result, ID};
+use crate::graphql::{
+    context::get_conn,
+    models::{Orientation, Photo as GqlPhoto},
+};
+use async_graphql::{Context, ID, InputObject, Object, Result};
 use core_victorhqc_com::models::{photo::Photo, tag::Tag};
 
 #[derive(Default)]
@@ -8,6 +11,7 @@ pub struct PhotoQuery;
 #[derive(InputObject)]
 pub struct PhotosQueryInput {
     pub tag: Option<String>,
+    pub orientation: Option<Orientation>,
     pub max_results: Option<i32>,
 }
 
@@ -31,13 +35,18 @@ impl PhotoQuery {
             let tag = Tag::find_by_name(&mut conn, &tag).await?;
             let ids = vec![tag.id];
 
-            Photo::find_by_tag_ids(&mut conn, &ids, input.max_results)
-                .await?
-                .into_iter()
-                .map(|(_, photo)| photo)
-                .collect()
+            Photo::find_by_tag_ids(
+                &mut conn,
+                &ids,
+                input.max_results,
+                input.orientation.map(|o| o.into()),
+            )
+            .await?
+            .into_iter()
+            .map(|(_, photo)| photo)
+            .collect()
         } else {
-            Photo::find_all(&mut conn).await?
+            Photo::find_all(&mut conn, input.orientation.map(|o| o.into())).await?
         };
 
         let photos = photos.into_iter().map(|p| p.into()).collect();
