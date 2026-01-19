@@ -1,19 +1,20 @@
 .open-photo {
-  width: calc(100vw - 1.5rem);
-  aspect-ratio: 3/2;
+  /*width: calc(100vw - 1.5rem);*/
 }
 
 @media (min-width: 768px) {
   .open-photo {
-    width: calc(100vw - 5rem);
+    /*height: calc(100vh - 5rem);*/
+    /*width: auto;*/
+    /*width: calc(100vw - 5rem);*/
   }
 }
 
-@media (min-aspect-ratio: 3/2) {
+/*@media (min-aspect-ratio: 3/2) {
   .open-photo {
     @apply w-full h-full;
   }
-}
+}*/
 
 .open-photo__photo-wrapper {
   @apply h-full w-full;

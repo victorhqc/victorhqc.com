@@ -61,6 +61,6 @@
 }
 
 .one-photo__container {
-  @apply w-full;
+  @apply w-full flex flex-col justify-center;
   height: calc(100% - 24px - 2.5rem);
 }

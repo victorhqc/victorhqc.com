@@ -1,13 +1,13 @@
-use super::context::{render_content, RenderArgs, TemplateKind};
+use super::context::{RenderArgs, TemplateKind, render_content};
 use super::get_user_agent;
 use crate::{
     analytics,
-    collections::{Collection, COLLECTIONS},
+    collections::{COLLECTIONS, Collection},
     gql::get_portfolio::GetPortfolioPhotos,
     prefetch::PrefetchedCollection,
     state::AppState,
 };
-use actix_web::{error::ResponseError, get, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{HttpRequest, HttpResponse, Responder, Result, error::ResponseError, get, web};
 use snafu::prelude::*;
 use std::str::FromStr;
 use tera::Context;
@@ -174,9 +174,11 @@ pub async fn collection_photo(
     let (name, id) = path.into_inner();
     let mut context = Context::new();
 
-    let active_collection = Collection::from_str(&name).context(UnknownCollectionSnafu { name })?;
+    let active_collection =
+        Collection::from_str(&name).context(UnknownCollectionSnafu { name: name.clone() })?;
 
     let collection = get_collection(&active_collection, &data.prefetched).await?;
+    debug!("Portfolio Photos for tag {}: {:?}", name, collection);
     let photo = collection.iter().find(|p| p.photo.id == id).unwrap();
 
     context.insert(

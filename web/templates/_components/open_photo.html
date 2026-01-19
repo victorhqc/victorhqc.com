@@ -1,5 +1,6 @@
 {% macro open_photo_no_info(data, size="Sm") %}
-<div class="open-photo">
+{% set style = "width: calc(100vw - 1.5rem);" %}
+<div class="open-photo" style="{{style}}">
   <div class="open-photo__container photo-wrapper">
     <img
       class="photo"
@@ -12,7 +13,13 @@
 
 {% macro open_photo(data, size="Md") %}
 {% set exif = data.exifMeta %}
-<div class="open-photo">
+{% set orientation = data.orientation %}
+{% if orientation == "LANDSCAPE" %}
+  {% set style = "aspect-ratio: 3/2; width: calc(100vw - 1.5rem);" %}
+{% else %}
+{% set style = "aspect-ratio: 2/3; height: calc(100vh - 5rem);" %}
+{% endif %}
+<div class="open-photo" style="{{style}}">
   <div class="open-photo__container photo-wrapper">
     <div class="open-photo__photo-wrapper photo--visible">
       <img
@@ -39,74 +46,7 @@
               ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s
             </p>
           </div>
-          {% if exif.cameraMaker == "FUJIFILM" %}
-          {% set film_sim = exif.fujifilmRecipe %}
-          <div
-            class="open-photo__film-sim-icon"
-            style="background-image: url('/public/film-simulations/{{ get_film_simulation_img(name=film_sim.filmSimulation)}}')"
-          ></div>
-          {% endif %}
         </div>
-        {% if exif.cameraMaker == "FUJIFILM" %}
-        {% set film_sim = exif.fujifilmRecipe %}
-        <h1>Fujifilm Recipe</h1>
-        <div class="open-photo__film-simulation">
-          <div>
-            <div>
-              <h3>Film Simulation</h3>
-              <p>{{ parse_film_simulation_name(name=film_sim.filmSimulation,monochromatic_color=film_sim.settings.monochromaticColor) }}</p>
-            </div>
-            <div>
-              <h3>White Balance</h3>
-              <p>{{ film_sim.settings.whiteBalance }}</p>
-            </div>
-            <div>
-              <h3>Color Chrome Effect</h3>
-              <p>{{ film_sim.settings.colorChromeEffect }}</p>
-            </div>
-            <div>
-              <h3>Dynamic Range</h3>
-              <p>{{ film_sim.settings.dynamicRange }}</p>
-            </div>
-            <div>
-              <h3>Color</h3>
-              <p>{{ film_sim.settings.color }}</p>
-            </div>
-            <div>
-              <h3>Clarity</h3>
-              <p>{{ film_sim.settings.clarity }}</p>
-            </div>
-          </div>
-          <div>
-            <div>
-              <h3>Grain Effect</h3>
-              <p>{{ film_sim.settings.grainEffect }}</p>
-            </div>
-            <div>
-              <h3>Tone Curve</h3>
-              <p>{{ film_sim.settings.toneCurve }}</p>
-            </div>
-            <div>
-              <h3>Color Chrome FX Blue</h3>
-              <p>{{ film_sim.settings.colorChromeFxBlue }}</p>
-            </div>
-            <div>
-              <h3>DRange Priority</h3>
-              <p>{{ film_sim.settings.dRangePriority }}</p>
-            </div>
-            <div>
-              <h3>High ISO NR</h3>
-              <p>
-                {{ film_sim.settings.highIsoNoiseReduction }}
-              </p>
-            </div>
-            <div>
-              <h3>Sharpness</h3>
-              <p>{{ film_sim.settings.sharpness }}</p>
-            </div>
-          </div>
-        </div>
-      {% endif %}
       </div>
     </div>
     <button class="open-photo__icon"></button>

@@ -1,6 +1,9 @@
+#[macro_use]
+extern crate log;
+
 use crate::state::AppState;
 use actix_files as fs;
-use actix_web::{middleware, web, App, HttpServer};
+use actix_web::{App, HttpServer, middleware, web};
 use analytics::{session::Session, visit::Visit};
 use lazy_static::lazy_static;
 use log::info;
