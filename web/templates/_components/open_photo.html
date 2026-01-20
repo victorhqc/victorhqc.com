@@ -15,7 +15,7 @@
 {% set exif = data.exifMeta %}
 {% set orientation = data.orientation %}
 {% if orientation == "LANDSCAPE" %}
-  {% set style = "aspect-ratio: 3/2; width: calc(100vw - 1.5rem);" %}
+  {% set style = "aspect-ratio: 3/2; width: calc(100vw - 12rem);" %}
 {% else %}
 {% set style = "aspect-ratio: 2/3; height: calc(100vh - 5rem);" %}
 {% endif %}
