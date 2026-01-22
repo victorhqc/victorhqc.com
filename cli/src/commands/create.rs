@@ -11,7 +11,7 @@ use console::Emoji;
 use core_victorhqc_com::{
     aws::S3,
     models::{
-        exif_meta::{CameraMaker, PhotographyDetails},
+        exif_meta::{CameraMaker, PhotographyDetails, from_exif::PhotographyDetailsError},
         exif_meta::{ExifMeta, db::Error as ExifMetaDbError},
         fujifilm::{FujifilmRecipe, db::Error as FujifilmDbError},
         photo::{Error as PhotoError, Photo, db::Error as PhotoDbError},
@@ -19,7 +19,7 @@ use core_victorhqc_com::{
     sqlx::{Sqlite, SqlitePool, Transaction, error::Error as SqlxError},
 };
 use fuji::{
-    exif::{ExifData, FromExifData},
+    exif::{ExifData, FromExifData, TryFromExifData},
     recipe::{FujifilmRecipe as _FujifilmRecipe, FujifilmRecipeDetails},
 };
 use itertools::Itertools;
@@ -92,7 +92,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
         .context(AttachTagsSnafu)?;
 
     let photography_details =
-        PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
+        PhotographyDetails::try_from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
     debug!("{:?}", photography_details);
 
     let exif = ExifMeta::new(photography_details, &photo, &recipe);
@@ -154,8 +154,8 @@ pub enum Error {
     #[snafu(display("Could not get Maker from EXIF"))]
     Maker,
 
-    #[snafu(display("Could not find the PhotographyDetails from EXIF"))]
-    PhotographyDetails,
+    #[snafu(display("Could not find the PhotographyDetails from EXIF: {}", source))]
+    PhotographyDetails { source: PhotographyDetailsError },
 
     #[snafu(display("Failed to build images: {}", source))]
     BuildImages { source: BuildImagesError },

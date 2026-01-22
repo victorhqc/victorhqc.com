@@ -8,3 +8,5 @@ mod maker;
 mod photography_details;
 mod rating;
 mod shutter_speed;
+
+pub use photography_details::*;
