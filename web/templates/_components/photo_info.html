@@ -10,7 +10,7 @@
   </div>
   <div class="photo-info__data">
     <div class="photo-info__data-container">
-      <h1>{{ data.title }}</h1>
+      <h1>{{ data.title }} <small>{{ exif.dateTaken }}</small></h1>
       <h3>
         ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{
         exif.shutterSpeed }} s
