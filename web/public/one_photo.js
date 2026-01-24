@@ -24,7 +24,6 @@
     if (!info || !icon) return;
 
     if (info.classList.contains("photo--hidden")) {
-      console.log("Should show it");
       info.classList.remove("photo--hidden");
       icon.classList.add("open-photo__icon--black");
     } else {
