@@ -9,7 +9,7 @@ use lazy_static::lazy_static;
 use log::info;
 use snafu::prelude::*;
 use sqlx::SqlitePool;
-use std::{env, path::PathBuf};
+use std::{collections::HashMap, env, path::PathBuf};
 use tera::Tera;
 use tokio::sync::mpsc;
 use uaparser::UserAgentParser;
@@ -46,6 +46,25 @@ lazy_static! {
         );
         tera.register_function("uuid", tera_utils::functions::uuid());
         tera.register_function("gravatar", tera_utils::functions::get_gravatar());
+
+        tera.register_filter(
+            "versioned",
+            |value: &tera::Value, _: &HashMap<String, tera::Value>| {
+                let path = value.as_str().unwrap();
+
+                #[cfg(not(debug_assertions))]
+                let version = env!("CARGO_PKG_VERSION");
+
+                #[cfg(debug_assertions)]
+                let version = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs()
+                    .to_string();
+
+                Ok(tera::Value::String(format!("{}?v={}", path, version)))
+            },
+        );
 
         tera
     };

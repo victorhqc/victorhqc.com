@@ -11,7 +11,7 @@
       <link rel="stylesheet" href="/static/styles.min.css">
       {% block static_head %}{% endblock %}
     {% else %}
-      <script src="/static/tailwindcss.js"></script>
+      <script src="{{ '/static/tailwindcss.js' | versioned }}"></script>
       {# Render Tailwind styles in the HEAD only in development #}
       <style type="text/tailwindcss">
         {% include "_components/main_menu.css" %}
@@ -20,8 +20,8 @@
       {# Things that can appear in the HEAD only in development #}
       {% block dev_head %}{% endblock %}
     {% endif %}
-    <script defer src="/static/htmx.js"></script>
-    <script src="/static/masonry.pkgd.min.js"></script>
+    <script defer src="{{ '/static/htmx.js' | versioned }}"></script>
+    <script src="{{ '/static/masonry.pkgd.min.js' | versioned }}"></script>
     <script>
     let __IS_MOBILE__ = {{ is_mobile }};
     let __LISTENERS__ = [];

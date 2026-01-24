@@ -67,8 +67,8 @@
 })();
 </script>
 {% if not is_mobile %}
-<script src="/public/one_photo.js"></script>
+<script src="{{ '/public/one_photo.js' | versioned }}"></script>
 {% endif %}
 {% if is_mobile %}
-<script src="/public/one_photo_mobile.js"></script>
+<script src="{{ '/public/one_photo_mobile.js' | versioned }}"></script>
 {% endif %}
