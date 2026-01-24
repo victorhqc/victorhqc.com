@@ -1,9 +1,9 @@
 use crate::graphql::{
-    loaders::{fujifilm_recipe::FujifilmRecipeByExifMetaId, AppLoader},
+    loaders::{AppLoader, fujifilm_recipe::FujifilmRecipeByExifMetaId},
     models::FujifilmRecipe,
 };
 use async_graphql::{
-    dataloader::DataLoader, ComplexObject, Context, Enum, Result, SimpleObject, ID,
+    ComplexObject, Context, Enum, ID, Result, SimpleObject, dataloader::DataLoader,
 };
 use core_victorhqc_com::models::exif_meta::{
     CameraMaker as CoreCameraMaker, ExifMeta as ExifMetaModel, LensMaker as CoreLensMaker,
@@ -12,6 +12,7 @@ use core_victorhqc_com::models::exif_meta::{
 #[derive(Clone, Copy, Debug, Enum, Eq, PartialEq)]
 pub enum CameraMaker {
     Fujifilm,
+    Leica,
     Konica,
     Canon,
 }
@@ -19,6 +20,7 @@ pub enum CameraMaker {
 #[derive(Clone, Copy, Debug, Enum, Eq, PartialEq)]
 pub enum LensMaker {
     Fujifilm,
+    Voigtlander,
     Konica,
     Canon,
     SevenArtisans,
@@ -29,6 +31,7 @@ impl From<CoreCameraMaker> for CameraMaker {
     fn from(value: CoreCameraMaker) -> Self {
         match value {
             CoreCameraMaker::Fujifilm => Self::Fujifilm,
+            CoreCameraMaker::Leica => Self::Leica,
             CoreCameraMaker::Konica => Self::Konica,
             CoreCameraMaker::Canon => Self::Canon,
         }
@@ -39,6 +42,7 @@ impl From<CoreLensMaker> for LensMaker {
     fn from(value: CoreLensMaker) -> Self {
         match value {
             CoreLensMaker::Fujifilm => Self::Fujifilm,
+            CoreLensMaker::Voigtlander => Self::Voigtlander,
             CoreLensMaker::Konica => Self::Konica,
             CoreLensMaker::Canon => Self::Canon,
             CoreLensMaker::SevenArtisans => Self::SevenArtisans,

@@ -83,6 +83,8 @@ pub struct ShutterSpeed(pub String);
 pub enum CameraMaker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,
+    #[strum(serialize = "LEICA")]
+    Leica,
     #[strum(serialize = "KONICA")]
     Konica,
     #[strum(serialize = "CANON")]
@@ -93,6 +95,8 @@ pub enum CameraMaker {
 pub enum LensMaker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,
+    #[strum(serialize = "VOIGTLANDER")]
+    Voigtlander,
     #[strum(serialize = "KONICA")]
     Konica,
     #[strum(serialize = "CANON")]

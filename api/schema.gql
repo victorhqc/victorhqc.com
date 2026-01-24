@@ -1,6 +1,7 @@
 
 enum CameraMaker {
 	FUJIFILM
+	LEICA
 	KONICA
 	CANON
 }
@@ -107,6 +108,7 @@ type FujifilmRecipeTransVSettings {
 
 enum LensMaker {
 	FUJIFILM
+	VOIGTLANDER
 	KONICA
 	CANON
 	SEVEN_ARTISANS

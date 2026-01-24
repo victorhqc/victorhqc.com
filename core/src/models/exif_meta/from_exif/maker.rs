@@ -46,6 +46,18 @@ mod tests {
     }
 
     #[test]
+    fn it_parses_leica_maker() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Make", "LEICA")];
+        assert_eq!(CameraMaker::from_exif(&exif), Some(CameraMaker::Leica));
+    }
+
+    #[test]
+    fn it_parses_voigtlander_maker() {
+        let exif: Vec<ExifData> = vec![ExifData::new("LensMake", "VOIGTLANDER")];
+        assert_eq!(LensMaker::from_exif(&exif), Some(LensMaker::Voigtlander));
+    }
+
+    #[test]
     fn it_parses_konica_maker() {
         let exif: Vec<ExifData> = vec![ExifData::new("Make", "KONICA")];
         assert_eq!(CameraMaker::from_exif(&exif), Some(CameraMaker::Konica));
