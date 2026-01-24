@@ -49,3 +49,7 @@
 .photo-info__film-simulation p {
   @apply text-sm;
 }
+
+.photo-info__small-info p {
+  @apply text-xs;
+}

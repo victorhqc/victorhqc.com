@@ -34,11 +34,20 @@
       <div class="open-photo__info-data">
         <div>
           <h1>{{ data.title }}</h1>
-          <h3>{{ exif.cameraMaker }} {{ exif.cameraName }}</h3>
+          <h3 class="open-photo__photo-values">
+            <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s ISO {{ exif.iso }}
+          </h3>
           <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
-          <p class="open-photo__photo-values">
-            ISO {{ exif.iso }} <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s
-          </p>
+          <br />
+          <div class="open-photo__small-info">
+            <p>{{ exif.cameraMaker }} {{ exif.cameraName }}</p>
+            {% if exif.lensMaker != "UNKNOWN" %}
+              <p>
+                  {{ exif.lensMaker }}
+                  {{ exif.lensName }}
+              </p>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
