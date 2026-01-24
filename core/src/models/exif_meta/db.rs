@@ -1,12 +1,12 @@
 use super::{
-    str::maker::Error as MakerError, Aperture, CameraMaker, City, DateTaken, ExifMeta,
-    ExposureCompensation, FocalLength, Iso, LensMaker, PhotographyDetails, Rating, ShutterSpeed,
+    Aperture, CameraMaker, City, DateTaken, ExifMeta, ExposureCompensation, FocalLength, Iso,
+    LensMaker, PhotographyDetails, Rating, ShutterSpeed, str::maker::Error as MakerError,
 };
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqliteConnection};
 use std::str::FromStr;
-use time::{error::ComponentRange, Date};
+use time::{Date, error::ComponentRange};
 
 #[derive(FromRow)]
 struct DBExifMeta {
