@@ -17,11 +17,11 @@
 }
 
 .open-photo__info-wrapper {
-  @apply top-0 left-0 m-3;
-  @apply grid grid-cols-12;
+  @apply bottom-0 left-0 m-3;
+  /*@apply grid grid-rows-8;*/
 
   width: calc(100% - 1.5rem);
-  height: calc(100% - 1.5rem);
+  height: 150px;
   position: absolute !important;
 }
 
@@ -35,13 +35,11 @@
 
 .open-photo__info-photo-wrapper {
   @apply px-3 -ml-3 mr-3;
-  @apply col-span-7 md:col-span-7 lg:col-span-8;
 }
 
 .open-photo__info-data {
-  @apply border-l border-gray-500 border-solid;
-  @apply p-3 -m-3;
-  @apply col-span-5 md:col-span-5 lg:col-span-4;
+  @apply w-full h-full;
+  @apply grid place-items-center;
 }
 
 .open-photo__info_photo {
@@ -64,14 +62,9 @@
   @apply text-sm md:text-sm lg:text-base;
 }
 
-.photo-info__data,
-.open-photo__info-head {
+.photo-info__data {
   @apply flex place-content-between;
   @apply -mx-3 px-3 pb-3 mb-3;
-}
-
-.open-photo__info-head {
-  @apply border-b border-black border-dashed;
 }
 
 .open-photo__film-sim-icon {
