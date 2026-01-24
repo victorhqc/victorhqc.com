@@ -31,7 +31,7 @@
 
 .main-menu__title {
   @apply font-serif italic font-extralight;
-  @applt text-sm md:text-xl lg:text-xl;
+  @apply text-sm md:text-xl lg:text-xl;
 }
 
 .main-menu__title a {

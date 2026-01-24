@@ -40,13 +40,15 @@
       </li>
     </ol>
   </nav>
-  <div class="one-photo__container">
-    {% if is_mobile %}
-    {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
-    {{ i::photo_info(data=photo.photo) }}
-    {% else %}
-    {{ c::open_photo(data=photo.photo, size="Hd") }}
-    {% endif %}
+  <div class="one-photo__photo-wrapper">
+    <div class="one-photo__container">
+      {% if is_mobile %}
+      {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
+      {{ i::photo_info(data=photo.photo) }}
+      {% else %}
+      {{ c::open_photo(data=photo.photo, size="Hd") }}
+      {% endif %}
+    </div>
   </div>
 </div>
 

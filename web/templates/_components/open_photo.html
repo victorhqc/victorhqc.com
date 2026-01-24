@@ -33,7 +33,7 @@
     <div class="open-photo__info-wrapper photo--visible photo--hidden">
       <div class="open-photo__info-data">
         <div>
-          <h1>{{ data.title }}</h1>
+          <h1>{{ data.title }} <small>{{ exif.dateTaken }}</small></h1>
           <h3 class="open-photo__photo-values">
             <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s ISO {{ exif.iso }}
           </h3>
