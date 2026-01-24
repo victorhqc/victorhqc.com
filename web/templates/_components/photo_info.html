@@ -1,6 +1,13 @@
 {% macro photo_info(data) %}
 {% set exif = data.exifMeta %}
 <div class="photo-info__wrapper">
+  <div class="photo-info__image-background">
+    <img
+      class="photo-info__background-img"
+      src="{{ api_host }}/v1/images/Sm/{{ data.id }}"
+      alt="{{ data.title }}"
+    />
+  </div>
   <div class="photo-info__data">
     <div class="photo-info__data-container">
       <h1>{{ data.title }}</h1>
