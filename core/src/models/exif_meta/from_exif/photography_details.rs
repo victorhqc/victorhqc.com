@@ -1,8 +1,8 @@
 use crate::models::exif_meta::{
     Aperture, CameraMaker, City, DateTaken, ExposureCompensation, FocalLength, Iso, LensMaker,
-    PhotographyDetails, Rating, ShutterSpeed,
+    PhotographyDetails, Rating, ShutterSpeed, from_exif::TryFromExifData,
 };
-use fuji::exif::{ExifData, FindExifData, FromExifData, TryFromExifData};
+use fuji::exif::{ExifData, FindExifData, FromExifData};
 use snafu::prelude::*;
 
 impl TryFromExifData for PhotographyDetails {

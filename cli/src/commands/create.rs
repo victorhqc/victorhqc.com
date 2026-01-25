@@ -11,13 +11,15 @@ use console::Emoji;
 use core_victorhqc_com::{
     aws::S3,
     models::{
-        exif_meta::{ExifMeta, db::Error as ExifMetaDbError},
-        exif_meta::{PhotographyDetails, from_exif::PhotographyDetailsError},
+        exif_meta::{
+            ExifMeta, PhotographyDetails,
+            db::Error as ExifMetaDbError,
+            from_exif::{PhotographyDetailsError, TryFromExifData},
+        },
         photo::{Error as PhotoError, Photo, db::Error as PhotoDbError},
     },
     sqlx::{SqlitePool, error::Error as SqlxError},
 };
-use fuji::exif::TryFromExifData;
 use itertools::Itertools;
 use log::{debug, trace};
 use snafu::prelude::*;

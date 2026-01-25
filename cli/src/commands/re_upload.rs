@@ -9,7 +9,9 @@ use crate::{
 use core_victorhqc_com::{
     aws::S3,
     models::{
-        exif_meta::{ExifMeta, PhotographyDetails, db::Error as ExifMetaDbError},
+        exif_meta::{
+            ExifMeta, PhotographyDetails, db::Error as ExifMetaDbError, from_exif::TryFromExifData,
+        },
         photo::{Photo, db::Error as PhotoDbError},
     },
     sqlx::SqlitePool,
@@ -17,7 +19,6 @@ use core_victorhqc_com::{
 use core_victorhqc_com::{
     models::exif_meta::from_exif::PhotographyDetailsError, sqlx::error::Error as SqlxError,
 };
-use fuji::exif::TryFromExifData;
 use snafu::prelude::*;
 use std::{path::Path, sync::mpsc};
 
