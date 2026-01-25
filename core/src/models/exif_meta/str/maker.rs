@@ -23,6 +23,7 @@ impl FromStr for LensMaker {
         match s.to_lowercase().as_str() {
             "fujifilm" => Ok(Self::Fujifilm),
             "voigtlander" => Ok(Self::Voigtlander),
+            "cosina" => Ok(Self::Cosina),
             "konica" => Ok(Self::Konica),
             "canon" => Ok(Self::Canon),
             "7artisans" => Ok(Self::SevenArtisans),

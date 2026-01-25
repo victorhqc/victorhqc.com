@@ -50,6 +50,12 @@ mod tests {
     }
 
     #[test]
+    fn it_parses_cosina_maker() {
+        let exif: Vec<ExifData> = vec![ExifData::new("LensMake", "COSINA")];
+        assert_eq!(LensMaker::from_exif(&exif), Some(LensMaker::Cosina));
+    }
+
+    #[test]
     fn it_parses_konica_maker() {
         let exif: Vec<ExifData> = vec![ExifData::new("Make", "KONICA")];
         assert_eq!(CameraMaker::from_exif(&exif), Some(CameraMaker::Konica));

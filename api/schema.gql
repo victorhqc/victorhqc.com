@@ -105,6 +105,7 @@ type FujifilmRecipeTransVSettings {
 enum LensMaker {
 	FUJIFILM
 	VOIGTLANDER
+	COSINA
 	KONICA
 	CANON
 	SEVEN_ARTISANS
