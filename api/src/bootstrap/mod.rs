@@ -52,6 +52,9 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
                             .s3
                             .download_from_aws_s3((&photo, img_size, kind))
                             .await
+                            .inspect_err(|e| {
+                                debug!("Failed to download photo {}: {}", &photo.id, e);
+                            })
                             .unwrap();
 
                         let data = response.body.collect().await.unwrap();
