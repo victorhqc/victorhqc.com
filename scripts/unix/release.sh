@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 usage() {
     echo "Usage: $0 -k SSH_KEY_FILE -h REMOTE_HOST -u REMOTE_USER -p REMOTE_PATH [--install]"
     echo "  -k: Path to SSH key file"
@@ -10,16 +9,23 @@ usage() {
     echo "  --install: Install web dependencies (optional)"
     exit 1
 }
+# Initialize variables
+INSTALL_DEPS=false
 
+# Filter out --install and rebuild arguments
+FILTERED_ARGS=()
 for arg in "$@"; do
-    case "$arg" in
-        --install)
-            INSTALL_DEPS=true
-            shift # Remove --install from arguments
-            ;;
-    esac
+    if [ "$arg" = "--install" ]; then
+        INSTALL_DEPS=true
+    else
+        FILTERED_ARGS+=("$arg")
+    fi
 done
 
+# Reset positional parameters with filtered arguments
+set -- "${FILTERED_ARGS[@]}"
+
+# Now parse with getopts
 while getopts "k:h:u:p:" opt; do
     case $opt in
         k) SSH_KEY_FILE="$OPTARG";;
@@ -35,7 +41,7 @@ if [ -z "$SSH_KEY_FILE" ] || [ -z "$REMOTE_HOST" ] || [ -z "$REMOTE_USER" ] || [
     usage
 fi
 
-ssh-add -k "$SSH_KEY_FILE"
+ssh-add "$SSH_KEY_FILE"
 
 if [ "$INSTALL_DEPS" = true ]; then
     SCRIPT_PATH="./scripts/unix/web-dependencies.sh"
