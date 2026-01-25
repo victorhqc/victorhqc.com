@@ -7,7 +7,7 @@ use crate::{
 };
 use actix_web::{HttpRequest, HttpResponse, Responder, Result, get, web};
 use log::debug;
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 use tera::Context;
 
 #[get("/")]
@@ -25,7 +25,7 @@ pub async fn index(data: web::Data<AppState>, req: HttpRequest) -> Result<impl R
         .collect();
 
     let random_photos: Vec<&GetPortfolioPhotos> = filtered_photos
-        .choose_multiple(&mut rand::thread_rng(), 3)
+        .choose_multiple(&mut rand::rng(), 3)
         .copied()
         .collect();
 
