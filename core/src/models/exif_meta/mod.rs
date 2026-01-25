@@ -97,6 +97,8 @@ pub enum LensMaker {
     Fujifilm,
     #[strum(serialize = "VOIGTLANDER")]
     Voigtlander,
+    #[strum(serialize = "COSINA")]
+    Cosina,
     #[strum(serialize = "KONICA")]
     Konica,
     #[strum(serialize = "CANON")]

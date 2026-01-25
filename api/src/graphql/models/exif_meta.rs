@@ -21,6 +21,7 @@ pub enum CameraMaker {
 pub enum LensMaker {
     Fujifilm,
     Voigtlander,
+    Cosina,
     Konica,
     Canon,
     SevenArtisans,
@@ -43,6 +44,7 @@ impl From<CoreLensMaker> for LensMaker {
         match value {
             CoreLensMaker::Fujifilm => Self::Fujifilm,
             CoreLensMaker::Voigtlander => Self::Voigtlander,
+            CoreLensMaker::Cosina => Self::Cosina,
             CoreLensMaker::Konica => Self::Konica,
             CoreLensMaker::Canon => Self::Canon,
             CoreLensMaker::SevenArtisans => Self::SevenArtisans,
