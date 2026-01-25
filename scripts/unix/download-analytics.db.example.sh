@@ -2,7 +2,7 @@
 
 # Configuration
 SERVER="<url>"
-USER="<user?"
+USER="<user>"
 REMOTE_FILE="/<path>/analytics.db"
 LOCAL_DESTINATION="./analytics.db"
 

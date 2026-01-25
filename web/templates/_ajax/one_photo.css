@@ -78,5 +78,5 @@
 }
 
 .one-photo__container {
-  height: h-full;
+  @apply: h-full;
 }

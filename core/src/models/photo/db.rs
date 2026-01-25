@@ -291,17 +291,18 @@ async fn find_by_tag_ids_and_orientation(
     JOIN
         photo_tags as pt ON pt.photo_id = p.id
     WHERE
-        orientation = {}
-        pt.tag_id IN ( { } )
+        orientation = ?
+        AND pt.tag_id IN ( { } )
         AND deleted = false
     ORDER BY  p.created_at ASC
     LIMIT {}
     "#,
-        orientation, params, limit
+        params, limit
     );
 
     let mut query = sqlx::query_as::<_, DBTagPhoto>(&query);
 
+    query = query.bind(orientation.to_string());
     for id in ids {
         query = query.bind(id);
     }
