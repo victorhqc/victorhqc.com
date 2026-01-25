@@ -35,7 +35,7 @@ pub fn render_content(args: RenderArgs) -> Result<String> {
     let is_mobile = device::is_mobile(&parsed.device, &parsed.os);
 
     if let Some(path) = args.route_to_record {
-        debug!("Injecting analytics path: '{}'", path.to_string());
+        debug!("Injecting analytics path: '{}'", path);
 
         args.ctx.insert("path", &path.to_string())
     };
