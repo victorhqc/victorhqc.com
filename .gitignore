@@ -4,6 +4,7 @@
 
 stress-tests/benchmark.yml
 scripts/unix/run.api.sh
+scripts/unix/run.cli.sh
 scripts/unix/download-analytics.db.sh
 
 stress-tests/benchmark.web.yml

@@ -4,11 +4,13 @@
 TAILWIND_URL="https://cdn.tailwindcss.com"
 HTMX_URL="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"
 MASONRY_URL="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"
+IMAGES_DOWNLOADED_URL="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"
 
 OUTPUT_FOLDER="web/static"
 TAILWIND_FILE="$OUTPUT_FOLDER/tailwindcss.js"
 HTMX_FILE="$OUTPUT_FOLDER/htmx.js"
 MASONRY_FILE="$OUTPUT_FOLDER/masonry.pkgd.min.js"
+IMAGES_DOWNLOADED_FILE="$OUTPUT_FOLDER/imagesloaded.pkgd.min.js"
 
 echo "Ensuring folder $OUTPUT_FOLDER exists..."
 mkdir -p "$OUTPUT_FOLDER"
@@ -40,6 +42,16 @@ if [[ $? -eq 0 ]]; then
     echo "Downloaded successfully. Saved as $MASONRY_FILE."
 else
     echo "Failed to download from $MASONRY_URL."
+    exit 1
+fi
+
+echo "Downloading contents from $IMAGES_DOWNLOADED_URL..."
+wget -O "$IMAGES_DOWNLOADED_FILE" "$IMAGES_DOWNLOADED_URL"
+
+if [[ $? -eq 0 ]]; then
+    echo "Downloaded successfully. Saved as $IMAGES_DOWNLOADED_FILE."
+else
+    echo "Failed to download from $IMAGES_DOWNLOADED_URL."
     exit 1
 fi
 

@@ -28,13 +28,16 @@
 
   function initMasonry() {
     const elem = document.querySelector('.portfolio-collection');
-    new Masonry(elem, {
+    const msnry = new Masonry(elem, {
       itemSelector: '.portfolio-collection__list_item',
       percentPosition: true,
       gutter: 10,
       transitionDuration: 0,
     });
 
+    imagesLoaded(elem).on('progress', () => {
+      msnry.layout();
+    });
   }
 </script>
 {% endif %}
