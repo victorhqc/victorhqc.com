@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    INSERT INTO exif_metas(\n        id,\n        rating,\n        city,\n        date_taken,\n        iso,\n        aperture,\n        shutter_speed,\n        focal_length,\n        exposure_compensation,\n        camera_maker,\n        camera_name,\n        lens_maker,\n        lens_name,\n        crop_factor,\n        photo_id,\n        fuji_recipe_id\n    )\n    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 16
+    },
+    "nullable": []
+  },
+  "hash": "0ef057c2205909862a250c6f28f33fdef7f86580148f37b6154dc331e6c90a5b"
+}

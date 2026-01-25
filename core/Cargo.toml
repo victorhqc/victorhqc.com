@@ -19,7 +19,7 @@ sqlx = { workspace = true, features = [
   "runtime-tokio",
   "macros",
   "migrate",
-  "time",
+  "time"
 ] }
 strum = { workspace = true }
 strum_macros = { workspace = true }

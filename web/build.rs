@@ -72,6 +72,12 @@ fn main() {
     }
 }
 
+fn is_sqlx_offline() -> bool {
+    std::env::var("SQLX_OFFLINE")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
+}
+
 fn fetch_file(dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let url = "https://raw.githubusercontent.com/ua-parser/uap-core/refs/heads/master/regexes.yaml";
 
@@ -142,6 +148,12 @@ fn build_analytics_db(
     migrations_dir: &PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let db_url = format!("sqlite:{}", db_file.display());
+
+    if is_sqlx_offline() {
+        println!("SQLX_OFFLINE is enabled, skipping database creation and migrations");
+        println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+        return Ok(());
+    }
 
     if !db_file.exists() {
         std::fs::write(db_file, b"").unwrap();

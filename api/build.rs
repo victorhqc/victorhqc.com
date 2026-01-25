@@ -29,8 +29,23 @@ fn main() {
     }
 }
 
+fn is_sqlx_offline() -> bool {
+    std::env::var("SQLX_OFFLINE")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
+}
+
 fn build_api_db(db_file: &Path, migrations_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let db_url = format!("sqlite:{}", db_file.display());
+
+    if is_sqlx_offline() {
+        println!("=== SQLX Offline Mode ===");
+        println!("Skipping database creation and migrations");
+        println!("Using prepared query metadata from .sqlx directory");
+        println!("cargo:rustc-env=ROCKET_DATABASE_URL={}", db_url);
+        println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+        return Ok(());
+    }
 
     println!("=== Database Setup ===");
     println!("DB file: {}", db_file.display());

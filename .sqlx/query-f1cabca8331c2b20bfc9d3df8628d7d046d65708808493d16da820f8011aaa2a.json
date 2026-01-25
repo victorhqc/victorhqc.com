@@ -1,0 +1,110 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    SELECT\n        id,\n        rating,\n        city,\n        date_taken,\n        iso,\n        aperture,\n        shutter_speed,\n        focal_length,\n        exposure_compensation,\n        camera_maker,\n        camera_name,\n        lens_maker,\n        lens_name,\n        crop_factor,\n        photo_id,\n        fuji_recipe_id\n    FROM\n        exif_metas\n    WHERE\n        id = ?\n    ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "city",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_taken",
+        "ordinal": 3,
+        "type_info": "Date"
+      },
+      {
+        "name": "iso",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "aperture",
+        "ordinal": 5,
+        "type_info": "Float"
+      },
+      {
+        "name": "shutter_speed",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "focal_length",
+        "ordinal": 7,
+        "type_info": "Float"
+      },
+      {
+        "name": "exposure_compensation",
+        "ordinal": 8,
+        "type_info": "Float"
+      },
+      {
+        "name": "camera_maker",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "camera_name",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "lens_maker",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "lens_name",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "crop_factor",
+        "ordinal": 13,
+        "type_info": "Float"
+      },
+      {
+        "name": "photo_id",
+        "ordinal": 14,
+        "type_info": "Text"
+      },
+      {
+        "name": "fuji_recipe_id",
+        "ordinal": 15,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "f1cabca8331c2b20bfc9d3df8628d7d046d65708808493d16da820f8011aaa2a"
+}

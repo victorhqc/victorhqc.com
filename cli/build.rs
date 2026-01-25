@@ -14,7 +14,13 @@ fn main() {
         .unwrap()
         .join("api")
         .join("api_victorhqc_com.db");
+
     let db_url = format!("sqlite:{}", db_file.display());
+
+    if is_sqlx_offline() {
+        println!("SQLX_OFFLINE is enabled, using prepared query metadata");
+    }
+
     println!("cargo:rustc-env=DATABASE_URL={}", db_url);
 
     #[cfg(debug_assertions)]
@@ -25,6 +31,12 @@ fn main() {
     {
         build_aws_keys("PRODUCTION_");
     }
+}
+
+fn is_sqlx_offline() -> bool {
+    std::env::var("SQLX_OFFLINE")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
 }
 
 fn build_aws_keys(prefix: &str) {

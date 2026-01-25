@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    INSERT INTO fuji_recipes(\n    id,\n    name,\n    author,\n    sensor,\n    src,\n    film_simulation,\n    white_balance,\n    white_balance_shift,\n    dynamic_range,\n    d_range_priority,\n    highlight_tone,\n    shadow_tone,\n    color,\n    sharpness,\n    clarity,\n    high_iso_noise_reduction,\n    grain_strength,\n    grain_size,\n    color_chrome_effect,\n    color_chrome_fx_blue,\n    monochromatic_color\n    )\n    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 21
+    },
+    "nullable": []
+  },
+  "hash": "3bedce797811bf51980a48eb52ba36b0ea8afe4441973401de74d378938657e7"
+}
