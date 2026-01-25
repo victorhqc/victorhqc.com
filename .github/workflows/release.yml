@@ -9,6 +9,9 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
+    RUSTC_WRAPPER: sccache
+    SCCACHE_CACHE_SIZE: 2G
+    SQLX_OFFLINE: true
 
 jobs:
     build_and_release:
@@ -23,35 +26,44 @@ jobs:
                       web_artifact_name: linux-web-victorhqc-com
 
         steps:
-            - uses: actions/checkout@v3
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
+            - uses: actions/checkout@v4
 
-            - name: Install latest stable
-              uses: actions-rs/toolchain@v1
+            - name: Install Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
               with:
-                  toolchain: stable
-                  override: true
-                  target: ${{ matrix.target }}
-                  profile: minimal
-
-            - uses: Swatinem/rust-cache@v2
-              with:
-                  workspaces: |
-                      api
-                      web
-                      core
-                  cache-on-failure: true
-                  shared-key: "rust-cache"
+                  targets: ${{ matrix.target }}
 
             - name: Install musl tools
               run: |
                   sudo apt-get update
                   sudo apt-get install -y musl-tools
 
-            - name: Install SQLX
+            - name: Setup sccache
+              uses: mozilla-actions/sccache-action@v0.0.9
+
+            - name: Rust cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  shared-key: "rust-cache"
+                  cache-on-failure: true
+
+            - name: Cache sqlx-cli
+              uses: actions/cache@v4
+              id: cache-sqlx
+              with:
+                  path: |
+                      ~/.cargo/bin/sqlx
+                      ~/.cargo/bin/cargo-sqlx
+                  key: ${{ runner.os }}-sqlx-cli-0.8.6
+
+            - name: Install sqlx-cli
+              if: steps.cache-sqlx.outputs.cache-hit != 'true'
               run: |
-                  cargo install sqlx-cli --no-default-features --features sqlite
+                  cargo install sqlx-cli \
+                    --version 0.8.6 \
+                    --no-default-features \
+                    --features sqlite \
+                    --locked
 
             - name: Build Release Binary
               run: cargo build --workspace --exclude cli-victorhqc-com --release --target ${{ matrix.target }}

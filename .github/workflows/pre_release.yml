@@ -11,60 +11,54 @@ env:
     CARGO_TERM_COLOR: always
     RUSTC_WRAPPER: sccache
     SCCACHE_CACHE_SIZE: 2G
+    SQLX_OFFLINE: true
 
 jobs:
     prepare-release:
         name: Prepare Release
         if: github.ref == 'refs/heads/main'
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                os: [ubuntu-latest]
-                rust: [stable]
-        steps:
-            - uses: actions/checkout@v3
+        runs-on: ubuntu-latest
 
-            - name: Install latest stable
-              uses: actions-rs/toolchain@v1
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
               with:
-                  toolchain: stable
-                  override: true
                   components: rustfmt, clippy
-                  profile: minimal
-                  target: x86_64-unknown-linux-musl
+                  targets: x86_64-unknown-linux-musl
 
             - name: Install musl tools
               run: |
                   sudo apt-get update
                   sudo apt-get install -y musl-tools
 
-            - name: Cache dependencies
-              uses: Swatinem/rust-cache@v2
-
-            - name: Configure sccache
-              run: |
-                  echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-                  echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-                  echo “RUSTFLAGS=’--cfg profile=ephemeral-build’” >> $GITHUB_ENV
-
-            - name: Run sccache-cache
+            - name: Setup sccache
               uses: mozilla-actions/sccache-action@v0.0.9
-              with:
-                  version: "v0.10.0"
 
-            - uses: Swatinem/rust-cache@v2
+            - name: Rust cache
+              uses: Swatinem/rust-cache@v2
               with:
-                  workspaces: |
-                      api
-                      web
-                      core
-                      cli
-                  cache-on-failure: true
                   shared-key: "rust-cache"
+                  cache-on-failure: true
 
-            - name: Install SQLX
+            - name: Cache sqlx-cli
+              uses: actions/cache@v4
+              id: cache-sqlx
+              with:
+                  path: |
+                      ~/.cargo/bin/sqlx
+                      ~/.cargo/bin/cargo-sqlx
+                  key: ${{ runner.os }}-sqlx-cli-0.8.6
+
+            - name: Install sqlx-cli
+              if: steps.cache-sqlx.outputs.cache-hit != 'true'
               run: |
-                  cargo install sqlx-cli --no-default-features --features sqlite
+                  cargo install sqlx-cli \
+                    --version 0.8.6 \
+                    --no-default-features \
+                    --features sqlite \
+                    --locked
 
             - name: Update versions
               run: |
