@@ -1,6 +1,6 @@
 use crate::utils::device;
-use crate::{analytics::routes::Route, state::AppState, TEMPLATES};
-use actix_web::{web, ResponseError, Result};
+use crate::{TEMPLATES, analytics::routes::Route, state::AppState};
+use actix_web::{ResponseError, Result, web};
 use log::{debug, error};
 use snafu::prelude::*;
 use strum_macros::Display;

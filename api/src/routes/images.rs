@@ -42,12 +42,12 @@ pub async fn get_image(
 
     debug!("id: {}", id);
 
-    if let Some(etag) = if_none_match.0 {
-        if cache.md5_exists(&etag).await {
-            debug!("Cache Hit");
+    if let Some(etag) = if_none_match.0
+        && cache.md5_exists(&etag).await
+    {
+        debug!("Cache Hit");
 
-            return Ok(ImageResponse::not_modified(etag, img_kind));
-        }
+        return Ok(ImageResponse::not_modified(etag, img_kind));
     };
 
     debug!("Cache Miss");

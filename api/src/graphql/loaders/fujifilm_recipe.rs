@@ -1,7 +1,7 @@
 use crate::{graphql::loaders::AppLoader, graphql::models::FujifilmRecipe as GqlFujifilmRecipe};
-use async_graphql::{dataloader::Loader, Result};
+use async_graphql::{Result, dataloader::Loader};
 use core_victorhqc_com::{
-    models::fujifilm::{db::Error as DbError, FujifilmRecipe},
+    models::fujifilm::{FujifilmRecipe, db::Error as DbError},
     sqlx::Error as SqlxError,
 };
 use snafu::prelude::*;

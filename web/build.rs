@@ -1,12 +1,12 @@
 #[cfg(not(debug_assertions))]
-use flate2::{write::GzEncoder, Compression};
+use flate2::{Compression, write::GzEncoder};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 #[cfg(not(debug_assertions))]
 use std::{
     fs::File,
-    io::{copy, BufReader, Write},
+    io::{BufReader, Write, copy},
 };
 #[cfg(not(debug_assertions))]
 use walkdir::WalkDir;

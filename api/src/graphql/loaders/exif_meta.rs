@@ -1,7 +1,7 @@
 use crate::{graphql::loaders::AppLoader, graphql::models::ExifMeta as GqlExifMeta};
-use async_graphql::{dataloader::Loader, Result};
+use async_graphql::{Result, dataloader::Loader};
 use core_victorhqc_com::{
-    models::exif_meta::{db::Error as DbError, ExifMeta},
+    models::exif_meta::{ExifMeta, db::Error as DbError},
     sqlx::Error as SqlxError,
 };
 use snafu::prelude::*;

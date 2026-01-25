@@ -9,16 +9,13 @@ impl FromTuple<Option<GrainStrength>, Option<GrainSize>> for GrainEffect {
             return Ok(GrainEffect::Off);
         }
 
-        if tuple.1.is_none() {
-            if let Some(s) = tuple.0 {
-                return Ok(GrainEffect::OnlyStrength { strength: s });
-            }
+        if tuple.1.is_none()
+            && let Some(s) = tuple.0
+        {
+            return Ok(GrainEffect::OnlyStrength { strength: s });
         }
 
-        if tuple.0.is_some() && tuple.1.is_some() {
-            let strength = tuple.0.unwrap();
-            let size = tuple.1.unwrap();
-
+        if let (Some(strength), Some(size)) = tuple {
             return Ok(GrainEffect::StrengthAndSize { strength, size });
         }
 

@@ -7,11 +7,7 @@ impl FromExifData for CameraMaker {
         let exif = data.find("Make")?;
 
         trace!("CameraMaker::from_exif: {:?}", exif);
-
-        match Self::from_str(exif.value()) {
-            Ok(maker) => Some(maker),
-            Err(_) => None,
-        }
+        Self::from_str(exif.value()).ok()
     }
 }
 
@@ -24,11 +20,7 @@ impl FromExifData for LensMaker {
         };
 
         trace!("LensMaker::from_exif: {:?}", exif);
-
-        match Self::from_str(exif.value()) {
-            Ok(maker) => Some(maker),
-            Err(_) => None,
-        }
+        Self::from_str(exif.value()).ok()
     }
 }
 

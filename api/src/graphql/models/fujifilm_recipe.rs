@@ -1,4 +1,4 @@
-use async_graphql::{SimpleObject, Union, ID};
+use async_graphql::{ID, SimpleObject, Union};
 use core_victorhqc_com::models::fujifilm::{
     FujifilmRecipe as FujifilmRecipeModel, Settings as SettingsModel,
 };

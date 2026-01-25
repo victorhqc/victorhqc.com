@@ -1,7 +1,7 @@
 use crate::{graphql::loaders::AppLoader, graphql::models::Tag as GqlTag};
-use async_graphql::{dataloader::Loader, Result};
+use async_graphql::{Result, dataloader::Loader};
 use core_victorhqc_com::{
-    models::tag::{db::Error as DbError, Tag},
+    models::tag::{Tag, db::Error as DbError},
     sqlx::Error as SqlxError,
     utils::hashmap::InsertOrPush,
 };

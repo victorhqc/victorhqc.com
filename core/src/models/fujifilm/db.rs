@@ -1,16 +1,16 @@
 use crate::models::fujifilm::{
-    from_tuple::{grain_effect::Error as GrainEffectError, FromTuple},
     FujifilmRecipe,
+    from_tuple::{FromTuple, grain_effect::Error as GrainEffectError},
 };
 use fuji::recipe::{
-    builder::SettingsBuilder, str::Error as RecipeError, Clarity, Color, ColorChromeEffect,
-    ColorChromeEffectFxBlue, DRangePriority, DynamicRange, FilmSimulation,
-    FujifilmRecipe as _FujifilmRecipe, FujifilmRecipeDetails, GrainEffect, GrainSize,
-    GrainStrength, HighISONoiseReduction, MonochromaticColor, SettingStrength, Sharpness,
-    ToneCurve, TransSensor, WBShift, WhiteBalance,
+    Clarity, Color, ColorChromeEffect, ColorChromeEffectFxBlue, DRangePriority, DynamicRange,
+    FilmSimulation, FujifilmRecipe as _FujifilmRecipe, FujifilmRecipeDetails, GrainEffect,
+    GrainSize, GrainStrength, HighISONoiseReduction, MonochromaticColor, SettingStrength,
+    Sharpness, ToneCurve, TransSensor, WBShift, WhiteBalance, builder::SettingsBuilder,
+    str::Error as RecipeError,
 };
 use snafu::prelude::*;
-use sqlx::{error::Error as SqlxError, FromRow, SqliteConnection};
+use sqlx::{FromRow, SqliteConnection, error::Error as SqlxError};
 use std::str::FromStr;
 use strum_macros::Display;
 

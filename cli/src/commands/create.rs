@@ -97,7 +97,10 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
 
     let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
     debug!("About to upload to S3");
-    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
+    upload(&photo, s3, buffers)
+        .await
+        .map_err(Box::new)
+        .context(UploadSnafu)?;
     debug!("Uploaded to S3");
 
     conn.commit().await.context(TxSnafu)?;
@@ -132,7 +135,7 @@ pub enum Error {
     NewPhoto { source: PhotoError },
 
     #[snafu(display("Failed to upload the images: {}", source))]
-    Upload { source: AWSError },
+    Upload { source: Box<AWSError> },
 
     #[snafu(display("Failed to save the photo: {}", source))]
     SavePhoto { source: PhotoDbError },

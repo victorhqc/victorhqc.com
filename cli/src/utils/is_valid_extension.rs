@@ -5,9 +5,7 @@ pub fn is_valid_extension(path: &Path) -> bool {
     let extension = path.extension().unwrap_or("none".as_ref());
     let extension = extension.to_str().unwrap_or("none").to_lowercase();
 
-    let res = !path.is_dir() && EXTENSIONS.contains(&extension.as_str());
-
-    res
+    !path.is_dir() && EXTENSIONS.contains(&extension.as_str())
 }
 
 #[cfg(test)]
