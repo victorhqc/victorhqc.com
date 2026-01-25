@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate log;
+
 mod commands;
 mod exiftool;
 mod photo;
@@ -5,7 +8,6 @@ mod utils;
 
 use clap::{Parser, Subcommand};
 use core_victorhqc_com::{aws::S3, db::get_pool};
-use log::{debug, error};
 use std::path::Path;
 
 #[tokio::main]
@@ -41,10 +43,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .unwrap();
         }
-        Commands::ReUpload { source } => {
+        Commands::ReUpload { id, source } => {
             let src = Path::new(&source);
 
-            commands::re_upload::re_upload(&pool, src, &s3)
+            commands::re_upload::re_upload(&pool, id, src, &s3)
                 .await
                 .map_err(|e| {
                     error!("Failed to re-upload Image: {}", e);
@@ -81,6 +83,9 @@ enum Commands {
     },
     #[command(arg_required_else_help = true)]
     ReUpload {
+        #[arg(short, long)]
+        id: String,
+
         #[arg(short, long)]
         source: String,
     },

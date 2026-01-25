@@ -42,7 +42,15 @@ impl ExifMeta {
 
     pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
         let exif: DBExifMeta = self.into();
-        insert(conn, exif).await
+
+        insert(conn, &exif).await
+    }
+
+    pub async fn replace(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
+        let exif: DBExifMeta = self.into();
+
+        delete_by_photo_id(conn, &exif).await?;
+        insert(conn, &exif).await
     }
 }
 
@@ -126,7 +134,22 @@ async fn find_by_photo_ids(
     Ok(metas)
 }
 
-async fn insert(conn: &mut SqliteConnection, exif: DBExifMeta) -> Result<String, Error> {
+async fn delete_by_photo_id(conn: &mut SqliteConnection, exif: &DBExifMeta) -> Result<(), Error> {
+    // Delete any existing exif_meta for this photo
+    sqlx::query!(
+        r#"
+        DELETE FROM exif_metas WHERE photo_id = ?
+        "#,
+        exif.photo_id
+    )
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(())
+}
+
+async fn insert(conn: &mut SqliteConnection, exif: &DBExifMeta) -> Result<String, Error> {
     let id = exif.id.clone();
 
     sqlx::query!(
