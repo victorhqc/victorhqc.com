@@ -1,6 +1,5 @@
 use crate::models::exif_meta::DateTaken;
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use time::{Date, Month};
@@ -12,10 +11,10 @@ impl FromExifData for DateTaken {
         trace!("DateTaken::from_exif: {:?}", exif);
 
         static RE: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r"(?<date>[0-9]{4}[-:][09]{2}[-:][0-9]{2}) (?<time>[0-9]{2}:[0-9]{2}:[0-9]{2}).*(?<offset>[+\-0-9]{3}:[0-9]{2})").unwrap()
+            Regex::new(r"(?<date>[0-9]{4}[-:][0-9]{2}[-:][0-9]{2}) (?<time>[0-9]{2}:[0-9]{2}:[0-9]{2})(?:.*(?<offset>[+\-][0-9]{2}:[0-9]{2}))?").unwrap()
         });
         static RE_DATE: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r"(?<year>[0-9]{4})[-:](?<month>[09]{2})[-:](?<day>[0-9]{2})").unwrap()
+            Regex::new(r"(?<year>[0-9]{4})[-:](?<month>[0-9]{2})[-:](?<day>[0-9]{2})").unwrap()
         });
 
         let caps = RE.captures(exif.value())?;
@@ -55,6 +54,14 @@ mod tests {
             "2024:09:12 18:55:14.13-07:30",
         )];
         let date = Date::from_calendar_date(2024, Month::September, 12).unwrap();
+
+        assert_eq!(DateTaken::from_exif(&exif), Some(DateTaken(date)));
+    }
+
+    #[test]
+    fn it_parses_without_format_timezone() {
+        let exif: Vec<ExifData> = vec![ExifData::new("DateTimeOriginal", "2023:10:22 16:56:12")];
+        let date = Date::from_calendar_date(2023, Month::October, 22).unwrap();
 
         assert_eq!(DateTaken::from_exif(&exif), Some(DateTaken(date)));
     }

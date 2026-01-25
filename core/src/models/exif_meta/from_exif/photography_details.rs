@@ -1,16 +1,20 @@
 use crate::models::exif_meta::{
     Aperture, CameraMaker, City, DateTaken, ExposureCompensation, FocalLength, Iso, LensMaker,
-    PhotographyDetails, Rating, ShutterSpeed,
+    PhotographyDetails, Rating, ShutterSpeed, from_exif::TryFromExifData,
 };
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
+use snafu::prelude::*;
 
-impl FromExifData for PhotographyDetails {
-    fn from_exif(data: &[ExifData]) -> Option<Self> {
-        let rating = Rating::from_exif(data).or_else(|| {
-            trace!("Rating Missing");
-            None
-        })?;
+impl TryFromExifData for PhotographyDetails {
+    type Error = PhotographyDetailsError;
+
+    fn try_from_exif(data: &[ExifData]) -> Result<Self, Self::Error> {
+        let rating = Rating::from_exif(data)
+            .or_else(|| {
+                trace!("Rating Missing");
+                None
+            })
+            .unwrap_or_default();
         let city = City::from_exif(data).or_else(|| {
             trace!("City Missing");
             None
@@ -19,41 +23,58 @@ impl FromExifData for PhotographyDetails {
             trace!("Date Taken Missing");
             None
         });
-        let aperture = Aperture::from_exif(data).or_else(|| {
-            trace!("Aperture Missing");
-            None
-        })?;
-        let shutter_speed = ShutterSpeed::from_exif(data).or_else(|| {
-            trace!("Shutter Speed Missing");
-            None
-        })?;
-        let exposure_compensation = ExposureCompensation::from_exif(data).or_else(|| {
-            trace!("Exposure Compensation Missing");
-            None
-        })?;
-        let focal_length = FocalLength::from_exif(data).or_else(|| {
-            trace!("Focal Length Missing");
-            None
-        })?;
-        let iso = Iso::from_exif(data).or_else(|| {
-            trace!("Iso Missing");
-            None
-        })?;
-        let camera_maker = CameraMaker::from_exif(data).or_else(|| {
-            trace!("Camera Maker Missing");
-            None
-        })?;
-        let lens_maker = LensMaker::from_exif(data).or_else(|| {
-            trace!("Lens Maker Missing");
-            None
-        })?;
+        let aperture = Aperture::from_exif(data)
+            .or_else(|| {
+                trace!("Aperture Missing");
+                None
+            })
+            .context(ApertureSnafu)?;
+        let shutter_speed = ShutterSpeed::from_exif(data)
+            .or_else(|| {
+                trace!("Shutter Speed Missing");
+                None
+            })
+            .context(ShutterSpeedSnafu)?;
+        let exposure_compensation = ExposureCompensation::from_exif(data)
+            .or_else(|| {
+                trace!("Exposure Compensation Missing");
+                None
+            })
+            .unwrap_or_default();
+        let focal_length = FocalLength::from_exif(data)
+            .or_else(|| {
+                trace!("Focal Length Missing");
+                None
+            })
+            .context(FocalLengthSnafu)?;
+        let iso = Iso::from_exif(data)
+            .or_else(|| {
+                trace!("Iso Missing");
+                None
+            })
+            .context(IsoSnafu)?;
+        let camera_maker = CameraMaker::from_exif(data)
+            .or_else(|| {
+                trace!("Camera Maker Missing");
+                None
+            })
+            .context(CameraMakerSnafu)?;
+        let lens_maker = LensMaker::from_exif(data)
+            .or_else(|| {
+                trace!("Lens Maker Missing");
+                None
+            })
+            .context(LensMakerSnafu)?;
         let lens_name = data.find("LensModel").map(|n| n.value().to_string());
-        let camera_name = data.find("Model").or_else(|| {
-            trace!("Camera Model Missing");
-            None
-        })?;
+        let camera_name = data
+            .find("Model")
+            .or_else(|| {
+                trace!("Camera Model Missing");
+                None
+            })
+            .context(CameraNameSnafu)?;
 
-        Some(PhotographyDetails {
+        Ok(PhotographyDetails {
             rating,
             date_taken,
             city,
@@ -68,6 +89,30 @@ impl FromExifData for PhotographyDetails {
             iso,
         })
     }
+}
+
+#[derive(Debug, Snafu, PartialEq)]
+pub enum PhotographyDetailsError {
+    #[snafu(display("Aperture value is missing"))]
+    Aperture,
+
+    #[snafu(display("Shutter Speed value is missing"))]
+    ShutterSpeed,
+
+    #[snafu(display("Focal Length value is missing"))]
+    FocalLength,
+
+    #[snafu(display("Iso value is missing"))]
+    Iso,
+
+    #[snafu(display("Camera Maker value is missing"))]
+    CameraMaker,
+
+    #[snafu(display("Camera Name value is missing"))]
+    CameraName,
+
+    #[snafu(display("Lens Maker value is missing"))]
+    LensMaker,
 }
 
 #[cfg(test)]
@@ -95,8 +140,8 @@ mod tests {
         let date = Date::from_calendar_date(2024, Month::September, 12).unwrap();
 
         assert_eq!(
-            PhotographyDetails::from_exif(&exif),
-            Some(PhotographyDetails {
+            PhotographyDetails::try_from_exif(&exif),
+            Ok(PhotographyDetails {
                 rating: Rating(3),
                 city: Some(City("Berlin".to_string())),
                 date_taken: Some(DateTaken(date)),
@@ -118,7 +163,7 @@ mod tests {
     }
 
     #[test]
-    fn it_does_not_parse_if_any_property_is_missing() {
+    fn it_does_not_parse_if_aperture_is_missing() {
         let exif: Vec<ExifData> = vec![
             ExifData::new("Rating", "3"),
             ExifData::new("City", "Berlin"),
@@ -132,6 +177,9 @@ mod tests {
             ExifData::new("Make", "FUJIFILM"),
         ];
 
-        assert_eq!(PhotographyDetails::from_exif(&exif), None,);
+        assert_eq!(
+            PhotographyDetails::try_from_exif(&exif),
+            Err(PhotographyDetailsError::Aperture),
+        );
     }
 }

@@ -2,6 +2,7 @@ query GetPortfolio($tag: String!, $max: Int) {
   photos(input: { tag: $tag, maxResults: $max }) {
     id
     title
+    orientation
     tags {
       id
       name

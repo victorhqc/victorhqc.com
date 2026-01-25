@@ -5,11 +5,12 @@
   hx-get="/analytics?p=/collection/{{ collection_route.name }}"
   hx-headers='js:{"x-visitor-id": localStorage.getItem("client_id")}'>
 </div>
-<ul class="portfolio-collection">
+<div class="portfolio-collection">
+  <div class="portfolio-collection__sizer"></div>
   {% for data in portfolio_photos %}
-  <li>{{ c::simple_photo(data=data, size="Sm", class="portfolio-collection__photo") }}</li>
+  <div class="portfolio-collection__list_item">{{ c::simple_photo(data=data, size="Sm", class="portfolio-collection__photo") }}</div>
   {% endfor %}
-</ul>
+</div>
 
 <script>
 (function() {
@@ -21,6 +22,22 @@
   document.title = `victorhqc.com - Photography Portfolio`;
 })();
 </script>
+{% if not is_mobile %}
+<script>
+  initMasonry();
+
+  function initMasonry() {
+    const elem = document.querySelector('.portfolio-collection');
+    new Masonry(elem, {
+      itemSelector: '.portfolio-collection__list_item',
+      percentPosition: true,
+      gutter: 10,
+      transitionDuration: 0,
+    });
+
+  }
+</script>
+{% endif %}
 <script>
   (function() {
     CLEANUP_EXISTING_LISTENERS();

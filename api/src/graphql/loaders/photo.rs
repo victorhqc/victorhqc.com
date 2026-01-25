@@ -1,7 +1,7 @@
 use crate::{graphql::loaders::AppLoader, graphql::models::Photo as GqlPhoto};
-use async_graphql::{dataloader::Loader, Result};
+use async_graphql::{Result, dataloader::Loader};
 use core_victorhqc_com::{
-    models::photo::{db::Error as DbError, Photo},
+    models::photo::{Photo, db::Error as DbError},
     sqlx::Error as SqlxError,
     utils::hashmap::InsertOrPush,
 };
@@ -25,7 +25,7 @@ impl Loader<PhotoByTagId> for AppLoader {
 
         let mut conn = self.pool.acquire().await.context(ConnectionSnafu)?;
 
-        let values = Photo::find_by_tag_ids(&mut conn, &ids, None)
+        let values = Photo::find_by_tag_ids(&mut conn, &ids, None, None)
             .await
             .context(QuerySnafu)?;
 

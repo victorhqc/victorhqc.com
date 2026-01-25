@@ -1,7 +1,7 @@
 use crate::utils::is_valid_extension;
 use fuji::exif::{
-    json::{Error as JsonError, JsonValue},
     ExifData,
+    json::{Error as JsonError, JsonValue},
 };
 use log::debug;
 use snafu::prelude::*;

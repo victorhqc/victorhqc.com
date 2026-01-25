@@ -15,13 +15,19 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
         let tags: Vec<&str> = tags.iter().map(|t| t.as_str()).collect();
 
         let tags = Tag::find_by_names(&mut conn, &tags).await.unwrap();
+        let tag_names = tags
+            .iter()
+            .map(|t| t.name.clone())
+            .collect::<Vec<String>>()
+            .join(", ");
+        info!("Bootstrapping photos from tags: {}", tag_names);
         let tag_ids = tags.into_iter().map(|t| t.id).collect::<Vec<_>>();
 
         if tag_ids.is_empty() {
             return state;
         }
 
-        let photos: Vec<(String, Photo)> = Photo::find_by_tag_ids(&mut conn, &tag_ids, None)
+        let photos: Vec<(String, Photo)> = Photo::find_by_tag_ids(&mut conn, &tag_ids, None, None)
             .await
             .unwrap();
         let photos: Vec<Photo> = photos.into_iter().map(|(_, p)| p).collect();

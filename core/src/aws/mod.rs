@@ -1,8 +1,8 @@
 pub mod image_size;
 pub mod photo;
 
-pub use aws_sdk_s3::primitives::ByteStream;
 use aws_sdk_s3::Client;
+pub use aws_sdk_s3::primitives::ByteStream;
 
 #[derive(Clone)]
 pub struct S3 {

@@ -14,22 +14,21 @@
     icon.addEventListener("click", toggleInfo);
   }
 
+  /**
+   * Toggles the information of the photo
+   */
   function toggleInfo() {
     const icon = document.querySelector(".open-photo__icon");
-    const target = document.querySelector(
-      ".open-photo .open-photo__photo-wrapper",
-    );
     const info = document.querySelector(".open-photo__info-wrapper");
-    if (!target || !info || !icon) return;
 
-    if (target.classList.contains("photo--hidden")) {
-      info.classList.add("photo--hidden");
-      target.classList.remove("photo--hidden");
-      icon.classList.remove("open-photo__icon--black");
-    } else {
+    if (!info || !icon) return;
+
+    if (info.classList.contains("photo--hidden")) {
       info.classList.remove("photo--hidden");
-      target.classList.add("photo--hidden");
       icon.classList.add("open-photo__icon--black");
+    } else {
+      info.classList.add("photo--hidden");
+      icon.classList.remove("open-photo__icon--black");
     }
   }
 

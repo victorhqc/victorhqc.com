@@ -1,25 +1,24 @@
 use crate::{
     exiftool,
     photo::{
-        aws::{upload, Error as AWSError},
-        build_images::{finish_build, start_build, Error as BuildImagesError, ImageProcess},
+        aws::{Error as AWSError, upload},
+        build_images::{Error as BuildImagesError, ImageProcess, finish_build, start_build},
+        orientation::{self, OrientationError},
     },
-    utils::capture,
+    utils::{GetFujifilmError, capture, get_some_fujifilm_recipe},
 };
 use console::Emoji;
 use core_victorhqc_com::{
     aws::S3,
     models::{
-        exif_meta::{db::Error as ExifMetaDbError, ExifMeta},
-        exif_meta::{CameraMaker, PhotographyDetails},
-        fujifilm::{db::Error as FujifilmDbError, FujifilmRecipe},
-        photo::{db::Error as PhotoDbError, Error as PhotoError, Photo},
+        exif_meta::{
+            ExifMeta, PhotographyDetails,
+            db::Error as ExifMetaDbError,
+            from_exif::{PhotographyDetailsError, TryFromExifData},
+        },
+        photo::{Error as PhotoError, Photo, db::Error as PhotoDbError},
     },
-    sqlx::{error::Error as SqlxError, Sqlite, SqlitePool, Transaction},
-};
-use fuji::{
-    exif::{ExifData, FromExifData},
-    recipe::{FujifilmRecipe as _FujifilmRecipe, FujifilmRecipeDetails},
+    sqlx::{SqlitePool, error::Error as SqlxError},
 };
 use itertools::Itertools;
 use log::{debug, trace};
@@ -32,8 +31,6 @@ static CAMERA: Emoji<'_, '_> = Emoji("📷", "");
 static CAMERA: Emoji<'_, '_> = Emoji("📷 ", "");
 #[cfg(target_os = "windows")]
 static FILM: Emoji<'_, '_> = Emoji("🎞️", "");
-#[cfg(not(target_os = "windows"))]
-static FILM: Emoji<'_, '_> = Emoji("🎞️  ", "");
 #[cfg(target_os = "windows")]
 static TAG: Emoji<'_, '_> = Emoji("🏷️", "");
 #[cfg(not(target_os = "windows"))]
@@ -54,6 +51,8 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
 
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
+
+    let orientation = orientation::get_orientation(src).context(OrientationSnafu)?;
 
     let (tx, rx) = mpsc::channel::<ImageProcess>();
 
@@ -76,10 +75,12 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
         .collect();
     debug!("Tags: {:?}", tags);
 
-    let recipe = get_some_fujifilm_recipe(&data, &mut conn).await?;
+    let recipe = get_some_fujifilm_recipe(&data, &mut conn)
+        .await
+        .context(FujifilmRecipeSnafu)?;
     debug!("{:?}", recipe);
 
-    let photo = Photo::new(title, src).context(NewPhotoSnafu)?;
+    let photo = Photo::new(title, src, orientation).context(NewPhotoSnafu)?;
     photo.save(&mut conn).await.context(SavePhotoSnafu)?;
     debug!("{:?}", photo);
 
@@ -89,7 +90,7 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
         .context(AttachTagsSnafu)?;
 
     let photography_details =
-        PhotographyDetails::from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
+        PhotographyDetails::try_from_exif(data.as_slice()).context(PhotographyDetailsSnafu)?;
     debug!("{:?}", photography_details);
 
     let exif = ExifMeta::new(photography_details, &photo, &recipe);
@@ -98,7 +99,10 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
 
     let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
     debug!("About to upload to S3");
-    upload(&photo, s3, buffers).await.context(UploadSnafu)?;
+    upload(&photo, s3, buffers)
+        .await
+        .map_err(Box::new)
+        .context(UploadSnafu)?;
     debug!("Uploaded to S3");
 
     conn.commit().await.context(TxSnafu)?;
@@ -106,54 +110,13 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     Ok(())
 }
 
-async fn get_some_fujifilm_recipe<'a>(
-    data: &'a Vec<ExifData>,
-    conn: &'a mut Transaction<'_, Sqlite>,
-) -> Result<Option<FujifilmRecipe>, Error> {
-    let maker = CameraMaker::from_exif(data.as_slice()).context(MakerSnafu)?;
-    debug!("{:?}", maker);
-
-    let mut recipe: Option<FujifilmRecipe> = None;
-    if maker == CameraMaker::Fujifilm {
-        let recipe_details = FujifilmRecipeDetails::from_exif(data.as_slice())
-            .context(FujifilmRecipeDetailsSnafu)?;
-        debug!("{:?}", recipe_details);
-
-        recipe = FujifilmRecipe::find_by_details(conn, &recipe_details)
-            .await
-            .context(FujifilmFindRecipeSnafu)?;
-
-        if recipe.is_none() {
-            let recipe_name = capture(&format!(
-                "{} Please, specify the name of the recipe used: ",
-                FILM
-            ));
-            debug!("Recipe Name: {}", recipe_name);
-
-            let r = FujifilmRecipe::new(recipe_name, _FujifilmRecipe::new(recipe_details));
-
-            r.save(conn).await.context(FujifilmSaveRecipeSnafu)?;
-
-            recipe = Some(r);
-        }
-    }
-
-    Ok(recipe)
-}
-
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Failed to get EXIF: {}", source))]
     Exiftool { source: exiftool::spawn::Error },
 
-    #[snafu(display("Could not get Maker from EXIF"))]
-    Maker,
-
-    #[snafu(display("Could not find the PhotographyDetails from EXIF"))]
-    PhotographyDetails,
-
-    #[snafu(display("Could not find Fujifilm Recipe details from EXIF"))]
-    FujifilmRecipeDetails,
+    #[snafu(display("Could not find the PhotographyDetails from EXIF: {}", source))]
+    PhotographyDetails { source: PhotographyDetailsError },
 
     #[snafu(display("Failed to build images: {}", source))]
     BuildImages { source: BuildImagesError },
@@ -161,11 +124,8 @@ pub enum Error {
     #[snafu(display("Failed to execute Transaction: {}", source))]
     Tx { source: SqlxError },
 
-    #[snafu(display("Failed to find recipe: {}", source))]
-    FujifilmFindRecipe { source: FujifilmDbError },
-
-    #[snafu(display("Failed to save the recipe: {}", source))]
-    FujifilmSaveRecipe { source: FujifilmDbError },
+    #[snafu(display("Failed to get Fujifilm Recipe: {}", source))]
+    FujifilmRecipe { source: GetFujifilmError },
 
     #[snafu(display("Failed to check for photo by path: {}", source))]
     PathPhoto { source: PhotoDbError },
@@ -177,7 +137,7 @@ pub enum Error {
     NewPhoto { source: PhotoError },
 
     #[snafu(display("Failed to upload the images: {}", source))]
-    Upload { source: AWSError },
+    Upload { source: Box<AWSError> },
 
     #[snafu(display("Failed to save the photo: {}", source))]
     SavePhoto { source: PhotoDbError },
@@ -187,4 +147,7 @@ pub enum Error {
 
     #[snafu(display("Failed to save the EXIF data: {}", source))]
     SaveExif { source: ExifMetaDbError },
+
+    #[snafu(display("Failed to get orientation: {}", source))]
+    Orientation { source: OrientationError },
 }

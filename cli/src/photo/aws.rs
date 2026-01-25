@@ -1,9 +1,9 @@
 use crate::photo::build_images::ImageBuffers;
 use core_victorhqc_com::{
     aws::{
+        S3,
         image_size::{ImageSize, ImageType},
         photo::Error as AWSError,
-        S3,
     },
     models::photo::Photo,
 };

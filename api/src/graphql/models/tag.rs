@@ -1,8 +1,8 @@
 use crate::graphql::{
-    loaders::{photo::PhotoByTagId, AppLoader},
+    loaders::{AppLoader, photo::PhotoByTagId},
     models::Photo,
 };
-use async_graphql::{dataloader::DataLoader, ComplexObject, Context, Result, SimpleObject, ID};
+use async_graphql::{ComplexObject, Context, ID, Result, SimpleObject, dataloader::DataLoader};
 use core_victorhqc_com::models::tag::Tag as TagModel;
 
 #[derive(SimpleObject, Clone)]

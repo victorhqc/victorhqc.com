@@ -5,8 +5,8 @@ cd ./deps
 
 rm -rf exiftool
 
-echo "Cloning exiftool@12.97"
-git clone --depth 1 --branch 12.97 https://github.com/exiftool/exiftool.git
+echo "Cloning exiftool@13.45"
+git clone --depth 1 --branch 13.45 https://github.com/exiftool/exiftool.git
 
 echo "Cleaning up exiftool"
 

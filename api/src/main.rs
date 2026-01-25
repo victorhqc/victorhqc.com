@@ -11,12 +11,12 @@ use crate::graphql::{
 };
 #[cfg(debug_assertions)]
 use crate::graphql::{routes::graphql_playground, sdl_gen};
-use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptyMutation, EmptySubscription, Schema, dataloader::DataLoader};
 #[cfg(debug_assertions)]
 use core_victorhqc_com::db::migrate;
 use core_victorhqc_com::{
     aws::S3,
-    db::{get_pool, Error as DBError},
+    db::{Error as DBError, get_pool},
     sqlx::sqlite::SqlitePool,
 };
 use log::info;
@@ -34,7 +34,7 @@ fn index() -> &'static str {
 }
 
 #[rocket::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), Box<Error>> {
     dotenvy::dotenv().ok();
 
     pretty_env_logger::init();

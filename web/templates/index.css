@@ -62,8 +62,6 @@
 
 #index__photos-stack {
   @apply block relative m-auto w-10/12;
-
-  aspect-ratio: 3/2;
 }
 
 @media (min-width: 768px) {
@@ -74,8 +72,4 @@
 
 .index__photo-slide {
   @apply absolute top-0 top-0 w-full;
-}
-
-.index__photo-slide .photo-wrapper {
-  aspect-ratio: 3/2;
 }

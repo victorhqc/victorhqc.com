@@ -40,13 +40,15 @@
       </li>
     </ol>
   </nav>
-  <div class="one-photo__container">
-    {% if is_mobile %}
-    {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
-    {{ i::photo_info(data=photo.photo) }}
-    {% else %}
-    {{ c::open_photo(data=photo.photo, size="Hd") }}
-    {% endif %}
+  <div class="one-photo__photo-wrapper">
+    <div class="one-photo__container">
+      {% if is_mobile %}
+      {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
+      {{ i::photo_info(data=photo.photo) }}
+      {% else %}
+      {{ c::open_photo(data=photo.photo, size="Hd") }}
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -65,5 +67,8 @@
 })();
 </script>
 {% if not is_mobile %}
-<script src="/public/one_photo.js"></script>
+<script src="{{ '/public/one_photo.js' | versioned }}"></script>
+{% endif %}
+{% if is_mobile %}
+<script src="{{ '/public/one_photo_mobile.js' | versioned }}"></script>
 {% endif %}

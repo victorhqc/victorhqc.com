@@ -1,4 +1,4 @@
-use actix_web::{http::header, HttpRequest};
+use actix_web::{HttpRequest, http::header};
 
 #[derive(Debug)]
 pub struct UserAgent(String);

@@ -1,5 +1,5 @@
 pub mod db;
-mod from_exif;
+pub mod from_exif;
 pub mod str;
 
 use crate::models::fujifilm::FujifilmRecipe;
@@ -51,7 +51,7 @@ pub struct PhotographyDetails {
     pub lens_name: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub struct Rating(pub i8);
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -70,10 +70,10 @@ pub struct FocalLength {
     pub crop_factor: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub struct ExposureCompensation(pub f64);
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub struct Aperture(pub f64);
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -83,6 +83,8 @@ pub struct ShutterSpeed(pub String);
 pub enum CameraMaker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,
+    #[strum(serialize = "LEICA")]
+    Leica,
     #[strum(serialize = "KONICA")]
     Konica,
     #[strum(serialize = "CANON")]
@@ -93,6 +95,8 @@ pub enum CameraMaker {
 pub enum LensMaker {
     #[strum(serialize = "FUJIFILM")]
     Fujifilm,
+    #[strum(serialize = "VOIGTLANDER")]
+    Voigtlander,
     #[strum(serialize = "KONICA")]
     Konica,
     #[strum(serialize = "CANON")]

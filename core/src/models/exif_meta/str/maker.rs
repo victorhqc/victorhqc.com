@@ -7,6 +7,7 @@ impl FromStr for CameraMaker {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "fujifilm" => Ok(Self::Fujifilm),
+            "leica" => Ok(Self::Leica),
             "konica" => Ok(Self::Konica),
             "canon" => Ok(Self::Canon),
             _ => Err(Error::NotValid {
@@ -21,6 +22,7 @@ impl FromStr for LensMaker {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "fujifilm" => Ok(Self::Fujifilm),
+            "voigtlander" => Ok(Self::Voigtlander),
             "konica" => Ok(Self::Konica),
             "canon" => Ok(Self::Canon),
             "7artisans" => Ok(Self::SevenArtisans),
@@ -45,7 +47,20 @@ mod tests {
     #[test]
     fn it_parses_fujifilm() {
         assert_eq!(CameraMaker::from_str("Fujifilm"), Ok(CameraMaker::Fujifilm));
-        assert_eq!(CameraMaker::from_str("Fujifilm"), Ok(CameraMaker::Fujifilm));
+        assert_eq!(LensMaker::from_str("Fujifilm"), Ok(LensMaker::Fujifilm));
+    }
+
+    #[test]
+    fn it_parses_leica() {
+        assert_eq!(CameraMaker::from_str("Leica"), Ok(CameraMaker::Leica));
+    }
+
+    #[test]
+    fn it_parses_voigtlander() {
+        assert_eq!(
+            LensMaker::from_str("Voigtlander"),
+            Ok(LensMaker::Voigtlander)
+        );
     }
 
     #[test]

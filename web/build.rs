@@ -1,12 +1,12 @@
 #[cfg(not(debug_assertions))]
-use flate2::{write::GzEncoder, Compression};
+use flate2::{Compression, write::GzEncoder};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 #[cfg(not(debug_assertions))]
 use std::{
     fs::File,
-    io::{copy, BufReader, Write},
+    io::{BufReader, Write, copy},
 };
 #[cfg(not(debug_assertions))]
 use walkdir::WalkDir;
@@ -70,6 +70,12 @@ fn main() {
             std::process::exit(1);
         }
     }
+}
+
+fn is_sqlx_offline() -> bool {
+    std::env::var("SQLX_OFFLINE")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
 }
 
 fn fetch_file(dest_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
@@ -142,6 +148,12 @@ fn build_analytics_db(
     migrations_dir: &PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let db_url = format!("sqlite:{}", db_file.display());
+
+    if is_sqlx_offline() {
+        println!("SQLX_OFFLINE is enabled, skipping database creation and migrations");
+        println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+        return Ok(());
+    }
 
     if !db_file.exists() {
         std::fs::write(db_file, b"").unwrap();

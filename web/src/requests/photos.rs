@@ -1,4 +1,4 @@
-use crate::gql::{get_portfolio, GetPortfolio};
+use crate::gql::{GetPortfolio, get_portfolio};
 use graphql_client::{Error as GraphQLError, GraphQLQuery, Response};
 use reqwest::Error as ReqwestError;
 use snafu::prelude::*;

@@ -13,6 +13,12 @@ fn main() {
 
     let db_url = format!("sqlite:{}", db_file.display());
 
+    if is_sqlx_offline() {
+        println!("SQLX_OFFLINE is enabled, skipping database creation and migrations");
+        println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+        return;
+    }
+
     std::process::Command::new("sqlx")
         .arg("database")
         .arg("create")
@@ -30,4 +36,10 @@ fn main() {
         .unwrap();
 
     println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+}
+
+fn is_sqlx_offline() -> bool {
+    std::env::var("SQLX_OFFLINE")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
 }

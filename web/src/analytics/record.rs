@@ -1,4 +1,4 @@
-use actix_web::{http::header, HttpRequest, Result};
+use actix_web::{HttpRequest, Result, http::header};
 use log::debug;
 use serde::Serialize;
 use std::str::FromStr;

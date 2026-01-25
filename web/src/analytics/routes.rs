@@ -6,7 +6,7 @@ use super::{
 use crate::collections::Collection;
 use crate::routes::get_user_agent;
 use crate::state::AppState;
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{HttpRequest, HttpResponse, Responder, Result, get, web};
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -65,20 +65,20 @@ impl FromStr for Route {
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let parts: Vec<&str> = s.split("/").collect();
 
-        if parts.len() > 2 {
-            if let (Some(part), Some(id)) = (parts.get(1), parts.get(2)) {
-                return match *part {
-                    "collection" => {
-                        if let Ok(c) = Collection::from_str(id) {
-                            Ok(Route::Collection(c))
-                        } else {
-                            Err(format!("Invalid route: {}", s))
-                        }
+        if parts.len() > 2
+            && let (Some(part), Some(id)) = (parts.get(1), parts.get(2))
+        {
+            return match *part {
+                "collection" => {
+                    if let Ok(c) = Collection::from_str(id) {
+                        Ok(Route::Collection(c))
+                    } else {
+                        Err(format!("Invalid route: {}", s))
                     }
-                    "photo" => Ok(Route::Photo(id.to_string())),
-                    _ => Err(format!("Invalid route: {}", s)),
-                };
-            }
+                }
+                "photo" => Ok(Route::Photo(id.to_string())),
+                _ => Err(format!("Invalid route: {}", s)),
+            };
         }
 
         match s {

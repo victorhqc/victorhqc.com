@@ -1,6 +1,5 @@
 use crate::models::exif_meta::Iso;
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 
 impl FromExifData for Iso {
     fn from_exif(data: &[ExifData]) -> Option<Self> {

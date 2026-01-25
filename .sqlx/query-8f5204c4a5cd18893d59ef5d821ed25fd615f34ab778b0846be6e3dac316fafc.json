@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    INSERT INTO photo_tags (id, photo_id, tag_id)\n    VALUES (?, ?, ?)\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "8f5204c4a5cd18893d59ef5d821ed25fd615f34ab778b0846be6e3dac316fafc"
+}

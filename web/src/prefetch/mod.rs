@@ -1,5 +1,5 @@
 use crate::{
-    collections::{Collection, COLLECTIONS},
+    collections::{COLLECTIONS, Collection},
     gql::get_portfolio::GetPortfolioPhotos,
     requests,
 };
@@ -9,7 +9,7 @@ use std::collections::HashMap;
 pub type PrefetchedCollection = HashMap<Collection, Vec<GetPortfolioPhotos>>;
 
 /**
-Since we need to fetch the pictures to display them in the fron-end, but also to know which image
+Since we need to fetch the pictures to display them in the front-end, but also to know which image
 to go when navigating with the keyboard. We need to cache the GQL calls to avoid overhead.
 */
 pub async fn fetch_photos() -> Result<PrefetchedCollection, Error> {

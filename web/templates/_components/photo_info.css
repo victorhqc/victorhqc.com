@@ -1,10 +1,29 @@
 .photo-info__wrapper {
   @apply mt-6 p-2;
   @apply border border-black border-solid;
+  @apply relative overflow-hidden;
+}
+
+.photo-info__image-background {
+  @apply absolute inset-0 top-2 left-2;
+  width: calc(100% - 1rem);
+  height: calc(100% - 1rem);
+
+  z-index: 0;
+}
+
+.photo-info__background-img {
+  @apply w-full h-full object-cover;
 }
 
 .photo-info__data {
+  @apply w-full h-full p-2;
   @apply flex place-content-between;
+  @apply backdrop-blur-md bg-white/20 border border-white/30;
+  @apply relative;
+
+  z-index: 1;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
 }
 
 .photo-info__data h1 {
@@ -48,4 +67,8 @@
 
 .photo-info__film-simulation p {
   @apply text-sm;
+}
+
+.photo-info__small-info p {
+  @apply text-xs;
 }

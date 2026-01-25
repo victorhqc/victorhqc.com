@@ -1,6 +1,7 @@
 
 enum CameraMaker {
 	FUJIFILM
+	LEICA
 	KONICA
 	CANON
 }
@@ -107,10 +108,16 @@ type FujifilmRecipeTransVSettings {
 
 enum LensMaker {
 	FUJIFILM
+	VOIGTLANDER
 	KONICA
 	CANON
 	SEVEN_ARTISANS
 	UNKNOWN
+}
+
+enum Orientation {
+	LANDSCAPE
+	PORTRAIT
 }
 
 type Photo {
@@ -119,6 +126,7 @@ type Photo {
 	src: String!
 	filename: String!
 	filetype: FileType!
+	orientation: Orientation!
 	createdAt: String!
 	updatedAt: String!
 	deleted: Boolean!
@@ -128,6 +136,7 @@ type Photo {
 
 input PhotosQueryInput {
 	tag: String
+	orientation: Orientation
 	maxResults: Int
 }
 

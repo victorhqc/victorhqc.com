@@ -1,5 +1,5 @@
-use super::image_size::{ImageSize, ImageType};
 use super::S3;
+use super::image_size::{ImageSize, ImageType};
 use crate::models::photo::Photo;
 use aws_sdk_s3::{
     error::SdkError,

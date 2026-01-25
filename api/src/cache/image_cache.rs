@@ -1,7 +1,7 @@
 use core_victorhqc_com::aws::{
+    S3,
     image_size::{ImageSize, ImageType},
     photo::{ByteStreamError, Error as AWSError},
-    S3,
 };
 use core_victorhqc_com::models::photo::Photo;
 use rocket::futures::lock::{Mutex, MutexGuard};
@@ -80,6 +80,7 @@ impl ImageCache {
                     .s3
                     .download_from_aws_s3((&photo, size, kind))
                     .await
+                    .map_err(Box::new)
                     .context(GetAWSObjectSnafu)?;
 
                 let data = response.body.collect().await.context(StreamSnafu)?;
@@ -136,7 +137,7 @@ impl ImageCache {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Failed to get AWS Object: {}", source))]
-    GetAWSObject { source: AWSError },
+    GetAWSObject { source: Box<AWSError> },
 
     #[snafu(display("Failed to download photo: {}", source))]
     Stream { source: ByteStreamError },

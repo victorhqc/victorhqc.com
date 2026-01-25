@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO visits (id, session_id, path_id, referer)\n        VALUES(?, ?, ?, ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "88681c723ec2956d175cc3c3f5403ef7b395a156b46cbc5f05269f73a978082f"
+}

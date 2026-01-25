@@ -16,7 +16,7 @@
 <meta property="og:type" content="website">
 
 <link rel="stylesheet" href="/static/photo-stack.min.css">
-<script src="/static/photo-stack.min.js"></script>
+<script src="{{ '/static/photo-stack.min.js' | versioned }}"></script>
 
 {% endblock head %}
 
@@ -75,9 +75,15 @@
       <p>
         Since then, I carry my camera almost everywhere, it rarely leaves my side.
         I'm happy to share some of my work <a href="/photography">here</a>.
-        Sometimes I also post photos in Threads
-        <a href="https://www.threads.net/@victorhqc.photos">@victorhqc.photos</a>.
+        I post my recent work in
+        <a href="https://www.instagram.com/victorhqc.photos">Instagram</a>
+        and sometimes in <a href="https://www.threads.net/@victorhqc.photos">Threads</a>.
       </p>
+      <p>
+        This website is built with Rust and the source code is available on
+        <a href="https://github.com/victorhqc/victorhqc.com/">GitHub</a>.
+      </p>
+
     </section>
     <section id="index__photos-section">
       <ul id="index__photos-stack">

@@ -1,8 +1,8 @@
 use core::f32;
 use core_victorhqc_com::aws::image_size::ImageSize;
 use image::{
-    codecs::jpeg::JpegEncoder, error::ImageError, imageops::FilterType::Lanczos3, DynamicImage,
-    GenericImageView,
+    DynamicImage, GenericImageView, codecs::jpeg::JpegEncoder, error::ImageError,
+    imageops::FilterType::Lanczos3,
 };
 use log::debug;
 use snafu::prelude::*;

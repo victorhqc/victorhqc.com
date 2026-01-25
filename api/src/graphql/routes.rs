@@ -1,10 +1,10 @@
 use super::graph::RootSchema;
 #[cfg(debug_assertions)]
-use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
+use rocket::State;
 #[cfg(debug_assertions)]
 use rocket::response::content;
-use rocket::State;
 
 #[cfg(debug_assertions)]
 #[get("/graphql")]

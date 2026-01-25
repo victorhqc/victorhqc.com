@@ -1,6 +1,5 @@
 use crate::models::exif_meta::Rating;
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 
 impl FromExifData for Rating {
     fn from_exif(data: &[ExifData]) -> Option<Self> {

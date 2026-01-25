@@ -104,6 +104,9 @@ bacon web
 Add a new migration
 
 ```sh
+# Move into the core directory
+cd ./core
+
 sqlx migrate add -r <name>
 ```
 

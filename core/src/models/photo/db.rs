@@ -1,7 +1,8 @@
 use super::{FileType, Photo};
 use crate::models::{
-    tag::{db::Error as TagDbError, Tag},
     Timestamp,
+    photo::Orientation,
+    tag::{Tag, db::Error as TagDbError},
 };
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
@@ -17,6 +18,7 @@ struct DBPhoto {
     title: String,
     filename: String,
     filetype: String,
+    orientation: String,
     created_at: Timestamp,
     updated_at: Timestamp,
     deleted: bool,
@@ -29,6 +31,7 @@ struct DBTagPhoto {
     title: String,
     filename: String,
     filetype: String,
+    orientation: String,
     created_at: Timestamp,
     updated_at: Timestamp,
     deleted: bool,
@@ -50,12 +53,19 @@ impl Photo {
         conn: &mut SqliteConnection,
         ids: &Vec<String>,
         max_results: Option<i32>,
+        orientation: Option<Orientation>,
     ) -> Result<Vec<(String, Photo)>, Error> {
-        find_by_tag_ids(conn, ids, max_results).await
+        match orientation {
+            Some(o) => find_by_tag_ids_and_orientation(conn, ids, &o, max_results).await,
+            None => find_by_tag_ids(conn, ids, max_results).await,
+        }
     }
 
-    pub async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
-        find_all(conn).await
+    pub async fn find_all(
+        conn: &mut SqliteConnection,
+        orientation: Option<Orientation>,
+    ) -> Result<Vec<Photo>, Error> {
+        find_all(conn, &orientation).await
     }
 
     pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
@@ -89,6 +99,7 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Erro
         title,
         filename,
         filetype,
+        orientation,
         created_at,
         updated_at,
         deleted
@@ -123,6 +134,7 @@ async fn find_by_filename(
         title,
         filename,
         filetype,
+        orientation,
         created_at,
         updated_at,
         deleted
@@ -147,29 +159,42 @@ async fn find_by_filename(
     }
 }
 
-async fn find_all(conn: &mut SqliteConnection) -> Result<Vec<Photo>, Error> {
-    let photos = sqlx::query_as!(
-        DBPhoto,
-        r#"
-    SELECT
-        id,
-        title,
-        filename,
-        filetype,
-        created_at,
-        updated_at,
-        deleted
-    FROM
-        photos AS p
-    WHERE
-        deleted = false
-    ORDER BY
-        created_at ASC
-    "#,
-    )
-    .fetch_all(conn)
-    .await
-    .context(SqlxSnafu)?;
+async fn find_all(
+    conn: &mut SqliteConnection,
+    orientation: &Option<Orientation>,
+) -> Result<Vec<Photo>, Error> {
+    let photos = match orientation {
+        Some(o) => {
+            let orientation_str = o.to_string();
+            sqlx::query_as!(
+                DBPhoto,
+                r#"
+                SELECT id, title, filename, filetype, orientation,
+                       created_at, updated_at, deleted
+                FROM photos AS p
+                WHERE deleted = false AND orientation = ?
+                ORDER BY created_at ASC
+                "#,
+                orientation_str
+            )
+            .fetch_all(conn)
+            .await
+            .context(SqlxSnafu)?
+        }
+        None => sqlx::query_as!(
+            DBPhoto,
+            r#"
+                SELECT id, title, filename, filetype, orientation,
+                       created_at, updated_at, deleted
+                FROM photos AS p
+                WHERE deleted = false
+                ORDER BY created_at ASC
+                "#,
+        )
+        .fetch_all(conn)
+        .await
+        .context(SqlxSnafu)?,
+    };
 
     let photos: Vec<Photo> = photos.into_iter().map(|p| p.try_into().unwrap()).collect();
 
@@ -192,6 +217,7 @@ async fn find_by_tag_ids(
         title,
         filename,
         filetype,
+        orientation,
         p.created_at,
         p.updated_at,
         p.deleted
@@ -226,6 +252,74 @@ async fn find_by_tag_ids(
                     title: p.title,
                     filename: p.filename,
                     filetype: p.filetype,
+                    orientation: p.orientation,
+                    created_at: p.created_at,
+                    updated_at: p.updated_at,
+                    deleted: p.deleted,
+                },
+            )
+        })
+        .map(|(id, t)| (id, t.try_into().unwrap()))
+        .collect();
+
+    Ok(photos)
+}
+
+async fn find_by_tag_ids_and_orientation(
+    conn: &mut SqliteConnection,
+    ids: &[String],
+    orientation: &Orientation,
+    max_results: Option<i32>,
+) -> Result<Vec<(String, Photo)>, Error> {
+    let limit = max_results.unwrap_or(-1);
+    let params = format!("?{}", ", ?".repeat(ids.len() - 1));
+
+    let query = format!(
+        r#"
+    SELECT
+        tag_id,
+        p.id,
+        title,
+        filename,
+        filetype,
+        orientation,
+        p.created_at,
+        p.updated_at,
+        p.deleted
+    FROM
+        photos as p
+    JOIN
+        photo_tags as pt ON pt.photo_id = p.id
+    WHERE
+        orientation = ?
+        AND pt.tag_id IN ( { } )
+        AND deleted = false
+    ORDER BY  p.created_at ASC
+    LIMIT {}
+    "#,
+        params, limit
+    );
+
+    let mut query = sqlx::query_as::<_, DBTagPhoto>(&query);
+
+    query = query.bind(orientation.to_string());
+    for id in ids {
+        query = query.bind(id);
+    }
+
+    let photos = query.fetch_all(conn).await.context(SqlxSnafu)?;
+
+    let photos: Vec<(String, Photo)> = photos
+        .into_iter()
+        .map(|p| {
+            (
+                p.tag_id,
+                DBPhoto {
+                    id: p.id,
+                    title: p.title,
+                    filename: p.filename,
+                    filetype: p.filetype,
+                    orientation: p.orientation,
                     created_at: p.created_at,
                     updated_at: p.updated_at,
                     deleted: p.deleted,
@@ -243,13 +337,14 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
 
     sqlx::query!(
         r#"
-    INSERT INTO photos (id, title, filename, filetype, created_at, updated_at, deleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO photos (id, title, filename, filetype, orientation, created_at, updated_at, deleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     "#,
         photo.id,
         photo.title,
         photo.filename,
         photo.filetype,
+        photo.orientation,
         photo.created_at,
         photo.updated_at,
         photo.deleted
@@ -286,6 +381,8 @@ impl TryFrom<DBPhoto> for Photo {
     fn try_from(value: DBPhoto) -> Result<Self, Error> {
         let filetype = FileType::from_str(&value.filetype).context(FileTypeSnafu)?;
 
+        let orientation = Orientation::from_str(&value.orientation).context(OrientationSnafu)?;
+
         let created_at = {
             let timestamp = value.created_at.0 / 1000;
 
@@ -303,6 +400,7 @@ impl TryFrom<DBPhoto> for Photo {
             title: value.title,
             filename: value.filename,
             filetype,
+            orientation,
             created_at,
             updated_at,
             deleted: value.deleted,
@@ -317,6 +415,7 @@ impl From<&Photo> for DBPhoto {
             title: photo.title.clone(),
             filename: photo.filename.clone(),
             filetype: photo.filetype.to_string(),
+            orientation: photo.orientation.to_string(),
             created_at: photo.created_at.into(),
             updated_at: photo.created_at.into(),
             deleted: photo.deleted,
@@ -333,6 +432,9 @@ pub enum Error {
     FileType {
         source: crate::models::photo::str::filetype::Error,
     },
+
+    #[snafu(display("Failed to parse Orientation {}", source))]
+    Orientation { source: strum::ParseError },
 
     #[snafu(display("Failed to parse timestamp: {}", source))]
     Timestamp { source: time::error::ComponentRange },

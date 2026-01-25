@@ -11,12 +11,18 @@ pub enum Collection {
     #[strum(serialize = "postcards")]
     #[serde(rename(serialize = "postcards"))]
     Postcards,
+    #[strum(serialize = "film")]
+    #[serde(rename(serialize = "film"))]
+    Film,
     #[strum(serialize = "berlin")]
     #[serde(rename(serialize = "berlin"))]
     Berlin,
     #[strum(serialize = "japan")]
     #[serde(rename(serialize = "japan"))]
     Japan,
+    #[strum(serialize = "mexico")]
+    #[serde(rename(serialize = "mexico"))]
+    Mexico,
     #[strum(serialize = "bikes")]
     #[serde(rename(serialize = "bikes"))]
     Bikes,
@@ -29,6 +35,8 @@ pub static COLLECTIONS: &[Collection] = &[
     Collection::Portfolio,
     Collection::Street,
     Collection::Postcards,
+    Collection::Film,
+    Collection::Mexico,
     Collection::Berlin,
     Collection::Japan,
     Collection::Bikes,

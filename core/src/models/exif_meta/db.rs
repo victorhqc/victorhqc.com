@@ -1,12 +1,12 @@
 use super::{
-    str::maker::Error as MakerError, Aperture, CameraMaker, City, DateTaken, ExifMeta,
-    ExposureCompensation, FocalLength, Iso, LensMaker, PhotographyDetails, Rating, ShutterSpeed,
+    Aperture, CameraMaker, City, DateTaken, ExifMeta, ExposureCompensation, FocalLength, Iso,
+    LensMaker, PhotographyDetails, Rating, ShutterSpeed, str::maker::Error as MakerError,
 };
 use snafu::prelude::*;
 use sqlx::error::Error as SqlxError;
 use sqlx::{FromRow, SqliteConnection};
 use std::str::FromStr;
-use time::{error::ComponentRange, Date};
+use time::{Date, error::ComponentRange};
 
 #[derive(FromRow)]
 struct DBExifMeta {
@@ -42,7 +42,15 @@ impl ExifMeta {
 
     pub async fn save(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
         let exif: DBExifMeta = self.into();
-        insert(conn, exif).await
+
+        insert(conn, &exif).await
+    }
+
+    pub async fn replace(&self, conn: &mut SqliteConnection) -> Result<String, Error> {
+        let exif: DBExifMeta = self.into();
+
+        delete_by_photo_id(conn, &exif).await?;
+        insert(conn, &exif).await
     }
 }
 
@@ -126,7 +134,22 @@ async fn find_by_photo_ids(
     Ok(metas)
 }
 
-async fn insert(conn: &mut SqliteConnection, exif: DBExifMeta) -> Result<String, Error> {
+async fn delete_by_photo_id(conn: &mut SqliteConnection, exif: &DBExifMeta) -> Result<(), Error> {
+    // Delete any existing exif_meta for this photo
+    sqlx::query!(
+        r#"
+        DELETE FROM exif_metas WHERE photo_id = ?
+        "#,
+        exif.photo_id
+    )
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(())
+}
+
+async fn insert(conn: &mut SqliteConnection, exif: &DBExifMeta) -> Result<String, Error> {
     let id = exif.id.clone();
 
     sqlx::query!(

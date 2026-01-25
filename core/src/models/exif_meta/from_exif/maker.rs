@@ -1,6 +1,5 @@
 use crate::models::exif_meta::{CameraMaker, LensMaker};
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 use std::str::FromStr;
 
 impl FromExifData for CameraMaker {
@@ -8,11 +7,7 @@ impl FromExifData for CameraMaker {
         let exif = data.find("Make")?;
 
         trace!("CameraMaker::from_exif: {:?}", exif);
-
-        match Self::from_str(exif.value()) {
-            Ok(maker) => Some(maker),
-            Err(_) => None,
-        }
+        Self::from_str(exif.value()).ok()
     }
 }
 
@@ -25,11 +20,7 @@ impl FromExifData for LensMaker {
         };
 
         trace!("LensMaker::from_exif: {:?}", exif);
-
-        match Self::from_str(exif.value()) {
-            Ok(maker) => Some(maker),
-            Err(_) => None,
-        }
+        Self::from_str(exif.value()).ok()
     }
 }
 
@@ -44,6 +35,18 @@ mod tests {
 
         let exif: Vec<ExifData> = vec![ExifData::new("LensMake", "FUJIFILM")];
         assert_eq!(LensMaker::from_exif(&exif), Some(LensMaker::Fujifilm));
+    }
+
+    #[test]
+    fn it_parses_leica_maker() {
+        let exif: Vec<ExifData> = vec![ExifData::new("Make", "LEICA")];
+        assert_eq!(CameraMaker::from_exif(&exif), Some(CameraMaker::Leica));
+    }
+
+    #[test]
+    fn it_parses_voigtlander_maker() {
+        let exif: Vec<ExifData> = vec![ExifData::new("LensMake", "VOIGTLANDER")];
+        assert_eq!(LensMaker::from_exif(&exif), Some(LensMaker::Voigtlander));
     }
 
     #[test]

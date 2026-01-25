@@ -3,10 +3,12 @@
 
 TAILWIND_URL="https://cdn.tailwindcss.com"
 HTMX_URL="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"
+MASONRY_URL="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"
 
 OUTPUT_FOLDER="web/static"
 TAILWIND_FILE="$OUTPUT_FOLDER/tailwindcss.js"
 HTMX_FILE="$OUTPUT_FOLDER/htmx.js"
+MASONRY_FILE="$OUTPUT_FOLDER/masonry.pkgd.min.js"
 
 echo "Ensuring folder $OUTPUT_FOLDER exists..."
 mkdir -p "$OUTPUT_FOLDER"
@@ -28,6 +30,16 @@ if [[ $? -eq 0 ]]; then
     echo "Downloaded successfully. Saved as $HTMX_FILE."
 else
     echo "Failed to download from $HTMX_URL."
+    exit 1
+fi
+
+echo "Downloading contents from $MASONRY_URL..."
+wget -O "$MASONRY_FILE" "$MASONRY_URL"
+
+if [[ $? -eq 0 ]]; then
+    echo "Downloaded successfully. Saved as $MASONRY_FILE."
+else
+    echo "Failed to download from $MASONRY_URL."
     exit 1
 fi
 

@@ -3,6 +3,32 @@
   @apply gap-3 md:gap-4 lg:gap-4;
 }
 
+@media (min-width: 768px) {
+  .portfolio-collection {
+    display: block;
+  }
+
+  .portfolio-collection__sizer {
+    width: calc(33% - 10px);
+  }
+
+  .portfolio-collection__list_item {
+    width: calc(33% - 10px);
+    margin-bottom: 10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .portfolio-collection__sizer {
+    width: calc(25% - 10px);
+  }
+
+  .portfolio-collection__list_item {
+    width: calc(25% - 10px);
+    margin-bottom: 10px;
+  }
+}
+
 .portfolio-collection__photo {
   @apply cursor-zoom-in;
   @apply p-2 !important;

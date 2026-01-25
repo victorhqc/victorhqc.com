@@ -2,7 +2,7 @@ use fuji::recipe::{FilmSimulation, MonochromaticFilter};
 use log::debug;
 use sha2::{Digest, Sha256};
 use std::{collections::HashMap, str::FromStr};
-use tera::{from_value, to_value, Function, Result, Value};
+use tera::{Function, Result, Value, from_value, to_value};
 use url::Url;
 
 pub fn get_gravatar() -> impl Function {

@@ -1,0 +1,140 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    SELECT\n        id,\n        name,\n        author,\n        sensor,\n        src,\n        film_simulation,\n        white_balance,\n        white_balance_shift,\n        dynamic_range,\n        d_range_priority,\n        highlight_tone,\n        shadow_tone,\n        color,\n        sharpness,\n        clarity,\n        high_iso_noise_reduction,\n        grain_strength,\n        grain_size,\n        color_chrome_effect,\n        color_chrome_fx_blue,\n        monochromatic_color\n    FROM\n        fuji_recipes\n    WHERE\n        film_simulation = ?\n        AND sensor = ?\n        AND white_balance =?\n        AND white_balance_shift = ?\n        AND dynamic_range = ?\n        AND d_range_priority = ?\n        AND highlight_tone = ?\n        AND shadow_tone = ?\n        AND color = ?\n        AND sharpness = ?\n        AND clarity = ?\n        AND high_iso_noise_reduction = ?\n        AND grain_strength = ?\n        AND grain_size = ?\n        AND color_chrome_effect = ?\n        AND color_chrome_fx_blue = ?\n        AND monochromatic_color = ?\n    ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "author",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "sensor",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "src",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "film_simulation",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "white_balance",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "white_balance_shift",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "dynamic_range",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "d_range_priority",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "highlight_tone",
+        "ordinal": 10,
+        "type_info": "Float"
+      },
+      {
+        "name": "shadow_tone",
+        "ordinal": 11,
+        "type_info": "Float"
+      },
+      {
+        "name": "color",
+        "ordinal": 12,
+        "type_info": "Integer"
+      },
+      {
+        "name": "sharpness",
+        "ordinal": 13,
+        "type_info": "Integer"
+      },
+      {
+        "name": "clarity",
+        "ordinal": 14,
+        "type_info": "Integer"
+      },
+      {
+        "name": "high_iso_noise_reduction",
+        "ordinal": 15,
+        "type_info": "Integer"
+      },
+      {
+        "name": "grain_strength",
+        "ordinal": 16,
+        "type_info": "Text"
+      },
+      {
+        "name": "grain_size",
+        "ordinal": 17,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_chrome_effect",
+        "ordinal": 18,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_chrome_fx_blue",
+        "ordinal": 19,
+        "type_info": "Text"
+      },
+      {
+        "name": "monochromatic_color",
+        "ordinal": 20,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 17
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "4f19d25daa9d974e8937f2532377b981290e849dcec5420bcfa05cba9e420e1f"
+}

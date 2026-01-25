@@ -1,6 +1,5 @@
 use crate::models::exif_meta::ShutterSpeed;
 use fuji::exif::{ExifData, FindExifData, FromExifData};
-use log::trace;
 
 impl FromExifData for ShutterSpeed {
     fn from_exif(data: &[ExifData]) -> Option<Self> {

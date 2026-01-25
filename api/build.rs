@@ -29,45 +29,95 @@ fn main() {
     }
 }
 
+fn is_sqlx_offline() -> bool {
+    std::env::var("SQLX_OFFLINE")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
+}
+
 fn build_api_db(db_file: &Path, migrations_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let db_url = format!("sqlite:{}", db_file.display());
 
+    if is_sqlx_offline() {
+        println!("=== SQLX Offline Mode ===");
+        println!("Skipping database creation and migrations");
+        println!("Using prepared query metadata from .sqlx directory");
+        println!("cargo:rustc-env=ROCKET_DATABASE_URL={}", db_url);
+        println!("cargo:rustc-env=DATABASE_URL={}", db_url);
+        return Ok(());
+    }
+
+    println!("=== Database Setup ===");
+    println!("DB file: {}", db_file.display());
+    println!("Migrations dir: {}", migrations_dir.display());
+    println!("DB URL: {}", db_url);
+
     if !db_file.exists() {
-        let create_status = Command::new("sqlx")
+        println!("Creating database...");
+
+        let output = Command::new("sqlx")
             .arg("database")
             .arg("create")
             .arg("--database-url")
             .arg(&db_url)
-            .spawn()
-            .unwrap()
-            .wait()?;
+            .output()?;
 
-        if !create_status.success() {
-            panic!("sqlx failed ({db_url}): {create_status}");
+        if !output.status.success() {
+            eprintln!("=== SQLX DATABASE CREATE FAILED ===");
+            eprintln!("Command: sqlx database create --database-url {}", db_url);
+            eprintln!("Exit status: {}", output.status);
+            eprintln!("\n--- stdout ---");
+            eprintln!("{}", String::from_utf8_lossy(&output.stdout));
+            eprintln!("\n--- stderr ---");
+            eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+            eprintln!("=================================");
+            return Err(
+                format!("sqlx database create failed with status: {}", output.status).into(),
+            );
         }
+
+        println!("✓ Database created successfully");
+    } else {
+        println!("Database already exists");
     }
 
-    let exit_status = Command::new("sqlx")
+    println!("Running migrations...");
+
+    let output = Command::new("sqlx")
         .arg("migrate")
         .arg("run")
         .arg("--source")
         .arg(migrations_dir)
         .arg("--database-url")
         .arg(&db_url)
-        .spawn()
-        .unwrap()
-        .wait()?;
+        .output()?;
 
-    if !exit_status.success() {
-        panic!("sqlx failed ({db_url}): {exit_status}");
+    if !output.status.success() {
+        eprintln!("=== SQLX MIGRATE FAILED ===");
+        eprintln!(
+            "Command: sqlx migrate run --source {} --database-url {}",
+            migrations_dir.display(),
+            db_url
+        );
+        eprintln!("Exit status: {}", output.status);
+        eprintln!("\n--- stdout ---");
+        eprintln!("{}", String::from_utf8_lossy(&output.stdout));
+        eprintln!("\n--- stderr ---");
+        eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+        eprintln!("===========================");
+        return Err(format!("sqlx migrate failed with status: {}", output.status).into());
     }
 
-    println!("SQLite DB created at {}", db_file.display());
-    println!("DATABASE_URL={}", db_url);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    if !stdout.is_empty() {
+        println!("{}", stdout);
+    }
+
+    println!("✓ Migrations completed successfully");
+    println!("✓ SQLite DB ready at {}", db_file.display());
 
     println!("cargo:rustc-env=ROCKET_DATABASE_URL={}", db_url);
     println!("cargo:rustc-env=DATABASE_URL={}", db_url);
-    println!("--");
 
     Ok(())
 }

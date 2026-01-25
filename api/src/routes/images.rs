@@ -1,17 +1,17 @@
-use crate::cache::image_cache::Error as CacheError;
 use crate::AppState;
+use crate::cache::image_cache::Error as CacheError;
 use core_victorhqc_com::{
     aws::image_size::{Error as ParseError, ImageSize, ImageType},
-    models::photo::{db::Error as PhotoDbError, Photo},
+    models::photo::{Photo, db::Error as PhotoDbError},
     sqlx::Error as SqlxError,
 };
 use log::{debug, error};
 use rocket::{
+    Request, Response, State,
     http::{ContentType, Header, Status},
     request::{FromRequest, Outcome},
     response::Responder,
     serde::json::serde_json,
-    Request, Response, State,
 };
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
@@ -42,12 +42,12 @@ pub async fn get_image(
 
     debug!("id: {}", id);
 
-    if let Some(etag) = if_none_match.0 {
-        if cache.md5_exists(&etag).await {
-            debug!("Cache Hit");
+    if let Some(etag) = if_none_match.0
+        && cache.md5_exists(&etag).await
+    {
+        debug!("Cache Hit");
 
-            return Err(Error::AlreadyCached);
-        }
+        return Ok(ImageResponse::not_modified(etag, img_kind));
     };
 
     debug!("Cache Miss");
@@ -59,17 +59,34 @@ pub async fn get_image(
         .await
         .context(CacheSnafu)?;
 
-    Ok(ImageResponse {
-        data,
-        etag,
-        kind: img_kind,
-    })
+    Ok(ImageResponse::ok(data, etag, img_kind))
 }
 
 pub struct ImageResponse {
-    data: Vec<u8>,
+    data: Option<Vec<u8>>,
     kind: ImageType,
     etag: String,
+    not_modified: bool,
+}
+
+impl ImageResponse {
+    pub fn ok(data: Vec<u8>, etag: String, kind: ImageType) -> Self {
+        Self {
+            data: Some(data),
+            kind,
+            etag,
+            not_modified: false,
+        }
+    }
+
+    pub fn not_modified(etag: String, kind: ImageType) -> Self {
+        Self {
+            data: None,
+            kind,
+            etag,
+            not_modified: true,
+        }
+    }
 }
 
 impl<'r> Responder<'r, 'static> for ImageResponse {
@@ -79,12 +96,26 @@ impl<'r> Responder<'r, 'static> for ImageResponse {
             ImageType::Webp => "image/webp",
         };
 
-        Response::build()
+        let mut response = Response::build();
+        response
             .header(Header::new("Content-Type", content_type))
             .header(Header::new("ETag", self.etag))
-            .header(Header::new("Cache-Control", "public, max-age=31536000"))
-            .sized_body(self.data.len(), Cursor::new(self.data))
-            .ok()
+            .header(Header::new(
+                "Cache-Control",
+                "public, max-age=31536000, immutable",
+            ));
+
+        if self.not_modified {
+            // 304 Not Modified - no body
+            response.status(Status::NotModified);
+        } else if let Some(data) = self.data {
+            // 200 OK - with body
+            response.sized_body(data.len(), Cursor::new(data));
+        } else {
+            return Err(Status::InternalServerError);
+        }
+
+        response.ok()
     }
 }
 
@@ -103,33 +134,19 @@ impl<'r> FromRequest<'r> for IfNoneMatch {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Invalid size '{}': {}", size, source))]
-    Size {
-        size: String,
-        source: ParseError,
-    },
+    Size { size: String, source: ParseError },
 
     #[snafu(display("Invalid type '{}': {}", kind, source))]
-    Kind {
-        kind: String,
-        source: ParseError,
-    },
+    Kind { kind: String, source: ParseError },
 
     #[snafu(display("Failed to get connection: {}", source))]
-    Connection {
-        source: SqlxError,
-    },
+    Connection { source: SqlxError },
 
     #[snafu(display("Failed to get photo by id: {}", source))]
-    Photo {
-        source: PhotoDbError,
-    },
+    Photo { source: PhotoDbError },
 
     #[snafu(display("Failed to get image from cache: {}", source))]
-    Cache {
-        source: CacheError,
-    },
-
-    AlreadyCached,
+    Cache { source: CacheError },
 }
 
 impl<'r> Responder<'r, 'static> for Error {
@@ -143,7 +160,6 @@ impl<'r> Responder<'r, 'static> for Error {
                 CacheError::GetAWSObject { .. } => Status::NotFound,
                 CacheError::Stream { .. } => Status::InternalServerError,
             },
-            Error::AlreadyCached => Status::NotModified,
         };
 
         let serialized = serde_json::to_string(&self).unwrap();
@@ -185,10 +201,6 @@ impl Serialize for Error {
                 state.serialize_field("message", "")?;
 
                 error!("Failed to get AWS Object: {}", source);
-            }
-            Error::AlreadyCached => {
-                state.serialize_field("kind", "Already Cached")?;
-                state.serialize_field("message", "")?;
             }
         };
 
