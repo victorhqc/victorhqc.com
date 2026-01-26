@@ -3,6 +3,7 @@ use crate::{
     photo::{
         aws::{Error as AWSError, remove, upload},
         build_images::{Error as BuildImagesError, ImageProcess, finish_build, start_build},
+        orientation::{self, OrientationError},
     },
     utils::{GetFujifilmError, get_some_fujifilm_recipe},
 };
@@ -12,7 +13,7 @@ use core_victorhqc_com::{
         exif_meta::{
             ExifMeta, PhotographyDetails, db::Error as ExifMetaDbError, from_exif::TryFromExifData,
         },
-        photo::{Photo, db::Error as PhotoDbError},
+        photo::{Error as PhotoError, Photo, db::Error as PhotoDbError},
     },
     sqlx::SqlitePool,
 };
@@ -25,17 +26,24 @@ use std::{path::Path, sync::mpsc};
 pub async fn re_upload(pool: &SqlitePool, id: String, src: &Path, s3: &S3) -> Result<(), Error> {
     let mut conn = pool.begin().await.context(DBConnectSnafu)?;
 
-    let photo = Photo::find_by_id(&mut conn, &id)
+    let mut photo = Photo::find_by_id(&mut conn, &id)
         .await
         .context(PhotoByIdSnafu)?;
 
     let data = exiftool::spawn::read_metadata(src).context(ExiftoolSnafu)?;
     trace!("Exiftool parsed data: {:?}", data);
 
+    let orientation = orientation::get_orientation(src).context(OrientationSnafu)?;
+
     let (tx, rx) = mpsc::channel::<ImageProcess>();
 
     debug!("Building Images to Re-upload");
     let main_handle = start_build(src, tx).context(BuildImagesSnafu)?;
+
+    photo
+        .update_file(src, &orientation)
+        .context(UpdatePhotoSnafu)?;
+    photo.update(&mut conn).await.context(UpdateDbPhotoSnafu)?;
 
     let recipe = get_some_fujifilm_recipe(&data, &mut conn)
         .await
@@ -68,6 +76,12 @@ pub enum Error {
     #[snafu(display("Failed to connect to db: {}", source))]
     DBConnect { source: SqlxError },
 
+    #[snafu(display("Failed to update photo: {}", source))]
+    UpdatePhoto { source: PhotoError },
+
+    #[snafu(display("Failed to update photo in the db: {}", source))]
+    UpdateDbPhoto { source: PhotoDbError },
+
     #[snafu(display("Failed to execute Transaction: {}", source))]
     Tx { source: SqlxError },
 
@@ -94,4 +108,7 @@ pub enum Error {
 
     #[snafu(display("Failed to get Fujifilm Recipe: {}", source))]
     FujifilmRecipe { source: GetFujifilmError },
+
+    #[snafu(display("Failed to get orientation: {}", source))]
+    Orientation { source: OrientationError },
 }

@@ -73,6 +73,12 @@ impl Photo {
         insert(conn, photo).await
     }
 
+    pub async fn update(&self, conn: &mut SqliteConnection) -> Result<(), Error> {
+        let photo: DBPhoto = self.into();
+
+        update(conn, photo).await
+    }
+
     pub async fn save_tags(
         &self,
         conn: &mut SqliteConnection,
@@ -354,6 +360,36 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
     .context(SqlxSnafu)?;
 
     Ok(id)
+}
+
+async fn update(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<(), Error> {
+    let id = photo.id.clone();
+
+    sqlx::query!(
+        r#"
+    UPDATE photos
+    SET
+        title = ?,
+        filename = ?,
+        filetype = ?,
+        orientation = ?,
+        updated_at = ?,
+        deleted = ?
+    WHERE id = ?
+    "#,
+        photo.title,
+        photo.filename,
+        photo.filetype,
+        photo.orientation,
+        photo.updated_at,
+        photo.deleted,
+        photo.id,
+    )
+    .execute(conn)
+    .await
+    .context(SqlxSnafu)?;
+
+    Ok(())
 }
 
 async fn attach_tag(conn: &mut SqliteConnection, photo: &Photo, tag: &Tag) -> Result<(), Error> {
