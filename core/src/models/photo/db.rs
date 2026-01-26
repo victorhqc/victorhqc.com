@@ -363,8 +363,6 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
 }
 
 async fn update(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<(), Error> {
-    let id = photo.id.clone();
-
     sqlx::query!(
         r#"
     UPDATE photos
