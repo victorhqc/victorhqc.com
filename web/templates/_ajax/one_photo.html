@@ -43,10 +43,10 @@
   <div class="one-photo__photo-wrapper">
     <div class="one-photo__container">
       {% if is_mobile %}
-      {{ c::open_photo_no_info(data=photo.photo, size="Md") }}
+      {{ c::open_photo_no_info(data=photo.photo, min="Sm", max="Hd") }}
       {{ i::photo_info(data=photo.photo) }}
       {% else %}
-      {{ c::open_photo(data=photo.photo, size="Hd") }}
+      {{ c::open_photo(data=photo.photo, min="Md", max="HdPlus") }}
       {% endif %}
     </div>
   </div>

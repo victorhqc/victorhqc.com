@@ -15,7 +15,7 @@ impl FromStr for ImageSize {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "hd-plus" => Ok(ImageSize::HdPlus),
+            "hdplus" => Ok(ImageSize::HdPlus),
             "hd" => Ok(ImageSize::Hd),
             "md" => Ok(ImageSize::Md),
             "sm" => Ok(ImageSize::Sm),
