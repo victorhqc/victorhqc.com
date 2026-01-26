@@ -24,6 +24,8 @@ pub async fn debug_compression(src: &Path) -> Result<(), Error> {
 
     let mut processed: Vec<ProcessedPhoto> = Vec::new();
 
+    debug!("Processing HD+");
+    processed.push(ProcessedPhoto::build_hd_plus(&img).context(ProcessSnafu)?);
     debug!("Processing HD");
     processed.push(ProcessedPhoto::build_hd(&img).context(ProcessSnafu)?);
     debug!("Processing MD");

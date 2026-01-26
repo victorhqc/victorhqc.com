@@ -116,6 +116,12 @@ Run migrations again
 sqlx migrate run
 ```
 
+Note that when adding a new query, the following needs to run
+
+```sh
+cargo sqlx prepare --workspace
+```
+
 # Compilation
 
 The service will run in a Linux machine, so targeting that platform is imperative.

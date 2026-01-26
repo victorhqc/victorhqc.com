@@ -1,11 +1,12 @@
 {# Used for Mobile View #}
-{% macro open_photo_no_info(data, size="Sm") %}
+{% macro open_photo_no_info(data, min="Sm", max="Md") %}
 {% set style = "width: calc(100vw - 1.5rem);" %}
 <div class="open-photo" style="{{style}}">
   <div class="open-photo__container photo-wrapper">
     <img
-      class="photo"
-      src="{{ api_host }}/v1/images/{{ size }}/{{ data.id }}"
+      class="photo progressive-image"
+      src="{{ api_host }}/v1/images/{{ min }}/{{ data.id }}"
+      data-src-hd="{{ api_host }}/v1/images/{{ max }}/{{ data.id }}"
       alt="{{ data.title }}"
     />
   </div>
@@ -13,7 +14,7 @@
 {% endmacro open_photo_no_info %}
 
 {# Used for Desktop View #}
-{% macro open_photo(data, size="Md") %}
+{% macro open_photo(data, min="Sm", max="Hd") %}
 {% set exif = data.exifMeta %}
 {% set orientation = data.orientation %}
 {% if orientation == "LANDSCAPE" %}
@@ -25,8 +26,9 @@
   <div class="open-photo__container photo-wrapper">
     <div class="open-photo__photo-wrapper">
       <img
-        class="photo"
-        src="{{ api_host }}/v1/images/{{ size }}/{{ data.id }}"
+        class="photo progressive-image"
+        src="{{ api_host }}/v1/images/{{ min }}/{{ data.id }}"
+        data-src-hd="{{ api_host }}/v1/images/{{ max }}/{{ data.id }}"
         alt="{{ data.title }}"
       />
     </div>
@@ -37,7 +39,11 @@
           <h3 class="open-photo__photo-values">
             <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s ISO {{ exif.iso }}
           </h3>
-          <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+          {% if exif.focalLength.value !=  exif.focalLength.eq35Mm %}
+            <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+          {% else %}
+            <p>{{ exif.focalLength.value }}mm</p>
+          {% endif %}
           <br />
           <div class="open-photo__small-info">
             <p>{{ exif.cameraMaker }} {{ exif.cameraName }}</p>

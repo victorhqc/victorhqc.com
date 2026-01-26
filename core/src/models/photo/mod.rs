@@ -48,6 +48,18 @@ impl Photo {
             deleted: false,
         })
     }
+
+    pub fn update_file(&mut self, path: &Path, orientation: &Orientation) -> Result<(), Error> {
+        let ext = path.extension().context(ExtensionSnafu)?;
+        let filetype = FileType::from_str(ext.to_str().unwrap()).context(FiletypeSnafu)?;
+        let filename = path.file_name().context(FilenameSnafu)?.to_str().unwrap();
+
+        self.orientation = *orientation;
+        self.filename = filename.to_string();
+        self.filetype = filetype;
+
+        Ok(())
+    }
 }
 
 impl PartialEq for Photo {

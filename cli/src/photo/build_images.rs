@@ -15,6 +15,7 @@ use std::{
 };
 
 pub struct ImageBuffers {
+    pub hd_plus: ProcessedBuffers,
     pub hd: ProcessedBuffers,
     pub md: ProcessedBuffers,
     pub sm: ProcessedBuffers,
@@ -26,7 +27,8 @@ pub enum ImageProcess {
 }
 
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
-pub type MainHandle = JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle), Error>>;
+pub type MainHandle =
+    JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle, BuildHandle), Error>>;
 
 #[cfg(target_os = "windows")]
 static PACKAGE: Emoji<'_, '_> = Emoji("📦", "");
@@ -54,6 +56,20 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         trace!("Opening Image");
         let img = image::open(Path::new(&p)).context(OpenSnafu)?;
         tx.send(ImageProcess::Opened).context(ThreadSendSnafu)?;
+
+        let img_hd_plus = img.clone();
+        let tx_hd_plus = tx.clone();
+        let handle_hd_plus: BuildHandle = thread::spawn(move || {
+            trace!("Building HD+ Image");
+
+            let processed = ProcessedPhoto::build_hd_plus(&img_hd_plus).context(ProcessSnafu)?;
+
+            trace!("HD+ Image Processing completed");
+
+            tx_hd_plus
+                .send(ImageProcess::Processed(processed))
+                .context(ThreadSendSnafu)
+        });
 
         let img_hd = img.clone();
         let tx_hd = tx.clone();
@@ -94,7 +110,7 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
                 .context(ThreadSendSnafu)
         });
 
-        Ok((handle_hd, handle_md, handle_sm))
+        Ok((handle_hd_plus, handle_hd, handle_md, handle_sm))
     });
 
     Ok(main_handle)
@@ -104,6 +120,7 @@ pub fn finish_build(
     rx: Receiver<ImageProcess>,
     main_handle: MainHandle,
 ) -> Result<ImageBuffers, Error> {
+    let mut hd_plus: Option<ProcessedBuffers> = None;
     let mut hd: Option<ProcessedBuffers> = None;
     let mut md: Option<ProcessedBuffers> = None;
     let mut sm: Option<ProcessedBuffers> = None;
@@ -118,19 +135,29 @@ pub fn finish_build(
     let sm_pb = build_loader(&m, &s, format!("{} Processing SM Image...", PACKAGE), 2);
     let md_pb = build_loader(&m, &s, format!("{} Processing MD Image...", PACKAGE), 3);
     let hd_pb = build_loader(&m, &s, format!("{} Processing HD Image...", PACKAGE), 4);
+    let hd_plus_pb = build_loader(&m, &s, format!("{} Processing HD+ Image...", PACKAGE), 5);
 
     for process in rx {
         match process {
             ImageProcess::Opened => {
                 opened_pb.set_style(s_done.clone());
-                opened_pb.set_prefix("[1/4] ✓");
+                opened_pb.set_prefix("[1/5] ✓");
                 opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
             }
             ImageProcess::Processed(data) => {
                 match data.size {
+                    ImageSize::HdPlus => {
+                        hd_plus_pb.set_style(s_done.clone());
+                        hd_plus_pb.set_prefix("[5/5] ✓");
+                        hd_plus_pb.finish_with_message(format!(
+                            "{} HD Image Processing Finished",
+                            PACKAGE
+                        ));
+                        hd_plus = Some(data.buffers)
+                    }
                     ImageSize::Hd => {
                         hd_pb.set_style(s_done.clone());
-                        hd_pb.set_prefix("[4/4] ✓");
+                        hd_pb.set_prefix("[4/5] ✓");
                         hd_pb.finish_with_message(format!(
                             "{} HD Image Processing Finished",
                             PACKAGE
@@ -139,7 +166,7 @@ pub fn finish_build(
                     }
                     ImageSize::Md => {
                         md_pb.set_style(s_done.clone());
-                        md_pb.set_prefix("[3/4] ✓");
+                        md_pb.set_prefix("[3/5] ✓");
                         md_pb.finish_with_message(format!(
                             "{} MD Image Processing Finished",
                             PACKAGE
@@ -148,7 +175,7 @@ pub fn finish_build(
                     }
                     ImageSize::Sm => {
                         sm_pb.set_style(s_done.clone());
-                        sm_pb.set_prefix("[2/4] ✓");
+                        sm_pb.set_prefix("[2/5] ✓");
                         sm_pb.finish_with_message(format!(
                             "{} SM Image Processing Finished",
                             PACKAGE
@@ -160,10 +187,13 @@ pub fn finish_build(
         }
     }
 
-    let (hd_handle, md_handle, sm_handle) = main_handle
+    let (hd_plus_handle, hd_handle, md_handle, sm_handle) = main_handle
         .join()
         .map(|r| match r {
-            Ok((handle_hd, handle_md, handle_sm)) => {
+            Ok((handle_hd_plus, handle_hd, handle_md, handle_sm)) => {
+                let hd_plus = handle_hd_plus
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
                 let hd = handle_hd
                     .join()
                     .map_err(|e| Error::ThreadPanic { err: e })?;
@@ -173,19 +203,25 @@ pub fn finish_build(
                 let sm = handle_sm
                     .join()
                     .map_err(|e| Error::ThreadPanic { err: e })?;
-                Ok((hd, md, sm))
+                Ok((hd_plus, hd, md, sm))
             }
             Err(err) => Err(err),
         })
         .map_err(|e| Error::ThreadPanic { err: e })??;
+    hd_plus_handle?;
     hd_handle?;
     md_handle?;
     sm_handle?;
 
     m.clear().unwrap();
 
-    if let (Some(hd), Some(md), Some(sm)) = (hd, md, sm) {
-        Ok(ImageBuffers { hd, md, sm })
+    if let (Some(hd_plus), Some(hd), Some(md), Some(sm)) = (hd_plus, hd, md, sm) {
+        Ok(ImageBuffers {
+            hd_plus,
+            hd,
+            md,
+            sm,
+        })
     } else {
         Err(Error::MissingData)
     }
@@ -200,7 +236,7 @@ fn build_loader(
     let pb = m.add(ProgressBar::new_spinner());
     pb.enable_steady_tick(Duration::from_millis(50));
     pb.set_style(spinner_style.clone());
-    pb.set_prefix(format!("[{}/4]", no));
+    pb.set_prefix(format!("[{}/5]", no));
     pb.set_message(message);
 
     pb

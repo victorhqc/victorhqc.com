@@ -19,6 +19,10 @@ pub struct ProcessedBuffers {
 }
 
 impl ProcessedPhoto {
+    pub fn build_hd_plus(img: &DynamicImage) -> Result<Self, Error> {
+        Self::build(img, ImageSize::HdPlus, 1440, 85f32)
+    }
+
     pub fn build_hd(img: &DynamicImage) -> Result<Self, Error> {
         Self::build(img, ImageSize::Hd, 1080, 75f32)
     }
