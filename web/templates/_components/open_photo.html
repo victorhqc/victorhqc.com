@@ -39,7 +39,11 @@
           <h3 class="open-photo__photo-values">
             <i class="italic">f</i>{{ exif.aperture }} {{ exif.shutterSpeed }}s ISO {{ exif.iso }}
           </h3>
-          <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+          {% if exif.focalLength.value !=  exif.focalLength.eq35Mm %}
+            <p>{{ exif.focalLength.value }}mm ({{ exif.focalLength.eq35Mm}}mm eq)</p>
+          {% else %}
+            <p>{{ exif.focalLength.value }}mm</p>
+          {% endif %}
           <br />
           <div class="open-photo__small-info">
             <p>{{ exif.cameraMaker }} {{ exif.cameraName }}</p>
