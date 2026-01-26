@@ -54,7 +54,7 @@ impl Photo {
         let filetype = FileType::from_str(ext.to_str().unwrap()).context(FiletypeSnafu)?;
         let filename = path.file_name().context(FilenameSnafu)?.to_str().unwrap();
 
-        self.orientation = orientation.clone();
+        self.orientation = *orientation;
         self.filename = filename.to_string();
         self.filetype = filetype;
 
