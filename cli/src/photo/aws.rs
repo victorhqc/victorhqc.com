@@ -11,6 +11,17 @@ use log::error;
 use snafu::prelude::*;
 
 pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(), Error> {
+    let hd_plus_pairs = futures::join!(
+        s3.upload_to_aws_s3(
+            (photo, &ImageSize::HdPlus, &ImageType::Jpeg),
+            buffers.hd_plus.jpeg
+        ),
+        s3.upload_to_aws_s3(
+            (photo, &ImageSize::HdPlus, &ImageType::Webp),
+            buffers.hd_plus.webp
+        )
+    );
+
     let hd_pairs = futures::join!(
         s3.upload_to_aws_s3((photo, &ImageSize::Hd, &ImageType::Jpeg), buffers.hd.jpeg),
         s3.upload_to_aws_s3((photo, &ImageSize::Hd, &ImageType::Webp), buffers.hd.webp)
@@ -25,6 +36,16 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
         s3.upload_to_aws_s3((photo, &ImageSize::Sm, &ImageType::Jpeg), buffers.sm.jpeg),
         s3.upload_to_aws_s3((photo, &ImageSize::Sm, &ImageType::Webp), buffers.sm.webp),
     );
+
+    hd_plus_pairs.0.context(UploadSnafu {
+        size: ImageSize::HdPlus,
+        kind: ImageType::Jpeg,
+    })?;
+
+    hd_plus_pairs.1.context(UploadSnafu {
+        size: ImageSize::HdPlus,
+        kind: ImageType::Webp,
+    })?;
 
     hd_pairs.0.context(UploadSnafu {
         size: ImageSize::Hd,
@@ -60,6 +81,11 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
 }
 
 pub async fn remove(photo: &Photo, s3: &S3) -> Result<(), Error> {
+    let hd_plus_pairs = futures::join!(
+        s3.remove_from_aws_s3((photo, &ImageSize::HdPlus, &ImageType::Jpeg)),
+        s3.remove_from_aws_s3((photo, &ImageSize::HdPlus, &ImageType::Webp))
+    );
+
     let hd_pairs = futures::join!(
         s3.remove_from_aws_s3((photo, &ImageSize::Hd, &ImageType::Jpeg)),
         s3.remove_from_aws_s3((photo, &ImageSize::Hd, &ImageType::Webp))
@@ -74,6 +100,24 @@ pub async fn remove(photo: &Photo, s3: &S3) -> Result<(), Error> {
         s3.remove_from_aws_s3((photo, &ImageSize::Sm, &ImageType::Jpeg)),
         s3.remove_from_aws_s3((photo, &ImageSize::Sm, &ImageType::Webp)),
     );
+
+    hd_plus_pairs
+        .0
+        .context(RemoveSnafu {
+            size: ImageSize::HdPlus,
+            kind: ImageType::Jpeg,
+        })
+        .map_err(|err| error!("{}", err))
+        .ok();
+
+    hd_plus_pairs
+        .1
+        .context(RemoveSnafu {
+            size: ImageSize::HdPlus,
+            kind: ImageType::Webp,
+        })
+        .map_err(|err| error!("{}", err))
+        .ok();
 
     hd_pairs
         .0

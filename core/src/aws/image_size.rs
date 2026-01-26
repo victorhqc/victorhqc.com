@@ -4,6 +4,7 @@ use strum_macros::Display;
 
 #[derive(Debug, Display, Clone, PartialEq)]
 pub enum ImageSize {
+    HdPlus,
     Hd,
     Md,
     Sm,
@@ -14,6 +15,7 @@ impl FromStr for ImageSize {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
+            "hd-plus" => Ok(ImageSize::HdPlus),
             "hd" => Ok(ImageSize::Hd),
             "md" => Ok(ImageSize::Md),
             "sm" => Ok(ImageSize::Sm),
