@@ -13,9 +13,12 @@ pub struct S3 {
 impl S3 {
     pub async fn new(bucket_name: &str) -> Self {
         let sdk_config = aws_config::load_from_env().await;
+        let s3_config = aws_sdk_s3::config::Builder::from(&sdk_config)
+            .force_path_style(true)
+            .build();
 
         S3 {
-            client: Client::new(&sdk_config),
+            client: Client::from_conf(s3_config),
             bucket_name: bucket_name.to_string(),
         }
     }

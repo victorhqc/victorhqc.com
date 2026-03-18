@@ -73,7 +73,15 @@ async fn main() -> Result<(), Box<Error>> {
     let mut state = AppState { db_pool, img_cache };
 
     if !cached_tags.is_empty() {
-        state = bootstrap::prepare_images(state, cached_tags).await.unwrap();
+        match bootstrap::prepare_images(state.clone(), cached_tags).await {
+            Ok(new_state) => state = new_state,
+            Err(e) => {
+                log::warn!(
+                    "Bootstrap image caching failed, continuing without cache: {}",
+                    e
+                );
+            }
+        }
     }
 
     let schema: RootSchema = Schema::build(RootQuery::default(), EmptyMutation, EmptySubscription)
