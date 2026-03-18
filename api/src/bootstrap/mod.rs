@@ -1,7 +1,7 @@
 use crate::AppState;
 use core_victorhqc_com::aws::image_size::{ImageSize, ImageType};
 use core_victorhqc_com::models::{photo::Photo, tag::Tag};
-use log::{debug, info};
+use log::{debug, info, warn};
 use rocket::futures::future::join_all;
 use rocket::tokio;
 use std::collections::HashSet;
@@ -52,17 +52,30 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
                     let photo = photo.clone();
 
                     async move {
-                        let response = state
+                        let response = match state
                             .img_cache
                             .s3
                             .download_from_aws_s3((&photo, img_size, kind))
                             .await
-                            .inspect_err(|e| {
-                                debug!("Failed to download photo {}: {}", &photo.id, e);
-                            })
-                            .unwrap();
+                        {
+                            Ok(r) => r,
+                            Err(e) => {
+                                warn!(
+                                    "Failed to download photo {} ({}): {}",
+                                    &photo.id, img_size, e
+                                );
+                                return;
+                            }
+                        };
 
-                        let data = response.body.collect().await.unwrap();
+                        let data = match response.body.collect().await {
+                            Ok(d) => d,
+                            Err(e) => {
+                                warn!("Failed to stream photo {} ({}): {}", &photo.id, img_size, e);
+                                return;
+                            }
+                        };
+
                         let bytes = data.into_bytes().to_vec();
 
                         state
