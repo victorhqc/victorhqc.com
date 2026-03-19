@@ -464,7 +464,7 @@ impl From<&Photo> for DBPhoto {
             orientation: photo.orientation.to_string(),
             blurhash: photo.blurhash.clone(),
             created_at: photo.created_at.into(),
-            updated_at: photo.created_at.into(),
+            updated_at: photo.updated_at.into(),
             deleted: photo.deleted,
         }
     }
