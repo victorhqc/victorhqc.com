@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n                SELECT id, title, filename, filetype, orientation,\n                       created_at, updated_at, deleted\n                FROM photos AS p\n                WHERE deleted = false\n                ORDER BY created_at ASC\n                ",
+  "query": "\n    SELECT\n        id,\n        title,\n        filename,\n        filetype,\n        orientation,\n        blurhash,\n        created_at,\n        updated_at,\n        deleted\n    FROM\n        photos\n    WHERE\n        deleted = false\n        AND id = ?\n    ORDER BY\n        created_at ASC\n    ",
   "describe": {
     "columns": [
       {
@@ -29,23 +29,28 @@
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "blurhash",
         "ordinal": 5,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 6,
         "type_info": "Datetime"
       },
       {
-        "name": "deleted",
+        "name": "updated_at",
         "ordinal": 7,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "deleted",
+        "ordinal": 8,
         "type_info": "Bool"
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
       false,
@@ -53,10 +58,11 @@
       false,
       false,
       false,
+      true,
       false,
       false,
       false
     ]
   },
-  "hash": "ed5d9d8803bbc2d9c90070ab9002d7cd1bc178a31bb40c2fad170eff2fe44df6"
+  "hash": "34e50fbfcc0c67eca50d80937dbf772987248b53d4945a6c99f2fb25e224599a"
 }

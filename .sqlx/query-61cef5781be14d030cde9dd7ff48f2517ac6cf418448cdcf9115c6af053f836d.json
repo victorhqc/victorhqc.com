@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    UPDATE photos\n    SET\n        title = ?,\n        filename = ?,\n        filetype = ?,\n        orientation = ?,\n        blurhash = ?,\n        updated_at = ?,\n        deleted = ?\n    WHERE id = ?\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": []
+  },
+  "hash": "61cef5781be14d030cde9dd7ff48f2517ac6cf418448cdcf9115c6af053f836d"
+}
