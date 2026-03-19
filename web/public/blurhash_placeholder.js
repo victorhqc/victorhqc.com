@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var bh = new BlurhashCanvas();
+  var bh = new BlurhashCanvas({ resolution: 64 });
 
   function initBlurhashPlaceholders(root) {
     bh.init(root);
