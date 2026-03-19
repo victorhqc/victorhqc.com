@@ -8,7 +8,6 @@ pub enum ImageSize {
     Hd,
     Md,
     Sm,
-    Blur,
 }
 
 impl FromStr for ImageSize {
@@ -20,7 +19,6 @@ impl FromStr for ImageSize {
             "hd" => Ok(ImageSize::Hd),
             "md" => Ok(ImageSize::Md),
             "sm" => Ok(ImageSize::Sm),
-            "blur" => Ok(ImageSize::Blur),
             _ => Err(Error::Invalid),
         }
     }

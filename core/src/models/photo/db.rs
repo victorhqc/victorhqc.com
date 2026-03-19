@@ -19,6 +19,7 @@ struct DBPhoto {
     filename: String,
     filetype: String,
     orientation: String,
+    blurhash: Option<String>,
     created_at: Timestamp,
     updated_at: Timestamp,
     deleted: bool,
@@ -32,6 +33,7 @@ struct DBTagPhoto {
     filename: String,
     filetype: String,
     orientation: String,
+    blurhash: Option<String>,
     created_at: Timestamp,
     updated_at: Timestamp,
     deleted: bool,
@@ -106,6 +108,7 @@ async fn find_by_id(conn: &mut SqliteConnection, id: &str) -> Result<Photo, Erro
         filename,
         filetype,
         orientation,
+        blurhash,
         created_at,
         updated_at,
         deleted
@@ -141,6 +144,7 @@ async fn find_by_filename(
         filename,
         filetype,
         orientation,
+        blurhash,
         created_at,
         updated_at,
         deleted
@@ -175,7 +179,7 @@ async fn find_all(
             sqlx::query_as!(
                 DBPhoto,
                 r#"
-                SELECT id, title, filename, filetype, orientation,
+                SELECT id, title, filename, filetype, orientation, blurhash,
                        created_at, updated_at, deleted
                 FROM photos AS p
                 WHERE deleted = false AND orientation = ?
@@ -190,7 +194,7 @@ async fn find_all(
         None => sqlx::query_as!(
             DBPhoto,
             r#"
-                SELECT id, title, filename, filetype, orientation,
+                SELECT id, title, filename, filetype, orientation, blurhash,
                        created_at, updated_at, deleted
                 FROM photos AS p
                 WHERE deleted = false
@@ -224,6 +228,7 @@ async fn find_by_tag_ids(
         filename,
         filetype,
         orientation,
+        blurhash,
         p.created_at,
         p.updated_at,
         p.deleted
@@ -259,6 +264,7 @@ async fn find_by_tag_ids(
                     filename: p.filename,
                     filetype: p.filetype,
                     orientation: p.orientation,
+                    blurhash: p.blurhash,
                     created_at: p.created_at,
                     updated_at: p.updated_at,
                     deleted: p.deleted,
@@ -289,6 +295,7 @@ async fn find_by_tag_ids_and_orientation(
         filename,
         filetype,
         orientation,
+        blurhash,
         p.created_at,
         p.updated_at,
         p.deleted
@@ -326,6 +333,7 @@ async fn find_by_tag_ids_and_orientation(
                     filename: p.filename,
                     filetype: p.filetype,
                     orientation: p.orientation,
+                    blurhash: p.blurhash,
                     created_at: p.created_at,
                     updated_at: p.updated_at,
                     deleted: p.deleted,
@@ -343,14 +351,15 @@ async fn insert(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<String, E
 
     sqlx::query!(
         r#"
-    INSERT INTO photos (id, title, filename, filetype, orientation, created_at, updated_at, deleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO photos (id, title, filename, filetype, orientation, blurhash, created_at, updated_at, deleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     "#,
         photo.id,
         photo.title,
         photo.filename,
         photo.filetype,
         photo.orientation,
+        photo.blurhash,
         photo.created_at,
         photo.updated_at,
         photo.deleted
@@ -371,6 +380,7 @@ async fn update(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<(), Error
         filename = ?,
         filetype = ?,
         orientation = ?,
+        blurhash = ?,
         updated_at = ?,
         deleted = ?
     WHERE id = ?
@@ -379,6 +389,7 @@ async fn update(conn: &mut SqliteConnection, photo: DBPhoto) -> Result<(), Error
         photo.filename,
         photo.filetype,
         photo.orientation,
+        photo.blurhash,
         photo.updated_at,
         photo.deleted,
         photo.id,
@@ -435,6 +446,7 @@ impl TryFrom<DBPhoto> for Photo {
             filename: value.filename,
             filetype,
             orientation,
+            blurhash: value.blurhash,
             created_at,
             updated_at,
             deleted: value.deleted,
@@ -450,6 +462,7 @@ impl From<&Photo> for DBPhoto {
             filename: photo.filename.clone(),
             filetype: photo.filetype.to_string(),
             orientation: photo.orientation.to_string(),
+            blurhash: photo.blurhash.clone(),
             created_at: photo.created_at.into(),
             updated_at: photo.created_at.into(),
             deleted: photo.deleted,

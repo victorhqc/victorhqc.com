@@ -98,6 +98,11 @@ pub async fn create(pool: &SqlitePool, src: &Path, s3: &S3) -> Result<(), Error>
     debug!("{:?}", exif);
 
     let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
+
+    let mut photo = photo;
+    photo.set_blurhash(buffers.blurhash.clone());
+    photo.update(&mut conn).await.context(SavePhotoSnafu)?;
+
     debug!("About to upload to S3");
     upload(&photo, s3, buffers)
         .await

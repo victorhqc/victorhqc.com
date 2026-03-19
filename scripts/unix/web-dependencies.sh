@@ -63,10 +63,12 @@ git pull
 
 deno run --allow-env --allow-read --allow-write --allow-run ./bundle.ts
 npx terser dist/photo-stack.js -o dist/photo-stack.min.js -c -m
+npx terser dist/blurhash-canvas.js -o dist/blurhash-canvas.min.js -c -m
 npx tailwindcss@v3 -i ./src/photo-stack/styles.css -o ./dist/photo-stack.min.css --minify
 
 cd - > /dev/null
 
 mv "$LIBS/dist/photo-stack.min.js" "$OUTPUT_FOLDER/photo-stack.min.js"
 mv "$LIBS/dist/photo-stack.min.css" "$OUTPUT_FOLDER/photo-stack.min.css"
+mv "$LIBS/dist/blurhash-canvas.min.js" "$OUTPUT_FOLDER/blurhash-canvas.min.js"
 rm -rf "$OUTPUT_FOLDER/victorhqc.com.libs"

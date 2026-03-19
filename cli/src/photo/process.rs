@@ -35,35 +35,6 @@ impl ProcessedPhoto {
         Self::build(img, ImageSize::Sm, 480, 70f32)
     }
 
-    pub fn build_blur(img: &DynamicImage) -> Result<Self, Error> {
-        Self::build_blurred(img, ImageSize::Blur, 32, 40f32, 3.0)
-    }
-
-    fn build_blurred(
-        img: &DynamicImage,
-        size: ImageSize,
-        wanted_height: i32,
-        compression: f32,
-        blur_sigma: f32,
-    ) -> Result<Self, Error> {
-        debug!("Resizing {} Image", size);
-        let resized = resize_with_known_dimensions(img, wanted_height);
-
-        debug!("Applying Gaussian blur (sigma={})", blur_sigma);
-        let blurred = resized.blur(blur_sigma);
-
-        debug!("Converting to Webp");
-        let webp = convert_to_webp(&blurred, compression)?;
-
-        debug!("Converting to JPEG");
-        let jpeg = compress(&blurred, compression)?;
-
-        Ok(ProcessedPhoto {
-            size,
-            buffers: ProcessedBuffers { webp, jpeg },
-        })
-    }
-
     fn build(
         img: &DynamicImage,
         size: ImageSize,
