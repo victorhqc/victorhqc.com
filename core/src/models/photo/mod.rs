@@ -18,6 +18,7 @@ pub struct Photo {
     pub filename: String,
     pub filetype: FileType,
     pub orientation: Orientation,
+    pub blurhash: Option<String>,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
     pub deleted: bool,
@@ -43,10 +44,15 @@ impl Photo {
             filetype,
             filename: filename.to_string(),
             orientation,
+            blurhash: None,
             created_at,
             updated_at,
             deleted: false,
         })
+    }
+
+    pub fn set_blurhash(&mut self, hash: String) {
+        self.blurhash = Some(hash);
     }
 
     pub fn update_file(&mut self, path: &Path, orientation: &Orientation) -> Result<(), Error> {

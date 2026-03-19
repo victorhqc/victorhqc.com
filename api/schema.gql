@@ -124,6 +124,7 @@ type Photo {
 	filename: String!
 	filetype: FileType!
 	orientation: Orientation!
+	blurhash: String
 	createdAt: String!
 	updatedAt: String!
 	deleted: Boolean!

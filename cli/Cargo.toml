@@ -5,6 +5,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
+blurhash = "0.2.3"
 clap = { version = "4.5.20", features = ["derive"] }
 console = "0.15.8"
 core-victorhqc-com.workspace = true

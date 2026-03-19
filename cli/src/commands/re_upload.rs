@@ -62,6 +62,10 @@ pub async fn re_upload(pool: &SqlitePool, id: String, src: &Path, s3: &S3) -> Re
     remove(&photo, s3).await.context(RemoveSnafu)?;
 
     let buffers = finish_build(rx, main_handle).context(BuildImagesSnafu)?;
+
+    photo.set_blurhash(buffers.blurhash.clone());
+    photo.update(&mut conn).await.context(UpdateDbPhotoSnafu)?;
+
     debug!("About to upload to S3");
     upload(&photo, s3, buffers).await.context(UploadSnafu)?;
     debug!("Uploaded to S3");

@@ -2,7 +2,7 @@ use super::process::{Error as ProcessPhotoError, ProcessedBuffers, ProcessedPhot
 use crate::utils::is_valid_extension;
 use console::Emoji;
 use core_victorhqc_com::aws::image_size::ImageSize;
-use image::error::ImageError;
+use image::{GenericImageView, error::ImageError};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::trace;
 use snafu::prelude::*;
@@ -19,11 +19,13 @@ pub struct ImageBuffers {
     pub hd: ProcessedBuffers,
     pub md: ProcessedBuffers,
     pub sm: ProcessedBuffers,
+    pub blurhash: String,
 }
 
 pub enum ImageProcess {
     Opened,
     Processed(ProcessedPhoto),
+    BlurHash(String),
 }
 
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
@@ -56,6 +58,16 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         trace!("Opening Image");
         let img = image::open(Path::new(&p)).context(OpenSnafu)?;
         tx.send(ImageProcess::Opened).context(ThreadSendSnafu)?;
+
+        // Compute blurhash from a small thumbnail for performance
+        let thumb = img.thumbnail(100, 100);
+        let (w, h) = thumb.dimensions();
+        let rgba = thumb.to_rgba8();
+        let hash = blurhash::encode(4, 3, w, h, rgba.as_raw()).map_err(|e| Error::BlurHash {
+            error: e.to_string(),
+        })?;
+        tx.send(ImageProcess::BlurHash(hash))
+            .context(ThreadSendSnafu)?;
 
         let img_hd_plus = img.clone();
         let tx_hd_plus = tx.clone();
@@ -124,6 +136,7 @@ pub fn finish_build(
     let mut hd: Option<ProcessedBuffers> = None;
     let mut md: Option<ProcessedBuffers> = None;
     let mut sm: Option<ProcessedBuffers> = None;
+    let mut blurhash: Option<String> = None;
 
     let m = MultiProgress::new();
     let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
@@ -143,6 +156,10 @@ pub fn finish_build(
                 opened_pb.set_style(s_done.clone());
                 opened_pb.set_prefix("[1/5] ✓");
                 opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
+            }
+            ImageProcess::BlurHash(hash) => {
+                trace!("BlurHash computed: {}", hash);
+                blurhash = Some(hash);
             }
             ImageProcess::Processed(data) => {
                 match data.size {
@@ -215,12 +232,15 @@ pub fn finish_build(
 
     m.clear().unwrap();
 
-    if let (Some(hd_plus), Some(hd), Some(md), Some(sm)) = (hd_plus, hd, md, sm) {
+    if let (Some(hd_plus), Some(hd), Some(md), Some(sm), Some(blurhash)) =
+        (hd_plus, hd, md, sm, blurhash)
+    {
         Ok(ImageBuffers {
             hd_plus,
             hd,
             md,
             sm,
+            blurhash,
         })
     } else {
         Err(Error::MissingData)
@@ -261,4 +281,7 @@ pub enum Error {
 
     #[snafu(display("Thread panicked: {:?}", err))]
     ThreadPanic { err: Box<dyn Any + Send> },
+
+    #[snafu(display("Failed to compute BlurHash: {}", error))]
+    BlurHash { error: String },
 }

@@ -3,6 +3,7 @@ query GetPortfolio($tag: String!, $max: Int) {
     id
     title
     orientation
+    blurhash
     tags {
       id
       name

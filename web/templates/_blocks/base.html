@@ -46,6 +46,8 @@
         localStorage.setItem("client_id", '{{ client_id }}');
       }
     </script>
+    <script src="{{ '/static/blurhash-canvas.min.js' | versioned }}"></script>
+    <script defer src="{{ '/public/blurhash_placeholder.js' | versioned }}"></script>
     <script defer src="{{ '/public/progressive_image.js' | versioned }}"></script>
   </head>
   <body>
