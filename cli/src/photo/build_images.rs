@@ -19,6 +19,7 @@ pub struct ImageBuffers {
     pub hd: ProcessedBuffers,
     pub md: ProcessedBuffers,
     pub sm: ProcessedBuffers,
+    pub blur: ProcessedBuffers,
 }
 
 pub enum ImageProcess {
@@ -27,8 +28,18 @@ pub enum ImageProcess {
 }
 
 pub type BuildHandle = JoinHandle<Result<(), Error>>;
-pub type MainHandle =
-    JoinHandle<Result<(BuildHandle, BuildHandle, BuildHandle, BuildHandle), Error>>;
+pub type MainHandle = JoinHandle<
+    Result<
+        (
+            BuildHandle,
+            BuildHandle,
+            BuildHandle,
+            BuildHandle,
+            BuildHandle,
+        ),
+        Error,
+    >,
+>;
 
 #[cfg(target_os = "windows")]
 static PACKAGE: Emoji<'_, '_> = Emoji("📦", "");
@@ -100,17 +111,30 @@ pub fn start_build(path: &Path, tx: Sender<ImageProcess>) -> Result<MainHandle, 
         });
 
         let img_sm = img.clone();
+        let tx_sm = tx.clone();
         let handle_sm: BuildHandle = thread::spawn(move || {
             trace!("Building SM Image");
             let processed = ProcessedPhoto::build_sm(&img_sm).context(ProcessSnafu)?;
 
             trace!("SM Image Processing completed");
 
+            tx_sm
+                .send(ImageProcess::Processed(processed))
+                .context(ThreadSendSnafu)
+        });
+
+        let img_blur = img;
+        let handle_blur: BuildHandle = thread::spawn(move || {
+            trace!("Building Blur Image");
+            let processed = ProcessedPhoto::build_blur(&img_blur).context(ProcessSnafu)?;
+
+            trace!("Blur Image Processing completed");
+
             tx.send(ImageProcess::Processed(processed))
                 .context(ThreadSendSnafu)
         });
 
-        Ok((handle_hd_plus, handle_hd, handle_md, handle_sm))
+        Ok((handle_hd_plus, handle_hd, handle_md, handle_sm, handle_blur))
     });
 
     Ok(main_handle)
@@ -124,6 +148,7 @@ pub fn finish_build(
     let mut hd: Option<ProcessedBuffers> = None;
     let mut md: Option<ProcessedBuffers> = None;
     let mut sm: Option<ProcessedBuffers> = None;
+    let mut blur: Option<ProcessedBuffers> = None;
 
     let m = MultiProgress::new();
     let s = ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
@@ -136,28 +161,38 @@ pub fn finish_build(
     let md_pb = build_loader(&m, &s, format!("{} Processing MD Image...", PACKAGE), 3);
     let hd_pb = build_loader(&m, &s, format!("{} Processing HD Image...", PACKAGE), 4);
     let hd_plus_pb = build_loader(&m, &s, format!("{} Processing HD+ Image...", PACKAGE), 5);
+    let blur_pb = build_loader(&m, &s, format!("{} Processing Blur Image...", PACKAGE), 6);
 
     for process in rx {
         match process {
             ImageProcess::Opened => {
                 opened_pb.set_style(s_done.clone());
-                opened_pb.set_prefix("[1/5] ✓");
+                opened_pb.set_prefix("[1/6] ✓");
                 opened_pb.finish_with_message(format!("{} Image Opened", DRAWER));
             }
             ImageProcess::Processed(data) => {
                 match data.size {
+                    ImageSize::Blur => {
+                        blur_pb.set_style(s_done.clone());
+                        blur_pb.set_prefix("[6/6] ✓");
+                        blur_pb.finish_with_message(format!(
+                            "{} Blur Image Processing Finished",
+                            PACKAGE
+                        ));
+                        blur = Some(data.buffers)
+                    }
                     ImageSize::HdPlus => {
                         hd_plus_pb.set_style(s_done.clone());
-                        hd_plus_pb.set_prefix("[5/5] ✓");
+                        hd_plus_pb.set_prefix("[5/6] ✓");
                         hd_plus_pb.finish_with_message(format!(
-                            "{} HD Image Processing Finished",
+                            "{} HD+ Image Processing Finished",
                             PACKAGE
                         ));
                         hd_plus = Some(data.buffers)
                     }
                     ImageSize::Hd => {
                         hd_pb.set_style(s_done.clone());
-                        hd_pb.set_prefix("[4/5] ✓");
+                        hd_pb.set_prefix("[4/6] ✓");
                         hd_pb.finish_with_message(format!(
                             "{} HD Image Processing Finished",
                             PACKAGE
@@ -166,7 +201,7 @@ pub fn finish_build(
                     }
                     ImageSize::Md => {
                         md_pb.set_style(s_done.clone());
-                        md_pb.set_prefix("[3/5] ✓");
+                        md_pb.set_prefix("[3/6] ✓");
                         md_pb.finish_with_message(format!(
                             "{} MD Image Processing Finished",
                             PACKAGE
@@ -175,7 +210,7 @@ pub fn finish_build(
                     }
                     ImageSize::Sm => {
                         sm_pb.set_style(s_done.clone());
-                        sm_pb.set_prefix("[2/5] ✓");
+                        sm_pb.set_prefix("[2/6] ✓");
                         sm_pb.finish_with_message(format!(
                             "{} SM Image Processing Finished",
                             PACKAGE
@@ -187,10 +222,10 @@ pub fn finish_build(
         }
     }
 
-    let (hd_plus_handle, hd_handle, md_handle, sm_handle) = main_handle
+    let (hd_plus_handle, hd_handle, md_handle, sm_handle, blur_handle) = main_handle
         .join()
         .map(|r| match r {
-            Ok((handle_hd_plus, handle_hd, handle_md, handle_sm)) => {
+            Ok((handle_hd_plus, handle_hd, handle_md, handle_sm, handle_blur)) => {
                 let hd_plus = handle_hd_plus
                     .join()
                     .map_err(|e| Error::ThreadPanic { err: e })?;
@@ -203,7 +238,10 @@ pub fn finish_build(
                 let sm = handle_sm
                     .join()
                     .map_err(|e| Error::ThreadPanic { err: e })?;
-                Ok((hd_plus, hd, md, sm))
+                let blur = handle_blur
+                    .join()
+                    .map_err(|e| Error::ThreadPanic { err: e })?;
+                Ok((hd_plus, hd, md, sm, blur))
             }
             Err(err) => Err(err),
         })
@@ -212,15 +250,19 @@ pub fn finish_build(
     hd_handle?;
     md_handle?;
     sm_handle?;
+    blur_handle?;
 
     m.clear().unwrap();
 
-    if let (Some(hd_plus), Some(hd), Some(md), Some(sm)) = (hd_plus, hd, md, sm) {
+    if let (Some(hd_plus), Some(hd), Some(md), Some(sm), Some(blur)) =
+        (hd_plus, hd, md, sm, blur)
+    {
         Ok(ImageBuffers {
             hd_plus,
             hd,
             md,
             sm,
+            blur,
         })
     } else {
         Err(Error::MissingData)
@@ -236,7 +278,7 @@ fn build_loader(
     let pb = m.add(ProgressBar::new_spinner());
     pb.enable_steady_tick(Duration::from_millis(50));
     pb.set_style(spinner_style.clone());
-    pb.set_prefix(format!("[{}/5]", no));
+    pb.set_prefix(format!("[{}/6]", no));
     pb.set_message(message);
 
     pb

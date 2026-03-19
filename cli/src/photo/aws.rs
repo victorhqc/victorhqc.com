@@ -37,6 +37,17 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
         s3.upload_to_aws_s3((photo, &ImageSize::Sm, &ImageType::Webp), buffers.sm.webp),
     );
 
+    let blur_pairs = futures::join!(
+        s3.upload_to_aws_s3(
+            (photo, &ImageSize::Blur, &ImageType::Jpeg),
+            buffers.blur.jpeg
+        ),
+        s3.upload_to_aws_s3(
+            (photo, &ImageSize::Blur, &ImageType::Webp),
+            buffers.blur.webp
+        )
+    );
+
     hd_plus_pairs.0.context(UploadSnafu {
         size: ImageSize::HdPlus,
         kind: ImageType::Jpeg,
@@ -77,6 +88,16 @@ pub async fn upload(photo: &Photo, s3: &S3, buffers: ImageBuffers) -> Result<(),
         kind: ImageType::Webp,
     })?;
 
+    blur_pairs.0.context(UploadSnafu {
+        size: ImageSize::Blur,
+        kind: ImageType::Jpeg,
+    })?;
+
+    blur_pairs.1.context(UploadSnafu {
+        size: ImageSize::Blur,
+        kind: ImageType::Webp,
+    })?;
+
     Ok(())
 }
 
@@ -101,6 +122,11 @@ pub async fn remove(photo: &Photo, s3: &S3) -> Result<(), Error> {
         s3.remove_from_aws_s3((photo, &ImageSize::Sm, &ImageType::Webp)),
     );
 
+    let blur_pairs = futures::join!(
+        s3.remove_from_aws_s3((photo, &ImageSize::Blur, &ImageType::Jpeg)),
+        s3.remove_from_aws_s3((photo, &ImageSize::Blur, &ImageType::Webp))
+    );
+
     hd_plus_pairs
         .0
         .context(RemoveSnafu {
@@ -168,6 +194,24 @@ pub async fn remove(photo: &Photo, s3: &S3) -> Result<(), Error> {
         .1
         .context(RemoveSnafu {
             size: ImageSize::Sm,
+            kind: ImageType::Webp,
+        })
+        .map_err(|err| error!("{}", err))
+        .ok();
+
+    blur_pairs
+        .0
+        .context(RemoveSnafu {
+            size: ImageSize::Blur,
+            kind: ImageType::Jpeg,
+        })
+        .map_err(|err| error!("{}", err))
+        .ok();
+
+    blur_pairs
+        .1
+        .context(RemoveSnafu {
+            size: ImageSize::Blur,
             kind: ImageType::Webp,
         })
         .map_err(|err| error!("{}", err))

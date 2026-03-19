@@ -12,6 +12,7 @@ pub fn prepare_images(state: AppState, tags: Vec<String>) -> tokio::task::JoinHa
         ImageSize::Hd,
         ImageSize::Md,
         ImageSize::Sm,
+        ImageSize::Blur,
     ];
 
     info!("Preparing images...");
