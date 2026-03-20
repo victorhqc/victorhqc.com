@@ -1,0 +1,56 @@
+---
+- name: Ensure nginx is installed
+  become: true
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Deploy API nginx config
+  become: true
+  ansible.builtin.template:
+    src: api.victorhqc.com.conf.j2
+    dest: /etc/nginx/sites-available/api.victorhqc.com.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload nginx
+
+- name: Deploy web nginx config
+  become: true
+  ansible.builtin.template:
+    src: victorhqc.com.conf.j2
+    dest: /etc/nginx/sites-available/victorhqc.com.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload nginx
+
+- name: Enable API site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/api.victorhqc.com.conf
+    dest: /etc/nginx/sites-enabled/api.victorhqc.com.conf
+    state: link
+  notify: reload nginx
+
+- name: Enable web site
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/victorhqc.com.conf
+    dest: /etc/nginx/sites-enabled/victorhqc.com.conf
+    state: link
+  notify: reload nginx
+
+- name: Remove default nginx site
+  become: true
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Ensure nginx is started and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true

@@ -1,0 +1,24 @@
+---
+# Full machine provisioning + first deploy.
+#
+# Usage:
+#   cd deploy
+#   ansible-playbook playbooks/setup.yml --ask-vault-pass --ask-become-pass
+#
+# With web dependency install:
+#   ansible-playbook playbooks/setup.yml --ask-vault-pass --ask-become-pass -e install_web_deps=true
+
+- name: Build locally
+  hosts: lattepanda
+  gather_facts: false
+  roles:
+    - build
+
+- name: Provision and deploy
+  hosts: lattepanda
+  become: false
+  roles:
+    - common
+    - nginx
+    - api
+    - web

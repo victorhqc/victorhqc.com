@@ -1,0 +1,14 @@
+[Unit]
+Description=api.victorhqc.com
+After=network.target
+
+[Service]
+Type=simple
+User={{ app_user }}
+EnvironmentFile={{ config_dir }}/api.env
+ExecStart={{ api_deploy_dir }}/api-victorhqc-com
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

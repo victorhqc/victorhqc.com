@@ -1,0 +1,32 @@
+# Application user that runs the services
+app_user: www-apps
+app_group: www-apps
+
+# Deploy user (your SSH user, needs sudo)
+deploy_user: victorhqc
+
+# --- Paths ---
+config_dir: /etc/victorhqc
+api_deploy_dir: /opt/victorhqc/api
+web_deploy_dir: /opt/victorhqc/website
+
+# --- Service names (without .service suffix) ---
+api_service_name: victorhqc-api
+web_service_name: victorhqc-web
+
+# --- API config ---
+api_port: 8617
+api_cached_photo_tags: "portfolio,street,postcards,berlin,bikes,close-ups"
+api_rust_log: "api_victorhqc_com=error,core_victorhqc_com=error,sqlx::query=error,rocket=error"
+
+# --- Web config ---
+web_port: 3000
+web_api_host: "https://api.victorhqc.com"
+
+# --- Nginx ---
+api_domain: api.victorhqc.com
+web_domains: "victorhqc.com www.victorhqc.com www2.victorhqc.com"
+
+# --- Local build ---
+rust_target: x86_64-unknown-linux-musl
+project_root: "{{ playbook_dir }}/../.."
