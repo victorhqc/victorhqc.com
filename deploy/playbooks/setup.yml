@@ -18,7 +18,7 @@
   hosts: lattepanda
   become: false
   roles:
-    - common
-    - nginx
-    - api
-    - web
+    - { role: common, tags: [common] }
+    - { role: nginx, tags: [nginx] }
+    - { role: api, tags: [api] }
+    - { role: web, tags: [web] }

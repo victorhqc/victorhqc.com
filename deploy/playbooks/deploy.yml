@@ -27,11 +27,11 @@
       become: true
       ansible.builtin.copy:
         src: "{{ api_deploy_dir }}/api_victorhqc_com.db"
-        dest: "{{ api_deploy_dir }}/api_victorhqc_com_bkp_{{ ansible_date_time.iso8601_basic_short }}.db"
+        dest: "{{ api_deploy_dir }}/api_victorhqc_com_bkp_{{ ansible_facts["date_time"]["iso8601_basic_short"] }}.db"
         remote_src: true
         owner: "{{ app_user }}"
         group: "{{ app_group }}"
-        mode: "0664"
+        mode: "0640"
       ignore_errors: true
 
     - name: Upload API binary
@@ -51,7 +51,7 @@
         dest: "{{ api_deploy_dir }}/api_victorhqc_com.db"
         owner: "{{ app_user }}"
         group: "{{ app_group }}"
-        mode: "0664"
+        mode: "0640"
       notify: restart api service
 
     - name: Upload web binary
@@ -65,9 +65,11 @@
       notify: restart web service
 
     - name: Upload web_files.zip
+      become: true
       ansible.builtin.copy:
         src: "{{ project_root }}/web/web_files.zip"
         dest: "/tmp/web_files.zip"
+        mode: "0600"
 
     - name: Extract web assets
       become: true

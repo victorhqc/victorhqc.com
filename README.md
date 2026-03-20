@@ -243,6 +243,19 @@ ansible-playbook playbooks/setup.yml --ask-vault-pass --ask-become-pass
 Pass `-e install_web_deps=true` to also install web dependencies (tailwindcss,
 htmx, etc.) before building.
 
+### Run a Single Role
+
+The setup playbook supports tags to run individual roles: `common`, `nginx`,
+`api`, `web`. For example, to only update the nginx configuration:
+
+```sh
+cd deploy
+ansible-playbook playbooks/setup.yml --ask-vault-pass --ask-become-pass --tags nginx --skip-tags build
+```
+
+The `--skip-tags build` skips the local compilation step when you only need to
+update server configuration.
+
 ## Deploy a Release
 
 This builds the project locally, uploads binaries and assets, backs up the

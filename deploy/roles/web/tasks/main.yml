@@ -40,9 +40,11 @@
   tags: [deploy]
 
 - name: Upload web_files.zip
+  become: true
   ansible.builtin.copy:
     src: "{{ project_root }}/web/web_files.zip"
     dest: "/tmp/web_files.zip"
+    mode: "0600"
   tags: [deploy]
 
 - name: Extract web assets
