@@ -27,7 +27,7 @@
       become: true
       ansible.builtin.copy:
         src: "{{ api_deploy_dir }}/api_victorhqc_com.db"
-        dest: "{{ api_deploy_dir }}/api_victorhqc_com_bkp_{{ ansible_facts["date_time"]["iso8601_basic_short"] }}.db"
+        dest: "{{ api_deploy_dir }}/api_victorhqc_com_bkp_{{ ansible_facts.date_time.iso8601_basic_short }}.db"
         remote_src: true
         owner: "{{ app_user }}"
         group: "{{ app_group }}"
@@ -92,6 +92,7 @@
       notify: restart web service
 
     - name: Clean up web_files.zip from tmp
+      become: true
       ansible.builtin.file:
         path: "/tmp/web_files.zip"
         state: absent
