@@ -92,6 +92,7 @@
       notify: restart web service
 
     - name: Clean up web_files.zip from tmp
+      become: true
       ansible.builtin.file:
         path: "/tmp/web_files.zip"
         state: absent
