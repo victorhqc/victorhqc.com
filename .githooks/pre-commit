@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Prevents committing unencrypted Ansible Vault files.
+# Any file matching *vault*.yml in the deploy directory is checked.
+
+VAULT_FILES=$(git diff --cached --name-only | grep -E 'deploy/.*vault.*\.yml$')
+
+if [ -z "$VAULT_FILES" ]; then
+    exit 0
+fi
+
+for file in $VAULT_FILES; do
+    # Skip deleted files
+    if [ ! -f "$file" ]; then
+        continue
+    fi
+
+    head -1 "$file" | grep -q '^\$ANSIBLE_VAULT'
+    if [ $? -ne 0 ]; then
+        echo "ERROR: $file is NOT encrypted."
+        echo ""
+        echo "Encrypt it before committing:"
+        echo "  ansible-vault encrypt $file"
+        echo ""
+        exit 1
+    fi
+done

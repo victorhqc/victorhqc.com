@@ -1,0 +1,119 @@
+---
+# Deploy a new release to an already-provisioned machine.
+#
+# Usage:
+#   cd deploy
+#   ansible-playbook playbooks/deploy.yml --ask-vault-pass --ask-become-pass
+#
+# Skip the build step (if you already compiled):
+#   ansible-playbook playbooks/deploy.yml --ask-vault-pass --ask-become-pass --skip-tags build
+#
+# With web dependency install:
+#   ansible-playbook playbooks/deploy.yml --ask-vault-pass --ask-become-pass -e install_web_deps=true
+
+- name: Build locally
+  hosts: lattepanda
+  gather_facts: false
+  tags: [build]
+  roles:
+    - build
+
+- name: Deploy API and Web
+  hosts: lattepanda
+  become: false
+  tags: [deploy]
+  tasks:
+    - name: Backup API database
+      become: true
+      ansible.builtin.copy:
+        src: "{{ api_deploy_dir }}/api_victorhqc_com.db"
+        dest: "{{ api_deploy_dir }}/api_victorhqc_com_bkp_{{ ansible_facts["date_time"]["iso8601_basic_short"] }}.db"
+        remote_src: true
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0640"
+      ignore_errors: true
+
+    - name: Upload API binary
+      become: true
+      ansible.builtin.copy:
+        src: "{{ project_root }}/target/{{ rust_target }}/release/api-victorhqc-com"
+        dest: "{{ api_deploy_dir }}/api-victorhqc-com"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+      notify: restart api service
+
+    - name: Upload API database
+      become: true
+      ansible.builtin.copy:
+        src: "{{ project_root }}/api/api_victorhqc_com.db"
+        dest: "{{ api_deploy_dir }}/api_victorhqc_com.db"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0640"
+      notify: restart api service
+
+    - name: Upload web binary
+      become: true
+      ansible.builtin.copy:
+        src: "{{ project_root }}/target/{{ rust_target }}/release/web-victorhqc-com"
+        dest: "{{ web_deploy_dir }}/web-victorhqc-com"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+      notify: restart web service
+
+    - name: Upload web_files.zip
+      become: true
+      ansible.builtin.copy:
+        src: "{{ project_root }}/web/web_files.zip"
+        dest: "/tmp/web_files.zip"
+        mode: "0600"
+
+    - name: Remove stale web assets
+      become: true
+      ansible.builtin.file:
+        path: "{{ web_deploy_dir }}/{{ item }}"
+        state: absent
+      loop:
+        - templates
+        - static
+        - public
+
+    - name: Extract web assets
+      become: true
+      ansible.builtin.unarchive:
+        src: "/tmp/web_files.zip"
+        dest: "{{ web_deploy_dir }}"
+        remote_src: true
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+      notify: restart web service
+
+    - name: Clean up web_files.zip from tmp
+      ansible.builtin.file:
+        path: "/tmp/web_files.zip"
+        state: absent
+
+    - name: Upload regexes.yaml
+      become: true
+      ansible.builtin.copy:
+        src: "{{ project_root }}/web/regexes.yaml"
+        dest: "{{ web_deploy_dir }}/regexes.yaml"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0644"
+
+  handlers:
+    - name: restart api service
+      become: true
+      ansible.builtin.systemd:
+        name: "{{ api_service_name }}"
+        state: restarted
+
+    - name: restart web service
+      become: true
+      ansible.builtin.systemd:
+        name: "{{ web_service_name }}"
+        state: restarted

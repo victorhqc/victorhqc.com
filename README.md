@@ -27,11 +27,20 @@ code into a different repository to keep it JS from taking over :)
   cargo install --locked bacon
   ```
 
+### Setup
+
+Run the setup script after cloning. It configures git hooks that prevent
+committing unencrypted vault files.
+
+```sh
+./scripts/unix/setup-dev.sh
+```
+
 Prepare the environment variables by creating an `.env` file
 
 ```sh
 cp .env.example .env
-cp .cargo/config.toml.example .cargo/config.toml 
+cp .cargo/config.toml.example .cargo/config.toml
 ```
 
 The `.cargo/config.toml` requires an update, replace the needed keys for AWS.
@@ -77,20 +86,20 @@ bacon
 
 ## Web Frontend Development
 
-First, install the dependencies the website needs using the `web-dependencies.sh` script, just make sure `wget` is installed,
-for Mac OSX do it with
+First, install the dependencies the website needs using the `web-dependencies.sh`
+script, just make sure `wget` is installed, for Mac OSX do it with
 
 ```sh
 brew install wget
 ```
 
-And then run the script. It will download a copy of `tailwindcss` and `htmx`. We could use a CDN, but time has proven that
-CDNs go down sometimes, and we want to avoid problems caused by 3rd parties as much as possible.
+And then run the script. It will download a copy of `tailwindcss` and `htmx`.
+We could use a CDN, but time has proven that CDNs go down sometimes, and we want
+to avoid problems caused by 3rd parties as much as possible.
 
 ```sh
 ./scripts/unix/web-dependencies.sh
 ```
-
 
 Make sure the API is running and then run the following
 
@@ -131,13 +140,16 @@ The service will run in a Linux machine, so targeting that platform is imperativ
 **Requirements**
 
 1. Musl Target
-  ```sh
-  rustup target add x86_64-unknown-linux-musl
-  ```
+
+```sh
+rustup target add x86_64-unknown-linux-musl
+```
+
 2. Musl Linker
-  ```sh
-  brew install FiloSottile/musl-cross/musl-cross
-  ```
+
+```sh
+brew install FiloSottile/musl-cross/musl-cross
+```
 
 **Compilation**
 
@@ -186,109 +198,87 @@ drill --benchmark stress-tests/benchmark.web.yml --stats
 
 # Deployment
 
-The current deployment is pretty spartan. It's a basic automation where the
-binaries and necessary files are shipped to the service through `scp` and then
-some commands are manually run using `ssh`.
-
-It requires that manual configuration is already in place. Meaning, having
-[Nginx configured](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-20-04#step-5-%E2%80%93-setting-up-server-blocks-(recommended))
-as well as having the `systemd` services ready. There's a small description
-on the configuration needed.
-
-Once that is ready then the deployment script can be executed
-
-```sh
-# Compiling for release is mandatory to run before
-cargo build --release --target x86_64-unknown-linux-musl
-
-./scripts/unix/release.sh -k ~/.ssh/your-ssh-key -h victorhqc.com -u username -p path_in_server
-
-# Or like this to install web dependencies
-./scripts/unix/release.sh -k ~/.ssh/your-ssh-key -h victorhqc.com -u username -p path_in_server --install
-```
+Deployment uses [Ansible](https://docs.ansible.com/). It handles both fresh machine setup and
+routine releases. All playbooks live in `deploy/`.
 
 ## Requirements
 
-- Nginx
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html): `brew install ansible`
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/): SSH proxy to the server
+- The `lattepanda` SSH alias configured in `~/.ssh/config`
 
-### Systemd
+## Secrets
 
-The services use `systemd` to manage restarts and configuration. Benjamin
-Morel [has an excellent](https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6) 
-guide on how to set a service.
+Secrets are stored in `deploy/inventory/group_vars/all/vault.yml`, encrypted with
+[Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html).
 
-Once the services configured with the configuration stated below, one can
-simply write
+First time setup:
 
 ```sh
-systemctl status api.victorhqc.com
-systemctl restart api.victorhqc.com
+cd deploy
 
-systemctl status www.victorhqc.com
-systemctl restart www.victorhqc.com
+# Fill in your real values
+vi inventory/group_vars/all/vault.yml
+
+# Encrypt the file
+ansible-vault encrypt inventory/group_vars/all/vault.yml
 ```
 
-### API Configuration
+To edit secrets later:
 
-The file for the API Service, I have it configured as
-
-`/etc/systemd/system/api.victorhqc.com.env`
-```
-DATABASE_URL="<PATH>"
-ROCKET_DATABASE_URL="<PATH>"
-ROCKET_CACHED_PHOTO_TAGS="<COMMA_SEPARATED_TAGS>"
-ROCKET_PORT=<PORT>
-
-RUST_LOG = "api_victorhqc_com=error,core_victorhqc_com=error,sqlx::query=error,rocket=error"
+```sh
+ansible-vault edit inventory/group_vars/all/vault.yml
 ```
 
-`/etc/systemd/system/api.victorhqc.com.service`
-```
-[Unit]
-Description=victorhqc.com API (api.victorhqc.com)
-After=network.target
-StartLimitIntervalSec=0
+## Provision a New Machine
 
-[Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=<USERNAME>
-ExecStart=<PATH>/linux-api-victorhqc-com
-EnvironmentFile=/etc/systemd/system/api.victorhqc.com.env
+This installs packages, creates users, sets up nginx, deploys systemd services,
+and runs the first deploy.
 
-[Install]
-WantedBy=multi-user.target
+```sh
+cd deploy
+ansible-playbook playbooks/setup.yml --ask-vault-pass --ask-become-pass
 ```
 
-### WEB Configuration
+Pass `-e install_web_deps=true` to also install web dependencies (tailwindcss,
+htmx, etc.) before building.
 
-The config file for the web service is
+### Run a Single Role
 
+The setup playbook supports tags to run individual roles: `common`, `nginx`,
+`api`, `web`. For example, to only update the nginx configuration:
 
-`/etc/systemd/system/www.victorhqc.com.env`
-```
-WEB_PORT=<PORT>
-WEB_API_HOST=https://api.victorhqc.com
-WEB_ROOT=<PATH_TO_WEB_STATICS>/victorhqc.com/
-DATABASE_URL=<PATH_TO_BINARY>/analytics.db
-OUT_DIR=<PATH_TO_WEB_STATICS>/victorhqc.com/
-REGEX_PATH=<PATH_TO_WEB_STATICS>/victorhqc.com/
+```sh
+cd deploy
+ansible-playbook playbooks/setup.yml --ask-vault-pass --ask-become-pass --tags nginx --skip-tags build
 ```
 
-`/etc/systemd/system/www.victorhqc.com.service`
+The `--skip-tags build` skips the local compilation step when you only need to
+update server configuration.
+
+## Deploy a Release
+
+This builds the project locally, uploads binaries and assets, backs up the
+database, and restarts the services.
+
+```sh
+cd deploy
+ansible-playbook playbooks/deploy.yml --ask-vault-pass --ask-become-pass
 ```
-After=network.target
-StartLimitIntervalSec=0
 
-[Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=<USERNAME>
-ExecStart=<PATH>/linux-web-victorhqc-com 
-EnvironmentFile=/etc/systemd/system/www.victorhqc.com.env
+If you already ran `cargo build --release --target x86_64-unknown-linux-musl`
+and want to skip the build, add `--skip-tags build`:
 
-[Install]
-WantedBy=multi-user.target
+```sh
+cd deploy
+ansible-playbook playbooks/deploy.yml --ask-vault-pass --ask-become-pass --skip-tags build
+```
+
+## Service Management
+
+Both services run under `systemd`. Check their status with:
+
+```sh
+systemctl status victorhqc-api
+systemctl status victorhqc-web
 ```

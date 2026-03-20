@@ -1,0 +1,34 @@
+---
+# All tasks in this role run locally on your Mac
+
+- name: Install web dependencies (optional)
+  ansible.builtin.command:
+    cmd: ./scripts/unix/web-dependencies.sh
+    chdir: "{{ project_root }}"
+  delegate_to: localhost
+  when: install_web_deps | default(false) | bool
+
+- name: Cross-compile for Linux (musl)
+  ansible.builtin.command:
+    cmd: cargo build --release --target {{ rust_target }}
+    chdir: "{{ project_root }}"
+  delegate_to: localhost
+  register: cargo_build
+  changed_when: false
+
+- name: Verify API binary exists
+  ansible.builtin.stat:
+    path: "{{ project_root }}/target/{{ rust_target }}/release/api-victorhqc-com"
+  delegate_to: localhost
+  register: api_binary
+
+- name: Verify web binary exists
+  ansible.builtin.stat:
+    path: "{{ project_root }}/target/{{ rust_target }}/release/web-victorhqc-com"
+  delegate_to: localhost
+  register: web_binary
+
+- name: Fail if binaries are missing
+  ansible.builtin.fail:
+    msg: "Build failed: binary not found"
+  when: not api_binary.stat.exists or not web_binary.stat.exists

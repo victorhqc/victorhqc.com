@@ -25,6 +25,8 @@ web/static/
 web/regexes.yaml
 *.zip
 
+.vault_pass*
+
 __debug_compression__
 *.jpg
 *.jpg

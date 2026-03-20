@@ -1,0 +1,63 @@
+---
+- name: Deploy API environment file
+  become: true
+  ansible.builtin.template:
+    src: api.env.j2
+    dest: "{{ config_dir }}/api.env"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: restart api
+
+- name: Deploy API systemd service
+  become: true
+  ansible.builtin.template:
+    src: victorhqc-api.service.j2
+    dest: "/etc/systemd/system/{{ api_service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - daemon reload
+    - restart api
+
+- name: Enable API service
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ api_service_name }}"
+    enabled: true
+    daemon_reload: true
+
+- name: Backup API database before deploy
+  become: true
+  ansible.builtin.copy:
+    src: "{{ api_deploy_dir }}/api_victorhqc_com.db"
+    dest: "{{ api_deploy_dir }}/api_victorhqc_com_bkp_{{ ansible_facts["date_time"]["iso8601_basic_short"] }}.db"
+    remote_src: true
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+  ignore_errors: true
+  tags: [deploy]
+
+- name: Upload API binary
+  become: true
+  ansible.builtin.copy:
+    src: "{{ project_root }}/target/{{ rust_target }}/release/api-victorhqc-com"
+    dest: "{{ api_deploy_dir }}/api-victorhqc-com"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+  notify: restart api
+  tags: [deploy]
+
+- name: Upload API database
+  become: true
+  ansible.builtin.copy:
+    src: "{{ project_root }}/api/api_victorhqc_com.db"
+    dest: "{{ api_deploy_dir }}/api_victorhqc_com.db"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+  notify: restart api
+  tags: [deploy]

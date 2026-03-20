@@ -1,0 +1,14 @@
+[Unit]
+Description=victorhqc Website
+After=network.target
+
+[Service]
+Type=simple
+User={{ app_user }}
+EnvironmentFile={{ config_dir }}/website.env
+ExecStart={{ web_deploy_dir }}/web-victorhqc-com
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
