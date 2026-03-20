@@ -71,6 +71,16 @@
         dest: "/tmp/web_files.zip"
         mode: "0600"
 
+    - name: Remove stale web assets
+      become: true
+      ansible.builtin.file:
+        path: "{{ web_deploy_dir }}/{{ item }}"
+        state: absent
+      loop:
+        - templates
+        - static
+        - public
+
     - name: Extract web assets
       become: true
       ansible.builtin.unarchive:

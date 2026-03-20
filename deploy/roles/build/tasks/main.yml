@@ -14,7 +14,7 @@
     chdir: "{{ project_root }}"
   delegate_to: localhost
   register: cargo_build
-  changed_when: cargo_build.rc == 0
+  changed_when: false
 
 - name: Verify API binary exists
   ansible.builtin.stat:
